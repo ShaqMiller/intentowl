@@ -66,6 +66,12 @@ export const customers = pgTable(
     plan: text("plan"),
     /** IANA timezone, e.g. "Europe/London". Digest send hour is local to this. */
     tz: text("tz").notNull().default("UTC"),
+    /**
+     * Local hour to send the digest, 0-23. Stored as the hour the customer
+     * asked for, never as a precomputed UTC hour: the offset between the two
+     * moves twice a year, on different dates in different countries.
+     */
+    digestHour: integer("digest_hour").notNull().default(7),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -115,7 +121,14 @@ export const watches = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [index("watches_customer_id_idx").on(t.customerId)],
+  (t) => [
+    index("watches_customer_id_idx").on(t.customerId),
+    // A natural key so re-onboarding a customer updates their watches in place.
+    // Without it, a seed file has to delete and recreate them, and the cascade
+    // takes item_watches and classifications with it -- silently destroying the
+    // lead history you already paid to classify.
+    uniqueIndex("watches_customer_name_key").on(t.customerId, t.name),
+  ],
 );
 
 /** Last-seen position per (watch, source). Makes polling incremental. */

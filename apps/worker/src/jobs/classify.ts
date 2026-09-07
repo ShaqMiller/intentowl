@@ -41,6 +41,13 @@ import {
 
 export const CLASSIFY_QUEUE = "classify";
 
+/** Exported so the scheduler can create the queue before scheduling onto it. */
+export const CLASSIFY_QUEUE_OPTIONS = {
+  ...DEFAULT_QUEUE_OPTIONS,
+  policy: "stately",
+  expireInSeconds: 600,
+} as const;
+
 /** Items per model call. Kept in one place so the eval can match production. */
 export const BATCH_SIZE = 12;
 
@@ -195,11 +202,7 @@ export async function registerClassify(
   db: Db,
   classifier: Classifier | null,
 ): Promise<void> {
-  await boss.createQueue(CLASSIFY_QUEUE, {
-    ...DEFAULT_QUEUE_OPTIONS,
-    policy: "stately",
-    expireInSeconds: 600,
-  });
+  await boss.createQueue(CLASSIFY_QUEUE, CLASSIFY_QUEUE_OPTIONS);
 
   if (classifier === null) {
     logger.warn(

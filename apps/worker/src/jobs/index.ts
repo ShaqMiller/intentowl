@@ -11,6 +11,7 @@ import {
 import { registerDigest } from "./digest.ts";
 import { registerHeartbeat } from "./heartbeat.ts";
 import { registerPoll, type AdapterRegistry } from "./poll.ts";
+import { syncSchedules } from "./schedules.ts";
 
 /**
  * Every job the worker runs is registered here.
@@ -32,9 +33,13 @@ export async function registerJobs(
   await registerClassify(boss, db, createWorkerClassifier());
   await registerClassifyBatch(boss, db, createAnthropicClient());
   await registerDigest(boss, db);
+
+  // Last: the queues have to exist before anything can be scheduled onto them.
+  await syncSchedules(boss, db);
 }
 
 export { HEARTBEAT_QUEUE } from "./heartbeat.ts";
+export { syncSchedules, intervalCron, offsetFor } from "./schedules.ts";
 export {
   DIGEST_QUEUE,
   runDigest,

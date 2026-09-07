@@ -17,20 +17,19 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M3** (M0, M1, M2 complete). M3 is built; its exit test
-  (a digest in a real inbox) has not been run.
+- Current milestone: **M5** (M0-M4 complete). M3 and M4 exit tests demonstrated
+  but not run to their full duration; see Open items.
 
 ## Open items carried forward
 
 - **M2 passed at 82.4% precision** (recall 82.4%, F1 82.4%, 72/72 judged) on
   2026-09-07, measured cost $0.079/run and ~$0.0011/item. Intent accuracy is
   the weak spot at 69.4% — it affects digest grouping, not which leads show.
-- **M3 is built but unsent.** Scoring, the React Email template, Resend and
-  Slack delivery all exist, and `pnpm cli send-digest --dry-run` renders a real
-  preview to `docs/digest-preview.html`. The exit test — a digest landing in a
-  real inbox — has not been run, and the preview's reason and reply-angle text
-  comes from golden-set labels rather than model output. Layout, ranking and
-  grouping are real; the words are placeholder.
+- **M3 sent for real** on 2026-09-07 (13 leads, message id 94b1fbff). M4 is
+  scheduled and firing on cron. The literal M4 exit test — 24h unattended —
+  has not been run end to end; polls, classify and the schedule sync were
+  observed live, and the timezone arithmetic is proven against pg-boss own
+  cron parser rather than by waiting for 7am.
 
 - **Reddit API access is unverified.** The adapter is built and covered by
   tests against recorded fixtures, but it has never touched the live API:

@@ -21,6 +21,8 @@ import { createBoss } from "./boss.ts";
 import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
 import { runDigest } from "./jobs/digest.ts";
+import { syncSchedules } from "./jobs/schedules.ts";
+import { applySeed, parseSeedFile } from "./seed.ts";
 import { runPoll } from "./jobs/poll.ts";
 import { logger } from "./logger.ts";
 
@@ -42,7 +44,12 @@ const USAGE = `intentowl cli
       and sends nothing. Without it, the digest is recorded and emailed, once
       per customer per local day unless --force.
 
-  seed --file=<customer.json>                  (M4)
+  seed --file=<customer.json>
+      Onboard or update a customer from a JSON file. Idempotent by email.
+      Re-syncs the cron schedules afterwards.
+
+  schedules
+      Print the cron schedules currently registered.
 `;
 
 async function main(): Promise<number> {
@@ -63,10 +70,10 @@ async function main(): Promise<number> {
       return await sendDigestCommand(flags);
 
     case "seed":
-      process.stderr.write(
-        `"${command}" is not implemented yet — see the milestone map in ${import.meta.filename}.\n`,
-      );
-      return 1;
+      return await seedCommand(flags);
+
+    case "schedules":
+      return await schedulesCommand();
 
     default:
       process.stdout.write(USAGE);
@@ -99,6 +106,65 @@ async function classifyBatchCommand(): Promise<number> {
       `batch run queued (job ${id}). The worker submits, polls and collects; ` +
         `watch its logs for "batch collected".\n`,
     );
+    return 0;
+  } finally {
+    await boss.stop({ graceful: true, close: true, timeout: 10_000 });
+  }
+}
+
+async function seedCommand(flags: Flags): Promise<number> {
+  const file = flags.string("file");
+  if (file === undefined) {
+    process.stderr.write("seed requires --file=<customer.json>\n");
+    return 1;
+  }
+
+  // Validate before opening a connection: a bad file should fail without
+  // leaving a half-onboarded customer behind.
+  const seed = parseSeedFile(file);
+
+  const { pool, db } = createDb(env.DATABASE_URL);
+  const boss = createBoss();
+  try {
+    const result = await applySeed(db, seed);
+    process.stdout.write(
+      `${result.created ? "created" : "updated"} ${result.email} (${result.customerId})
+` +
+        `${result.watchIds.length} watch(es)
+`,
+    );
+
+    // Schedules are derived from these rows, so onboarding is not finished
+    // until they exist — otherwise the customer is in the database and nothing
+    // ever polls or sends for them.
+    await boss.start();
+    const sync = await syncSchedules(boss, db);
+    process.stdout.write(
+      `schedules: +${sync.added} kept ${sync.kept} -${sync.removed}
+`,
+    );
+    return 0;
+  } finally {
+    await boss.stop({ graceful: true, close: true, timeout: 10_000 });
+    await pool.end();
+  }
+}
+
+async function schedulesCommand(): Promise<number> {
+  const boss = createBoss();
+  try {
+    await boss.start();
+    const schedules = await boss.getSchedules();
+    if (schedules.length === 0) {
+      process.stdout.write("no schedules registered\n");
+      return 0;
+    }
+    for (const s of [...schedules].sort((a, b) => a.name.localeCompare(b.name))) {
+      process.stdout.write(
+        `${s.name.padEnd(16)} ${String(s.cron).padEnd(18)} ${String(s.timezone).padEnd(18)} ${s.key}
+`,
+      );
+    }
     return 0;
   } finally {
     await boss.stop({ graceful: true, close: true, timeout: 10_000 });

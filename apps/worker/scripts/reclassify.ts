@@ -16,7 +16,7 @@ import { eq, sql } from "drizzle-orm";
 import { env } from "../src/env.ts";
 import { runClassify } from "../src/jobs/classify.ts";
 
-const SPEND_CAP_USD = 0.6;
+const SPEND_CAP_USD = 0.2;
 const REAL_EMAIL = "millershaquille533@gmail.com";
 
 const { pool, db } = createDb(env.DATABASE_URL);

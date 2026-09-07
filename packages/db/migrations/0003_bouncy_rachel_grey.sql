@@ -1,0 +1,1 @@
+ALTER TABLE "customers" ADD COLUMN "digest_hour" integer DEFAULT 7 NOT NULL;

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "watches_customer_name_key" ON "watches" USING btree ("customer_id","name");

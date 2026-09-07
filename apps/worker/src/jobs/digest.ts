@@ -34,6 +34,13 @@ import { logger } from "../logger.ts";
 
 export const DIGEST_QUEUE = "digest";
 
+/** Exported so the scheduler can create the queue before scheduling onto it. */
+export const DIGEST_QUEUE_OPTIONS = {
+  ...DEFAULT_QUEUE_OPTIONS,
+  policy: "stately",
+  expireInSeconds: 300,
+} as const;
+
 /** How far back a digest may reach for leads. */
 const LOOKBACK_HOURS = 36;
 
@@ -178,11 +185,7 @@ export async function runDigest(
 // --- queue wiring -----------------------------------------------------------
 
 export async function registerDigest(boss: PgBoss, db: Db): Promise<void> {
-  await boss.createQueue(DIGEST_QUEUE, {
-    ...DEFAULT_QUEUE_OPTIONS,
-    policy: "stately",
-    expireInSeconds: 300,
-  });
+  await boss.createQueue(DIGEST_QUEUE, DIGEST_QUEUE_OPTIONS);
 
   await boss.work<DigestJobData>(DIGEST_QUEUE, { batchSize: 1 }, async (jobs) => {
     for (const job of jobs) {

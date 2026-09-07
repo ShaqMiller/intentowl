@@ -27,6 +27,19 @@ import { logger } from "../logger.ts";
 
 export const POLL_QUEUE = "poll";
 
+/**
+ * Exported so the scheduler can create the queue too. Schedules are registered
+ * from the CLI as well as the worker, and pg-boss refuses to schedule onto a
+ * queue that does not exist yet.
+ */
+export const POLL_QUEUE_OPTIONS = {
+  ...DEFAULT_QUEUE_OPTIONS,
+  // One poll per (watch, source) may be queued and one may be running.
+  // Without this a slow Reddit response builds a backlog that then stampedes.
+  policy: "stately",
+  expireInSeconds: 300,
+} as const;
+
 /** Postgres caps bound parameters at 65535; stay far under it. */
 const INSERT_CHUNK = 200;
 
@@ -168,13 +181,7 @@ export async function registerPoll(
   db: Db,
   adapters: AdapterRegistry,
 ): Promise<void> {
-  await boss.createQueue(POLL_QUEUE, {
-    ...DEFAULT_QUEUE_OPTIONS,
-    // One poll per (watch, source) may be queued and one may be running.
-    // Without this a slow Reddit response builds a backlog that then stampedes.
-    policy: "stately",
-    expireInSeconds: 300,
-  });
+  await boss.createQueue(POLL_QUEUE, POLL_QUEUE_OPTIONS);
 
   await boss.work<PollJobData>(POLL_QUEUE, { batchSize: 1 }, async (jobs) => {
     for (const job of jobs) {

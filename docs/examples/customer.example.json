@@ -1,0 +1,43 @@
+{
+  "customer": {
+    "email": "millershaquille533@gmail.com",
+    "name": "Acme Analytics",
+    "tz": "America/New_York",
+    "digestHour": 7,
+    "status": "active",
+    "plan": "founding-monthly"
+  },
+  "profile": {
+    "productDesc": "Acme Analytics is a product-analytics tool for small SaaS teams. It answers 'which features do my paying customers actually use' without requiring an engineer to instrument every event by hand.",
+    "icpDesc": "Solo founders and teams of two to ten running a live B2B SaaS with paying customers. Technical enough to install a script, too busy to maintain a tracking plan. Usually outgrowing a spreadsheet or a free analytics tier and unsure which features drive retention.",
+    "competitors": ["Mixpanel", "Amplitude", "PostHog", "Heap", "June"],
+    "disqualifiers": [
+      "Agencies and consultants asking on behalf of clients",
+      "Anyone building their own analytics tool - a competitor, not a buyer",
+      "Marketing-attribution and ad-spend questions, which are a different problem",
+      "Pure implementation questions about a competitor's SDK with no evaluation intent"
+    ]
+  },
+  "watches": [
+    {
+      "name": "Founders outgrowing their analytics",
+      "sources": ["hn", "lobsters", "stackexchange"],
+      "subreddits": ["SaaS", "startups", "analytics", "ProductManagement", "indiehackers"],
+      "includeTerms": [
+        "product analytics",
+        "feature usage",
+        "which features",
+        "user retention",
+        "tracking plan",
+        "mixpanel alternative",
+        "amplitude alternative",
+        "posthog"
+      ],
+      "excludeTerms": ["\"who is hiring\"", "\"for hire\"", "upwork", "fiverr"],
+      "sourceConfig": {
+        "stackexchange": { "sites": ["softwareengineering", "webmasters"] }
+      },
+      "active": true
+    }
+  ]
+}
