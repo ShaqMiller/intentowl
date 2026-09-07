@@ -31,7 +31,15 @@ export const customerStatus = pgEnum("customer_status", [
   "churned",
 ]);
 
-export const source = pgEnum("source", ["reddit", "hn", "bluesky", "rss", "x"]);
+export const source = pgEnum("source", [
+  "reddit",
+  "hn",
+  "lobsters",
+  "stackexchange",
+  "bluesky",
+  "rss",
+  "x",
+]);
 
 export const intent = pgEnum("intent", [
   "buying_intent",
@@ -96,6 +104,12 @@ export const watches = pgTable(
     subreddits: text("subreddits").array().notNull().default([]),
     includeTerms: text("include_terms").array().notNull().default([]),
     excludeTerms: text("exclude_terms").array().notNull().default([]),
+    /**
+     * Per-source settings that do not deserve a column each: which Stack
+     * Exchange sites, which RSS feed URLs, which Lobsters tags. Keyed by
+     * source name. `subreddits` predates this and stays where it is.
+     */
+    sourceConfig: jsonb("source_config"),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

@@ -13,7 +13,15 @@
  */
 import { z } from "zod";
 
-export const sourceName = z.enum(["reddit", "hn", "bluesky", "rss", "x"]);
+export const sourceName = z.enum([
+  "reddit",
+  "hn",
+  "lobsters",
+  "stackexchange",
+  "bluesky",
+  "rss",
+  "x",
+]);
 export type SourceName = z.infer<typeof sourceName>;
 
 /**
@@ -54,6 +62,16 @@ export const cursor = z.union([
     /** Algolia `created_at_i`, unix seconds. */
     newestCreatedAt: z.number().int().nonnegative(),
   }),
+  z.object({
+    kind: z.literal("lobsters"),
+    /** Epoch milliseconds: Lobsters returns ISO timestamps, not unix. */
+    newestCreatedAt: z.number().int().nonnegative(),
+  }),
+  z.object({
+    kind: z.literal("stackexchange"),
+    /** `creation_date`, unix seconds. */
+    newestCreatedAt: z.number().int().nonnegative(),
+  }),
 ]);
 export type Cursor = z.infer<typeof cursor>;
 
@@ -66,6 +84,12 @@ export interface WatchConfig {
   subreddits: string[];
   includeTerms: string[];
   excludeTerms: string[];
+  /**
+   * Per-source settings keyed by source name, e.g.
+   * `{ stackexchange: { sites: ["softwareengineering"] } }`. Avoids a column
+   * per source as more of them land.
+   */
+  sourceConfig?: unknown;
 }
 
 /** What one fetch cost, for `api_usage`. */

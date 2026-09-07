@@ -50,6 +50,8 @@ export interface PollOutcome {
   calls: number;
   rateLimited: boolean;
   retryAfterSeconds?: number;
+  /** Non-fatal problems the adapter reported. Logged, never swallowed. */
+  warnings: string[];
 }
 
 export type AdapterRegistry = Partial<Record<SourceName, SourceAdapter>>;
@@ -107,7 +109,16 @@ export async function runPoll(options: RunPollOptions): Promise<PollOutcome> {
     ...emptyOutcome(watchId, source),
     fetched: result.items.length,
     calls: result.cost.calls,
+    warnings: result.warnings ?? [],
   };
+
+  // Adapters raise warnings for the failures that do not throw: a query too
+  // broad to cover in one window, a shared quota running down, a misconfigured
+  // site skipped so the rest of the poll survives. Every one of them looks
+  // exactly like a quiet day if nothing surfaces it.
+  for (const warning of outcome.warnings) {
+    log.warn({ warning }, "adapter warning");
+  }
 
   if (!persist) {
     log.info(
@@ -222,6 +233,10 @@ async function loadWatch(db: Db, watchId: string): Promise<LoadedWatch> {
       subreddits: row.subreddits,
       includeTerms: row.includeTerms,
       excludeTerms: row.excludeTerms,
+      // Per-source settings: which Stack Exchange sites, which RSS feeds.
+      // Without this the adapters silently fall back to their defaults and a
+      // customer's configuration has no effect at all.
+      sourceConfig: row.sourceConfig,
     },
   };
 }
@@ -374,6 +389,7 @@ function emptyOutcome(watchId: string, source: SourceName): PollOutcome {
     linked: 0,
     calls: 0,
     rateLimited: false,
+    warnings: [],
   };
 }
 

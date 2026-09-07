@@ -6,7 +6,12 @@
  * app is still awaiting approval. Attempting to poll an absent source fails
  * with a clear message at the point of use.
  */
-import { createHnAdapter, createRedditAdapter } from "@intentowl/core";
+import {
+  createHnAdapter,
+  createLobstersAdapter,
+  createRedditAdapter,
+  createStackExchangeAdapter,
+} from "@intentowl/core";
 
 import { env } from "./env.ts";
 import type { AdapterRegistry } from "./jobs/poll.ts";
@@ -14,8 +19,14 @@ import { logger } from "./logger.ts";
 
 export function createAdapters(): AdapterRegistry {
   const registry: AdapterRegistry = {
-    // Free, unauthenticated, always available.
+    // Free and unauthenticated, so always available.
     hn: createHnAdapter(),
+    lobsters: createLobstersAdapter(),
+    // Works without a key at 300 requests/day per IP; the key raises it to
+    // 10,000 and is worth having before a second customer.
+    stackexchange: createStackExchangeAdapter(
+      env.STACKEXCHANGE_KEY === undefined ? {} : { apiKey: env.STACKEXCHANGE_KEY },
+    ),
   };
 
   if (

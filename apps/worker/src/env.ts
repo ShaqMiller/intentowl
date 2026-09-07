@@ -23,6 +23,8 @@ const schema = z.object({
   REDDIT_CLIENT_ID: z.string().optional(),
   REDDIT_CLIENT_SECRET: z.string().optional(),
   REDDIT_USER_AGENT: z.string().optional(),
+  /** Free key from stackapps.com: raises the daily quota from 300 to 10,000. */
+  STACKEXCHANGE_KEY: z.string().optional(),
   // M2
   ANTHROPIC_API_KEY: z.string().optional(),
   /** Only needed when the API key is org-scoped rather than workspace-scoped. */

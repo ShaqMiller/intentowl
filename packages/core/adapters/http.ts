@@ -6,7 +6,8 @@
  *
  *   RateLimitedError  -> stop, reschedule the job, do not retry in-process
  *   TransientError    -> let pg-boss retry with backoff
- *   AdapterError      -> a real bug or a provider contract change; fail loudly
+ *   SchemaError       -> the provider changed its payload; fail loudly
+ *   AdapterError      -> the provider rejected the request; usually skippable
  */
 import { z } from "zod";
 
@@ -26,6 +27,23 @@ export class RateLimitedError extends AdapterError {
     super(source, `${source} rate limited; retry in ${retryAfterSeconds}s`);
     this.name = "RateLimitedError";
     this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
+/**
+ * The provider answered, but not in the shape we expect.
+ *
+ * Distinct from a plain `AdapterError` because the two demand opposite
+ * handling: a request the provider *rejected* (a mistyped site name, a deleted
+ * subreddit) should usually be skipped so the rest of the poll survives, while
+ * a payload that no longer validates means the contract changed underneath us
+ * and must fail loudly. Silently skipping that would show up as a source that
+ * quietly stopped returning anything.
+ */
+export class SchemaError extends AdapterError {
+  constructor(source: string, message: string, options?: { cause?: unknown }) {
+    super(source, message, options);
+    this.name = "SchemaError";
   }
 }
 
@@ -111,7 +129,7 @@ export async function fetchJson<T>(
   // not turn into an undefined halfway through a digest.
   const parsed = schema.safeParse(payload);
   if (!parsed.success) {
-    throw new AdapterError(
+    throw new SchemaError(
       source,
       `${redactUrl(url)} returned an unexpected shape: ${parsed.error.issues
         .slice(0, 3)
