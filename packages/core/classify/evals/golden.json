@@ -219,11 +219,11 @@
       "body": "I am currently working on a startup idea, and I would like to get some user feedback by people who have the problem I am trying to solve. How do I find people with a specific problem? (Apart from friends of friends or acquaintances). For example: If I was working on a solution for learning a language, how do I find people who are trying to learn a language?",
       "expect": {
         "relevant": true,
-        "intent": "buying_intent",
+        "intent": "pain_point",
         "minScore": 55,
         "maxScore": 90
       },
-      "note": "Wants to find people who already have the problem - literally what IntentOwl does."
+      "note": "Wants to find people who already have the problem - literally what IntentOwl does. Asking HOW, not which tool, so pain_point rather than buying_intent."
     },
     {
       "id": "18813679",
@@ -234,11 +234,11 @@
       "body": "I have launched beta version of my agile retrospective tool. And now looking to attract beta users. What are the best practices others have used to get initial users and feedback. here is link: www.reetro.io",
       "expect": {
         "relevant": true,
-        "intent": "buying_intent",
+        "intent": "pain_point",
         "minScore": 55,
         "maxScore": 90
       },
-      "note": "SaaS beta, asking for practices to attract users. Strong buying intent."
+      "note": "SaaS beta asking what practices others used. Wants an approach, not a product recommendation, so pain_point."
     },
     {
       "id": "26959986",

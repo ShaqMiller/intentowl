@@ -82,7 +82,7 @@ Reject on **who the author is** — wrong ICP, a seller, a competitor, a service
 
 ## Intent types
 
-- **buying_intent** — actively shopping. Asking for recommendations, comparing options, "what do you use for X", "is there a tool that...", announcing they are about to build it themselves.
+- **buying_intent** — actively shopping. The operational test: **are they asking which product to use, or how to approach a problem?** "Is there a tool that does X?", "what do you all use for X?", "X vs Y, which should I pick?", "I'm about to build this myself" are buying_intent. "How did you find your first customers?" is *not* — they want an approach, and that is a pain_point. Asking for advice is not shopping, however strong the underlying need.
 - **competitor_complaint** — using or evaluating a named competitor and unhappy: pricing, a missing feature, an outage, a shutdown. The highest-conversion category, because the need is already proven and budget already exists.
 - **pain_point** — describing the problem the product solves, in their own words, without asking for a tool. They may not know a solution exists.
 - **question** — asking about the problem space in a way that suggests interest but not need. Curiosity, research, "how do people usually handle X".

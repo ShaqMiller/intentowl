@@ -228,6 +228,31 @@ async function main(): Promise<number> {
   console.log(`  confusion         tp=${tp} fp=${fp} fn=${fn} tn=${tn}`);
   console.log("─────────────────────────────────────────────");
 
+  // Which bucket a lead lands in drives digest grouping, so an aggregate
+  // accuracy figure hides the thing worth acting on: whether one intent is
+  // systematically collapsing into another.
+  const intents = ["buying_intent", "competitor_complaint", "pain_point", "question", "none"];
+  const pairs = new Map<string, number>();
+  for (const c of scored) {
+    const p = predictions.get(c.id);
+    if (p === undefined) continue;
+    const key = `${c.expect.intent}>${p.intent}`;
+    pairs.set(key, (pairs.get(key) ?? 0) + 1);
+  }
+  console.log("\n  intent confusion (rows = labelled, cols = predicted)");
+  console.log(`  ${"".padEnd(22)}${intents.map((i) => i.slice(0, 6).padStart(8)).join("")}`);
+  for (const expected of intents) {
+    const row = intents
+      .map((got) => String(pairs.get(`${expected}>${got}`) ?? 0).padStart(8))
+      .join("");
+    const total = intents.reduce((n, got) => n + (pairs.get(`${expected}>${got}`) ?? 0), 0);
+    if (total === 0) continue;
+    const hit = pairs.get(`${expected}>${expected}`) ?? 0;
+    console.log(
+      `  ${expected.padEnd(22)}${row}   ${((hit / total) * 100).toFixed(0)}% of ${total}`,
+    );
+  }
+
   const inTokens = usage.reduce((s, u) => s + u.tokensIn, 0);
   const outTokens = usage.reduce((s, u) => s + u.tokensOut, 0);
   const cacheRead = usage.reduce((s, u) => s + u.cacheReadTokens, 0);
