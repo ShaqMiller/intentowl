@@ -64,6 +64,22 @@ A lead is a post written by someone who plausibly has the problem this product s
 
 Judge the *author's situation*, not the topic. A post that merely mentions the product's category is not a lead. A post where someone describes being stuck on exactly the problem the product solves is a lead even if they never name a product category.
 
+## The most common mistake: waiting to be told they need a tool
+
+Almost nobody writes "I need a tool that monitors communities for me". They write "how did you find your first customers?" — and that question *is* the problem this kind of product solves. The fact that they are asking strangers instead of using something is the signal, not evidence against it.
+
+Do **not** lower a score or set relevant=false because:
+
+- the question is general, open-ended, or one many people ask
+- the author has not named a product category or any tool
+- the author has not said they are frustrated with software they already use
+- the post asks for advice or stories rather than a recommendation
+- the need reads as "exploratory" rather than urgent
+
+Those are facts about how people write, not evidence about whether they have the problem. An ICP-matched author describing the core problem in plain words is a **pain_point lead in the 55-85 range**, even when the post is short, generic, or asks for war stories.
+
+Reject on **who the author is** — wrong ICP, a seller, a competitor, a services business when the ICP is products — or on **what they actually want** — a genuinely different problem. Never reject for the absence of solution-awareness. Requiring it is how a classifier ends up returning only the handful of posts that were already going to convert on their own.
+
 ## Intent types
 
 - **buying_intent** — actively shopping. Asking for recommendations, comparing options, "what do you use for X", "is there a tool that...", announcing they are about to build it themselves.

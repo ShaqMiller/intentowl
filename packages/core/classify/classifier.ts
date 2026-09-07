@@ -181,6 +181,14 @@ export function extractClassifications(
     return { classifications: [], warnings };
   }
 
+  // Individual bad entries are dropped, not the batch. Surfaced so a model
+  // quietly degrading shows up as a warning rather than as a thin digest.
+  if (parsed.dropped.length > 0) {
+    warnings.push(
+      `${model}: dropped ${parsed.dropped.length} malformed classification(s): ${parsed.dropped.slice(0, 3).join(", ")}`,
+    );
+  }
+
   return { classifications: parsed.value.classifications, warnings };
 }
 

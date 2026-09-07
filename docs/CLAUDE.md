@@ -17,15 +17,14 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M2** (M0, M1 complete). M3 was built ahead of it because
-  M2's exit test is blocked on API credits — see Open items before assuming
-  either is done.
+- Current milestone: **M3** (M0, M1, M2 complete). M3 is built; its exit test
+  (a digest in a real inbox) has not been run.
 
 ## Open items carried forward
 
-- **M2 is unmeasured.** `pnpm eval` has never completed a run: the Anthropic
-  account has no credits. The rubric, cascade and Batch API path are written
-  and typechecked but have made zero successful live calls. M2 is NOT complete.
+- **M2 passed at 82.4% precision** (recall 82.4%, F1 82.4%, 72/72 judged) on
+  2026-09-07, measured cost $0.079/run and ~$0.0011/item. Intent accuracy is
+  the weak spot at 69.4% — it affects digest grouping, not which leads show.
 - **M3 is built but unsent.** Scoring, the React Email template, Resend and
   Slack delivery all exist, and `pnpm cli send-digest --dry-run` renders a real
   preview to `docs/digest-preview.html`. The exit test — a digest landing in a
