@@ -2,7 +2,7 @@
  * Landing page (ARCHITECTURE.md sections 4.7 and 4.8).
  *
  * One job: convince a founder that they are missing threads where people ask
- * for what they built, and that £49 to stop missing them is obvious. Checkout
+ * for what they built, and that $49 to stop missing them is obvious. Checkout
  * is a Stripe Payment Link, so there is no payment code in the app at all.
  *
  * Everything claimed here has to be true today. The sources list is the
@@ -10,51 +10,71 @@
  * but it has never run against the live API, and a landing page is a promise.
  */
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
-import { env } from "../../src/env.ts";
+import { checkout } from "../../src/checkout.ts";
+import { ScrambleWord } from "./scramble-word.tsx";
 
 export const metadata: Metadata = {
-  title: "IntentOwl — never miss someone asking for what you built",
+  title: "Never miss someone asking for what you built",
   description:
     "A daily digest of the posts where people describe the problem your product solves, ranked, with an angle for replying. You write the reply.",
 };
 
 /**
- * Sources that genuinely run in production today.
+ * Sources that genuinely poll in production today.
  *
- * Reddit is deliberately absent: the adapter is built and tested against
- * recorded fixtures but has never touched the live API, and app approval is
- * outstanding. Add it here on the day it actually polls, not before.
+ * Reddit is deliberately absent from `live`: the adapter is built and tested
+ * against recorded fixtures but has never touched the live API, and app
+ * approval is outstanding. It moves up on the day it actually polls.
  */
-const SOURCES = [
-  { name: "Hacker News", note: "Ask HN, Show HN and every comment thread" },
-  { name: "Lobsters", note: "small, high-signal, developer-heavy" },
-  { name: "Stack Exchange", note: "where people describe problems in detail" },
-];
+const LIVE_SOURCES = ["Hacker News", "Lobsters", "Stack Exchange"];
+const NEXT_SOURCES = ["Reddit", "Bluesky", "RSS"];
+
+/** The rotating word in the headline — live sources only, same promise. */
+const SCRAMBLE_SOURCES = ["HACKER NEWS", "LOBSTERS", "STACK EXCHANGE"];
 
 const STEPS = [
   {
     title: "You describe what you sell",
-    body: "Your product, who it is for, your competitors, and who is definitely not a customer. One paragraph each — this is the part that makes the results yours rather than generic.",
+    body: "Your product, who it is for, your competitors, and who is definitely not a customer. One paragraph each. This is the part that makes the results yours instead of generic.",
   },
   {
-    title: "We read the communities, all day",
-    body: "Every ten minutes, across every source. A keyword pass throws out the obvious noise for free, then Claude reads what is left against your description — not against a keyword list.",
+    title: "We read the communities all day",
+    body: "Every ten to twenty minutes, across every source. A cheap keyword pass throws out the obvious noise, then Claude reads what survives against your description — not against a keyword list.",
   },
   {
     title: "You get one email at 7am",
-    body: "Ranked, grouped, at most fifteen. Each lead has the post, why it matters to you specifically, and an angle to reply from. Nothing is auto-posted, ever.",
+    body: "Ranked, grouped, fifteen at most. Each lead carries the post, why it matters to you specifically, and an angle to reply from. Nothing is ever auto-posted.",
+  },
+];
+
+const FEATURES = [
+  {
+    mark: "01 · JUDGED",
+    title: "It reads the situation, not the keyword",
+    body: "“How did you all find your first customers?” never mentions your category, so no alert tool will ever show it to you. It is also the single best thread you could reply to this week.",
+  },
+  {
+    mark: "02 · RANKED",
+    title: "Scored, grouped, and capped at fifteen",
+    body: "Sorted by how close the person is to buying, then grouped by whether they are shopping, unhappy with a competitor, or just describing the pain. A digest you cannot finish is a digest you stop opening.",
+  },
+  {
+    mark: "03 · HONEST",
+    title: "A quiet day says so",
+    body: "If nothing good turned up, the email tells you that in one line. Padding a slow morning with filler is the fastest way to teach you to ignore the thing you paid for.",
   },
 ];
 
 const FAQ = [
   {
     q: "How is this different from a keyword alert?",
-    a: "A keyword alert finds the word. This finds the situation. Someone writing “how did you all find your first customers?” never mentions your category — but they are describing exactly the problem you solve, and a keyword tool will never show you that post.",
+    a: "A keyword alert finds the word. This finds the situation. Someone writing “how did you all find your first customers?” never mentions your category — but they are describing exactly the problem you solve, and a keyword tool will never surface that post.",
   },
   {
     q: "Does it post replies for me?",
-    a: "No, and it never will. The product drafts an angle; you write and send the reply yourself. Auto-posting is an instant ban on most platforms and a trust-destroyer everywhere else.",
+    a: "No, and it never will. IntentOwl drafts an angle; you write and send the reply yourself. Auto-posting is an instant ban on most platforms and a trust-destroyer everywhere else.",
   },
   {
     q: "What if there is nothing good on a given day?",
@@ -62,215 +82,283 @@ const FAQ = [
   },
   {
     q: "How many leads should I expect?",
-    a: "Between zero and fifteen a day, depending on how broad your space is. If you are consistently seeing zero after a week, the watch is wrong and I will fix it — that is what the concierge setup is for.",
+    a: "Between zero and fifteen a day, depending on how broad your space is. If you are consistently seeing zero after a week the watch is wrong, and I will fix it by hand — that is what the concierge setup is for.",
+  },
+  {
+    q: "Which communities does it read?",
+    a: "Hacker News, Lobsters and Stack Exchange today. Reddit and Bluesky are next. If there is a forum your customers actually live in, tell me and I will add it — that is usually a same-week job.",
   },
   {
     q: "Can I cancel?",
-    a: "Any time, from the link in any digest. Monthly is monthly.",
+    a: "Any time, from the link at the bottom of any digest. Monthly is monthly, and the founding price stays locked for as long as you stay.",
+  },
+];
+
+/** The example lead shown in the framed digest. Illustrative, not a customer's. */
+const SAMPLE_LEADS = [
+  {
+    score: 88,
+    meta: "news.ycombinator.com · Ask HN · 41 comments",
+    title:
+      "Ask HN: I spend two hours a day scrolling forums looking for people with the problem we fix. Better way?",
+    why: "Describes your exact workflow as a chore and is openly asking the room for an alternative.",
+    angle:
+      "Acknowledge the two hours before mentioning you built anything. Lead with how you would triage it by hand — the tool is the shortcut, not the answer.",
+  },
+  {
+    score: 74,
+    meta: "lobste.rs · ask · 12 comments",
+    title:
+      "Anyone moved off a keyword-alert setup? Mine fires forty times a day and I have started ignoring it.",
+    why: "Actively unhappy with the category you replace, and already past the point of tolerating it.",
+    angle:
+      "Agree that volume is the failure, not coverage. Ask what fraction of the forty were worth opening — the number makes your case for you.",
   },
 ];
 
 export default function LandingPage() {
-  const monthly = env.STRIPE_LINK_MONTHLY;
-  const annual = env.STRIPE_LINK_ANNUAL;
-  const checkoutReady = monthly !== undefined || annual !== undefined;
+  const monthly = checkout.monthly;
+  const annual = checkout.annual;
+  // Straight to checkout when Stripe is wired; otherwise the plan page, which
+  // works either way. Never a dead button.
+  const start = monthly ?? "/signup";
 
   return (
-    <>
-      <style>{CSS}</style>
+    <main>
+      <section className="hero">
+        <div className="page">
+          <a className="badge" href="#sources">
+            <span className="badge-dot" />
+            Three communities live · Reddit next
+          </a>
 
-      <header className="hero">
-        <div className="wrap">
-          <p className="eyebrow">IntentOwl</p>
           <h1>
-            You are missing the threads where people ask for what you built.
+            Right now someone on{" "}
+            <ScrambleWord words={SCRAMBLE_SOURCES} /> is{" "}
+            <span className="dim">asking for what you built.</span>
           </h1>
-          <p className="standfirst">
-            Every day, somebody describes the exact problem your product solves
-            — in a subreddit you do not read, or a thread you scrolled past.
-            IntentOwl reads them all and sends you the ones that matter, with an
-            angle for replying that will not read as an ad.
-          </p>
-          <div className="cta-row">
-            {monthly !== undefined && (
-              <a className="btn primary" href={monthly}>
-                Start — $49/month
-              </a>
-            )}
-            {annual !== undefined && (
-              <a className="btn" href={annual}>
-                $199/year — save 66%
-              </a>
-            )}
-            {!checkoutReady && (
-              <span className="soon">Checkout opens shortly.</span>
-            )}
-          </div>
-          <p className="fine">
-            Founding price, locked for as long as you stay. Cancel any time.
-          </p>
-        </div>
-      </header>
 
-      <section className="wrap band">
-        <h2>What you actually get</h2>
-        <div className="sample" role="img" aria-label="An example lead as it appears in the daily digest.">
-          <p className="sample-label">Buying intent · 1 of 11</p>
-          <p className="sample-meta">r/SaaS · founder_jane · 88</p>
-          <p className="sample-title">
-            Spending 2 hours a day scrolling Reddit for people asking about
-            invoicing tools. There has to be a better way?
+          <p className="hero-sub">
+            IntentOwl reads those communities all day, judges every post against
+            what you actually sell, and sends you one ranked email at 7am. You
+            write the reply.
           </p>
-          <p className="sample-reason">
-            Describes your exact workflow as a chore, and is actively asking the
-            room for an alternative.
-          </p>
-          <p className="sample-angle">
-            <b>Angle ·</b> Acknowledge the two hours before mentioning you built
-            anything. Lead with how you would triage it by hand — the tool is
-            the shortcut, not the answer.
+
+          <div className="hero-cta">
+            <a className="btn btn-primary" href={start}>
+              Start for $49/month
+            </a>
+            <a className="btn" href="#digest">
+              See a real digest
+            </a>
+          </div>
+
+          <p className="hero-fine">
+            Founding price, locked for as long as you stay · Set up by hand
+            within a day · Cancel any time
           </p>
         </div>
-        <p className="sample-note">
-          That is one lead. A normal morning has five to fifteen, grouped by
-          whether the person is shopping, complaining about a competitor, or
-          just describing the pain.
-        </p>
       </section>
 
-      <section className="wrap band">
-        <h2>How it works</h2>
-        <ol className="steps">
-          {STEPS.map((step, i) => (
-            <li key={step.title}>
-              <span className="step-n">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </div>
+      <section className="page showcase" id="digest">
+        <div className="frame">
+          <div className="frame-bar">
+            <span className="frame-dots">
+              <i />
+              <i />
+              <i />
+            </span>
+            <span>Inbox · 07:00 · IntentOwl daily digest</span>
+          </div>
+          <div className="digest">
+            <div className="digest-head">
+              <h3>11 leads worth your morning</h3>
+              <p>
+                Tuesday, from 3,140 posts read across three communities in the
+                last 24 hours.
+              </p>
+            </div>
+            <p className="group-label">Buying intent · 2 of 11</p>
+            {SAMPLE_LEADS.map((lead) => (
+              <article className="lead" key={lead.score}>
+                <div className="score">{lead.score}</div>
+                <div>
+                  <p className="lead-meta">{lead.meta}</p>
+                  <p className="lead-title">{lead.title}</p>
+                  <p className="lead-why">{lead.why}</p>
+                  <p className="lead-angle">
+                    <b>Angle</b>
+                    {lead.angle}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="page sources" id="sources">
+        <p className="sources-label">Reading, every ten to twenty minutes</p>
+        <ul className="source-row">
+          {LIVE_SOURCES.map((name) => (
+            <li key={name}>
+              <span className="pulse" />
+              {name}
             </li>
           ))}
-        </ol>
-      </section>
-
-      <section className="wrap band">
-        <h2>Where it reads</h2>
-        <ul className="sources">
-          {SOURCES.map((s) => (
-            <li key={s.name}>
-              <b>{s.name}</b>
-              <span>{s.note}</span>
+          {NEXT_SOURCES.map((name) => (
+            <li className="soon" key={name}>
+              <span className="pulse" />
+              {name}
             </li>
           ))}
         </ul>
-        <p className="sample-note">
-          Reddit and Bluesky are next. If there is a forum your customers live
-          in, tell me and I will add it — that is usually a same-week job.
-        </p>
       </section>
 
-      <section className="wrap band">
-        <h2>Questions</h2>
-        <dl className="faq">
-          {FAQ.map((item) => (
-            <div key={item.q}>
-              <dt>{item.q}</dt>
-              <dd>{item.a}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <section className="wrap closer">
-        <h2>One email. Every morning. The people already asking.</h2>
-        <div className="cta-row">
-          {monthly !== undefined && (
-            <a className="btn primary" href={monthly}>
-              Start — $49/month
-            </a>
-          )}
-          {annual !== undefined && (
-            <a className="btn" href={annual}>
-              $199/year
-            </a>
-          )}
+      <section className="section" id="how">
+        <div className="page">
+          <div className="section-head center">
+            <p className="eyebrow">How it works</p>
+            <h2>Three steps, and only one of them is yours.</h2>
+            <p className="section-sub">
+              Setup takes about three minutes. After that the only thing you do
+              is read an email and decide who is worth talking to.
+            </p>
+          </div>
+          <ol className="steps">
+            {STEPS.map((step, i) => (
+              <li key={step.title}>
+                <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-        <p className="fine">
-          Set up by hand, by me, within a day of signing up. Reply to the
-          receipt and tell me what you sell.
-        </p>
       </section>
 
-      <footer className="wrap foot">
-        <span>IntentOwl</span>
-        <span>Never posts on your behalf.</span>
-      </footer>
-    </>
+      <section className="section">
+        <div className="page">
+          <div className="section-head center">
+            <p className="eyebrow">Why it finds things alerts miss</p>
+            <h2>Most leads never say your keyword.</h2>
+          </div>
+          <div className="grid-3">
+            {FEATURES.map((f) => (
+              <div className="card" key={f.title}>
+                <p className="card-mark">{f.mark}</p>
+                <h3>{f.title}</h3>
+                <p>{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="pricing">
+        <div className="page">
+          <div className="section-head center">
+            <p className="eyebrow">Pricing</p>
+            <h2>One price. Set up by hand.</h2>
+            <p className="section-sub">
+              Founding pricing while IntentOwl is young. Whatever you pay when
+              you join is what you keep paying.
+            </p>
+          </div>
+          <div className="plans">
+            <div className="plan featured">
+              <div className="plan-top">
+                <span className="plan-name">Monthly</span>
+              </div>
+              <p className="plan-price">
+                $49<span> /month</span>
+              </p>
+              <ul>
+                <PlanItem>One ranked digest every morning</PlanItem>
+                <PlanItem>Every live source, no per-source pricing</PlanItem>
+                <PlanItem>Watch tuned by hand in week one</PlanItem>
+                <PlanItem>Cancel from any digest</PlanItem>
+              </ul>
+              <a className="btn btn-primary" href={monthly ?? "/signup"}>
+                Start monthly
+              </a>
+            </div>
+            <div className="plan">
+              <div className="plan-top">
+                <span className="plan-name">Annual</span>
+                <span className="plan-save">SAVE 66%</span>
+              </div>
+              <p className="plan-price">
+                $199<span> /year</span>
+              </p>
+              <ul>
+                <PlanItem>Everything in monthly</PlanItem>
+                <PlanItem>Two months of runway instead of twelve</PlanItem>
+                <PlanItem>New sources added at no extra cost</PlanItem>
+                <PlanItem>Price locked for as long as you stay</PlanItem>
+              </ul>
+              <a className="btn" href={annual ?? "/signup"}>
+                Start annual
+              </a>
+            </div>
+          </div>
+          <p className="plan-note" style={{ marginTop: 18 }}>
+            Reply to your receipt with what you sell and I will have your first
+            digest running within a day.
+          </p>
+        </div>
+      </section>
+
+      <section className="section" id="faq">
+        <div className="page">
+          <div className="section-head center">
+            <p className="eyebrow">Questions</p>
+            <h2>The ones people actually ask.</h2>
+          </div>
+          <div className="faq">
+            {FAQ.map((item, i) => (
+              <details key={item.q} open={i === 0}>
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="closer">
+        <div className="page">
+          <h2>One email. Every morning. The people already asking.</h2>
+          <div className="hero-cta">
+            <a className="btn btn-primary" href={start}>
+              Start for $49/month
+            </a>
+            <a className="btn" href="/login">
+              Log in
+            </a>
+          </div>
+          <p className="hero-fine">
+            Nothing is ever posted on your behalf. You write every reply.
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 
-const CSS = `
-:root {
-  --ground:#F4F6F7; --surface:#FFFFFF; --surface-2:#EDF1F3;
-  --ink:#131A20; --ink-soft:#3D4A55; --muted:#5F6E7A; --faint:#8695A1;
-  --line:#D9E0E5; --line-strong:#BFCAD2;
-  --accent:#0E6E78; --accent-soft:#DCEEF0; --accent-ink:#0A545C; --ok:#2E7D53;
+function PlanItem({ children }: { children: ReactNode }) {
+  return (
+    <li>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M3 8.5 6.2 11.6 13 4.8"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span>{children}</span>
+    </li>
+  );
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground:#0E1418; --surface:#151D23; --surface-2:#1B252C;
-    --ink:#E4ECF1; --ink-soft:#C0CED8; --muted:#93A5B1; --faint:#71838F;
-    --line:#26323A; --line-strong:#38474F;
-    --accent:#45B5C0; --accent-soft:#13343A; --accent-ink:#7FD3DB; --ok:#5CBF88;
-  }
-}
-* { box-sizing: border-box; }
-body {
-  margin:0; background:var(--ground); color:var(--ink); line-height:1.6;
-  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3 { font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif; font-weight:600; margin:0; text-wrap:balance; line-height:1.15; letter-spacing:-.005em; }
-.wrap { max-width:760px; margin:0 auto; padding:0 24px; }
-.hero { background:var(--surface); border-bottom:1px solid var(--line); padding:64px 0 52px; }
-.eyebrow { font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:0 0 20px; }
-.hero h1 { font-size:clamp(32px,5.4vw,50px); max-width:16ch; }
-.standfirst { margin:22px 0 0; max-width:60ch; font-size:18px; color:var(--ink-soft); }
-.cta-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:30px; align-items:center; }
-.btn {
-  display:inline-block; font-size:15px; font-weight:600; padding:11px 22px;
-  border-radius:7px; border:1px solid var(--line-strong); background:var(--surface);
-  color:var(--ink); text-decoration:none;
-}
-.btn:hover { border-color:var(--accent); color:var(--accent); }
-.btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
-.btn.primary:hover { color:#fff; opacity:.92; }
-.soon { font-size:14px; color:var(--muted); }
-.fine { margin:14px 0 0; font-size:13.5px; color:var(--faint); }
-.band { padding:48px 0 0; }
-.band h2 { font-size:clamp(22px,3vw,28px); margin-bottom:18px; border-top:2px solid var(--ink); padding-top:14px; }
-.sample { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:20px 22px; }
-.sample-label { margin:0 0 10px; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); }
-.sample-meta { margin:0 0 4px; font-size:12.5px; color:var(--faint); }
-.sample-title { margin:0 0 8px; font-size:17px; font-weight:600; line-height:1.35; }
-.sample-reason { margin:0 0 10px; font-size:14.5px; color:var(--ink-soft); }
-.sample-angle { margin:0; padding:10px 13px; font-size:14px; color:var(--ink-soft); background:var(--ground); border-left:3px solid var(--accent); border-radius:0 5px 5px 0; }
-.sample-angle b { color:var(--accent); }
-.sample-note { margin:14px 0 0; font-size:14.5px; color:var(--muted); max-width:64ch; }
-.steps { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:22px; }
-.steps li { display:flex; gap:16px; align-items:flex-start; }
-.step-n { font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--accent); border:1px solid var(--accent-soft); background:var(--accent-soft); border-radius:4px; padding:3px 8px; flex:none; margin-top:2px; }
-.steps h3 { font-size:17px; margin-bottom:4px; }
-.steps p { margin:0; color:var(--ink-soft); font-size:15px; max-width:62ch; }
-.sources { list-style:none; padding:0; margin:0 0 4px; display:flex; flex-direction:column; gap:10px; }
-.sources li { display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; padding-bottom:10px; border-bottom:1px solid var(--line); }
-.sources b { min-width:150px; }
-.sources span { color:var(--muted); font-size:14.5px; }
-.faq { margin:0; }
-.faq div { padding:16px 0; border-bottom:1px solid var(--line); }
-.faq dt { font-weight:600; font-size:16px; margin-bottom:6px; }
-.faq dd { margin:0; color:var(--ink-soft); font-size:15px; max-width:64ch; }
-.closer { padding:52px 0 8px; }
-.closer h2 { border-top:none; padding-top:0; max-width:20ch; }
-.foot { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:32px; padding-bottom:48px; margin-top:32px; border-top:1px solid var(--line); font-size:13px; color:var(--faint); }
-`;

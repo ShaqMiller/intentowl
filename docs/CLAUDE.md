@@ -17,10 +17,24 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M5** (M0-M4 complete). M3 and M4 exit tests demonstrated
-  but not run to their full duration; see Open items.
+- Current milestone: **M5 complete** (M0-M5 done). M3 and M4 exit tests were
+  demonstrated but not run to their full duration; see Open items.
 
 ## Open items carried forward
+
+- **M5 exit test passed** on 2026-09-07 in Stripe test mode. Two purchases:
+  $49 monthly created `m5-test@example.com` as `active`; $199 annual created
+  `m5-plan@example.com` as `active` with `plan=founding-annual`, proving the
+  `client_reference_id` survives from the URL through Stripe to the row. All
+  webhook deliveries returned 200 — signature verification never failed. Both
+  test rows were deleted afterwards; the two test-mode subscriptions in Stripe
+  were left running.
+
+- **No auth system exists.** The site now has `/login` and `/signup` routes
+  because a landing page without them does not read as a real product, but
+  accounts are M7. `/login` deliberately ships a disabled form and says so in
+  plain words; do not make that form look functional before there is a session
+  behind it. `/signup` is a plan choice that hands off to Stripe.
 
 - **M2 passed at 82.4% precision** (recall 82.4%, F1 82.4%, 72/72 judged) on
   2026-09-07, measured cost $0.079/run and ~$0.0011/item. Intent accuracy is
