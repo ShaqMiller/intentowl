@@ -1,0 +1,1114 @@
+<title>How a Lead Reaches the Inbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    --ground:      #F4F6F7;
+    --surface:     #FFFFFF;
+    --surface-2:   #EDF1F3;
+    --ink:         #131A20;
+    --ink-soft:    #3D4A55;
+    --muted:       #5F6E7A;
+    --faint:       #8695A1;
+    --line:        #D9E0E5;
+    --line-strong: #BFCAD2;
+    --accent:      #0E6E78;
+    --accent-soft: #DCEEF0;
+    --accent-ink:  #0A545C;
+    --ok:          #2E7D53;
+    --warn:        #9A6510;
+    --crit:        #B3352F;
+    --code-bg:     #10181E;
+    --code-ink:    #D6E2EA;
+    --code-dim:    #7E93A2;
+    --shadow:      0 1px 2px rgba(19,26,32,.05), 0 8px 24px -12px rgba(19,26,32,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0E1418; --surface:#151D23; --surface-2:#1B252C;
+      --ink:#E4ECF1; --ink-soft:#C0CED8; --muted:#93A5B1; --faint:#71838F;
+      --line:#26323A; --line-strong:#38474F;
+      --accent:#45B5C0; --accent-soft:#13343A; --accent-ink:#7FD3DB;
+      --ok:#5CBF88; --warn:#D9A441; --crit:#E8776F;
+      --code-bg:#0A1015; --code-ink:#CFDDE6; --code-dim:#6E8492;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0E1418; --surface:#151D23; --surface-2:#1B252C;
+    --ink:#E4ECF1; --ink-soft:#C0CED8; --muted:#93A5B1; --faint:#71838F;
+    --line:#26323A; --line-strong:#38474F;
+    --accent:#45B5C0; --accent-soft:#13343A; --accent-ink:#7FD3DB;
+    --ok:#5CBF88; --warn:#D9A441; --crit:#E8776F;
+    --code-bg:#0A1015; --code-ink:#CFDDE6; --code-dim:#6E8492;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4 {
+    font-family: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600; text-wrap: balance; line-height: 1.16; margin: 0; letter-spacing: -.005em;
+  }
+  code, pre, .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; font-variant-ligatures: none; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .masthead { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .masthead-inner { max-width: 1280px; margin: 0 auto; padding: 52px 28px 44px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 500;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .eyebrow .sep { width: 22px; height: 1px; background: currentColor; opacity: .5; }
+  .masthead h1 { font-size: clamp(34px, 5.2vw, 54px); max-width: 18ch; }
+  .standfirst { margin: 20px 0 0; max-width: 62ch; font-size: 18px; color: var(--ink-soft); }
+
+  .shell { max-width: 1280px; margin: 0 auto; padding: 0 28px 96px; }
+  @media (min-width: 1100px) {
+    .shell { display: grid; grid-template-columns: 224px minmax(0,1fr); gap: 64px; align-items: start; }
+  }
+  .toc { padding-top: 48px; }
+  @media (min-width: 1100px) { .toc { position: sticky; top: 28px; max-height: calc(100vh - 56px); overflow-y: auto; } }
+  .toc h2 { font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin-bottom:14px; }
+  .toc ol { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; }
+  .toc a { display:block; padding:5px 10px; font-size:13.5px; color:var(--muted); text-decoration:none; border-left:2px solid var(--line); line-height:1.35; }
+  .toc a:hover { color:var(--accent); border-left-color:var(--accent); background:var(--surface); }
+
+  main { padding-top: 48px; min-width: 0; }
+  section { scroll-margin-top: 24px; }
+  section + section { margin-top: 68px; }
+  .sec-head { border-top: 2px solid var(--ink); padding-top: 14px; margin-bottom: 26px; }
+  .sec-head h2 { font-size: clamp(24px,3vw,31px); max-width: 26ch; }
+  .sec-head .kicker { font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:9px; }
+  h3 { font-size: 19px; margin: 38px 0 12px; }
+  h4 { font-size: 15.5px; margin: 26px 0 8px; letter-spacing: 0; }
+  p { margin: 0 0 17px; max-width: 68ch; }
+  ul, ol { max-width: 68ch; margin: 0 0 17px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  li::marker { color: var(--faint); }
+  p code, li code, td code, dd code {
+    font-size: .875em; background: var(--surface-2); color: var(--accent-ink);
+    padding: 1.5px 5px; border-radius: 3px; border: 1px solid var(--line); white-space: nowrap;
+  }
+  .lede { font-size: 17.5px; color: var(--ink-soft); max-width: 64ch; }
+
+  .code-block { margin: 22px 0; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); background: var(--code-bg); box-shadow: var(--shadow); }
+  .code-title { font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.07em; color:var(--code-dim); padding:9px 15px; border-bottom:1px solid rgba(255,255,255,.07); display:flex; justify-content:space-between; gap:16px; text-transform:uppercase; }
+  .code-block pre { margin:0; padding:15px; overflow-x:auto; font-size:12.8px; line-height:1.68; color:var(--code-ink); }
+  .code-block pre .c { color: var(--code-dim); }
+  .code-block pre .k { color: #7FD3DB; }
+  .code-block pre .s { color: #9FD59B; }
+  .code-block pre .w { color: #E0B457; }
+
+  .table-wrap { overflow-x:auto; margin:22px 0; border:1px solid var(--line); border-radius:7px; background:var(--surface); }
+  table { border-collapse:collapse; width:100%; font-size:14px; min-width:580px; }
+  th, td { text-align:left; padding:10px 15px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:500; background:var(--surface-2); white-space:nowrap; }
+  tbody tr:last-child td { border-bottom:none; }
+  td.mono-cell { font-family:"IBM Plex Mono",monospace; font-size:12.5px; white-space:nowrap; color:var(--accent-ink); }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .tag { display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em; padding:1.5px 7px; border-radius:3px; white-space:nowrap; border:1px solid; font-weight:500; }
+  .tag.live { color:var(--ok); border-color:color-mix(in srgb,var(--ok) 45%,transparent); background:color-mix(in srgb,var(--ok) 11%,transparent); }
+  .tag.soon { color:var(--muted); border-color:var(--line-strong); background:var(--surface-2); }
+  .tag.broken { color:var(--crit); border-color:color-mix(in srgb,var(--crit) 45%,transparent); background:color-mix(in srgb,var(--crit) 10%,transparent); }
+
+  figure { margin: 30px 0; }
+  figure svg { display:block; width:100%; height:auto; max-width:100%; }
+  .fig-frame { border:1px solid var(--line); border-radius:7px; background:var(--surface); padding:22px 20px; overflow-x:auto; }
+  figcaption { margin-top:12px; font-size:13.5px; color:var(--muted); max-width:70ch; padding-left:13px; border-left:2px solid var(--line-strong); }
+  figcaption b { color:var(--ink-soft); font-weight:600; }
+
+  .note { margin:24px 0; padding:16px 18px; border-radius:6px; background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); font-size:14.5px; }
+  .note p { margin:0; max-width:none; }
+  .note p + p { margin-top:10px; }
+  .note .note-label { font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:6px; }
+  .note.caution { border-left-color: var(--warn); }
+  .note.caution .note-label { color: var(--warn); }
+  .note.danger { border-left-color: var(--crit); }
+  .note.danger .note-label { color: var(--crit); }
+
+  /* timeline */
+  .timeline { list-style:none; padding:0; margin:26px 0; border-left:2px solid var(--line-strong); }
+  .timeline > li { position:relative; padding:0 0 26px 28px; }
+  .timeline > li::before {
+    content:""; position:absolute; left:-7px; top:6px; width:12px; height:12px;
+    border-radius:50%; background:var(--surface); border:2px solid var(--accent);
+  }
+  .timeline > li.dim::before { border-color: var(--line-strong); }
+  .t-time { font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.05em; color:var(--accent-ink); display:block; margin-bottom:3px; }
+  .timeline > li.dim .t-time { color: var(--muted); }
+  .t-what { font-weight:600; font-size:15.5px; display:block; margin-bottom:4px; }
+  .t-detail { font-size:14.5px; color:var(--ink-soft); max-width:66ch; margin:0; }
+  .t-detail + .t-detail { margin-top:8px; }
+
+  .closer { margin-top:76px; padding-top:26px; border-top:2px solid var(--ink); font-size:14px; color:var(--muted); max-width:70ch; }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+</style>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">IntentOwl <span class="sep"></span> Pipeline walkthrough <span class="sep"></span> Job to inbox</p>
+    <h1>How a Lead Reaches the Inbox</h1>
+    <p class="standfirst">
+      One Reddit post, followed from the moment somebody hits submit to the moment
+      it lands in a founder's 7&nbsp;a.m. digest. Every job that fires, every row that
+      gets written, every decision made along the way &mdash; and an honest account of
+      which parts are running today and which are still drawings.
+    </p>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#stages">The five stages</a></li>
+      <li><a href="#job">What a job really is</a></li>
+      <li><a href="#created">How a job gets created</a></li>
+      <li><a href="#claimed">How a worker claims it</a></li>
+      <li><a href="#day">A day in the life of a lead</a></li>
+      <li><a href="#poll">Inside the poll job</a></li>
+      <li><a href="#classify">Inside the classify job</a></li>
+      <li><a href="#rank">Scoring and ranking</a></li>
+      <li><a href="#seven">The 7 a.m. problem</a></li>
+      <li><a href="#send">Sending, exactly once</a></li>
+      <li><a href="#broken">When things break</a></li>
+      <li><a href="#status">What is actually built</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ========================================================== STAGES -->
+    <section id="stages">
+      <div class="sec-head">
+        <span class="kicker">Orientation</span>
+        <h2>The five stages</h2>
+      </div>
+
+      <p class="lede">
+        Data moves one direction through five stages. Every stage writes to
+        Postgres before the next one reads. That single property is what makes
+        the pipeline survivable by one person.
+      </p>
+
+      <p>
+        Because each stage hands off through the database rather than through
+        memory or a network call, any stage can crash, be retried, or be re-run
+        by hand without losing work or duplicating it. If the classifier falls
+        over at 3&nbsp;a.m., the items it hadn't reached are still sitting in
+        <code>items</code>, waiting. Nothing is in flight anywhere.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 940 320" role="img" aria-label="The five pipeline stages: adapters fetch raw items, the pre-filter drops most of them, the classifier scores what remains, scoring ranks them, and the digest job renders and sends. Every stage reads from and writes to Postgres tables named beneath it.">
+            <defs>
+              <marker id="p-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- stage boxes -->
+            <g>
+              <rect x="14" y="60" width="160" height="66" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+              <text x="94" y="88" font-size="14" fill="var(--accent-ink)" text-anchor="middle" font-weight="600">Adapters</text>
+              <text x="94" y="107" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".7">fetch new posts</text>
+
+              <rect x="204" y="60" width="160" height="66" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+              <text x="284" y="88" font-size="14" fill="var(--accent-ink)" text-anchor="middle" font-weight="600">Pre-filter</text>
+              <text x="284" y="107" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".7">drop 80&ndash;90%, free</text>
+
+              <rect x="394" y="60" width="160" height="66" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+              <text x="474" y="88" font-size="14" fill="var(--accent-ink)" text-anchor="middle" font-weight="600">Classifier</text>
+              <text x="474" y="107" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".7">Haiku, then Sonnet</text>
+
+              <rect x="584" y="60" width="160" height="66" rx="6" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-dasharray="5 4"/>
+              <text x="664" y="88" font-size="14" fill="currentColor" text-anchor="middle" opacity=".65" font-weight="600">Scoring</text>
+              <text x="664" y="107" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".5">rank and dedupe</text>
+
+              <rect x="774" y="60" width="160" height="66" rx="6" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-dasharray="5 4"/>
+              <text x="854" y="88" font-size="14" fill="currentColor" text-anchor="middle" opacity=".65" font-weight="600">Digest</text>
+              <text x="854" y="107" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".5">render and send</text>
+            </g>
+
+            <!-- flow arrows -->
+            <g color="var(--accent)">
+              <line x1="178" y1="93" x2="198" y2="93" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#p-ar)"/>
+              <line x1="368" y1="93" x2="388" y2="93" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#p-ar)"/>
+            </g>
+            <g color="currentColor" opacity=".4">
+              <line x1="558" y1="93" x2="578" y2="93" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#p-ar)"/>
+              <line x1="748" y1="93" x2="768" y2="93" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#p-ar)"/>
+            </g>
+
+            <!-- the database band -->
+            <rect x="14" y="188" width="920" height="72" rx="6" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".28"/>
+            <text x="30" y="180" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".55" letter-spacing="1">POSTGRES &mdash; EVERY HANDOFF GOES THROUGH A TABLE</text>
+
+            <g font-family="IBM Plex Mono, monospace" font-size="11.5" text-anchor="middle">
+              <text x="94"  y="216" fill="var(--accent-ink)">items</text>
+              <text x="94"  y="235" fill="var(--accent-ink)">cursors</text>
+              <text x="284" y="216" fill="var(--accent-ink)">item_watches</text>
+              <text x="284" y="235" fill="currentColor" opacity=".5">(no verdict row)</text>
+              <text x="474" y="216" fill="var(--accent-ink)">classifications</text>
+              <text x="474" y="235" fill="var(--accent-ink)">api_usage</text>
+              <text x="664" y="216" fill="currentColor" opacity=".5">in memory only</text>
+              <text x="854" y="216" fill="currentColor" opacity=".5">digests</text>
+              <text x="854" y="235" fill="currentColor" opacity=".5">digest_items</text>
+            </g>
+
+            <!-- vertical ties -->
+            <g stroke="currentColor" stroke-opacity=".3" stroke-width="1">
+              <line x1="94"  y1="130" x2="94"  y2="186"/>
+              <line x1="284" y1="130" x2="284" y2="186"/>
+              <line x1="474" y1="130" x2="474" y2="186"/>
+              <line x1="664" y1="130" x2="664" y2="186"/>
+              <line x1="854" y1="130" x2="854" y2="186"/>
+            </g>
+
+            <!-- legend -->
+            <rect x="14" y="286" width="14" height="12" rx="2" fill="var(--accent-soft)" stroke="var(--accent)"/>
+            <text x="36" y="296" font-size="11.5" fill="currentColor" opacity=".75">running today</text>
+            <rect x="150" y="286" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-opacity=".4" stroke-dasharray="3 2"/>
+            <text x="172" y="296" font-size="11.5" fill="currentColor" opacity=".6">designed, not built yet (M3&ndash;M4)</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>Five stages, four database handoffs.</b> Scoring is the one stage
+          that holds nothing of its own &mdash; it reads classifications and produces a
+          ranking in memory, which the digest job immediately consumes. Note the
+          gap under the pre-filter: dropped items get <em>no row anywhere</em>,
+          which turns out to matter (see <a href="#broken">When things break</a>).
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ============================================================= JOB -->
+    <section id="job">
+      <div class="sec-head">
+        <span class="kicker">Mechanism</span>
+        <h2>What a job really is</h2>
+      </div>
+
+      <p>
+        Strip the library away and a job is <strong>a row in a table</strong>.
+        Not a thread, not a message on a wire, not a closure sitting in memory.
+        A row, with a name, a JSON payload, a state, and some timestamps.
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>one row in pgboss.job, abridged</span></div>
+<pre>id            <span class="s">"e3ce20e9-7286-44b7-aa34-589a63daa1df"</span>
+name          <span class="s">"poll"</span>                  <span class="c">-- which queue, so which handler</span>
+data          {<span class="s">"watchId"</span>: <span class="s">"0647fe18-…"</span>, <span class="s">"source"</span>: <span class="s">"reddit"</span>}
+state         <span class="s">"created"</span>               <span class="c">-- created → active → completed | failed</span>
+singleton_key <span class="s">"0647fe18-…:reddit"</span>     <span class="c">-- stops a second identical job existing</span>
+start_after   <span class="w">2026-09-07 09:20:00+00</span>  <span class="c">-- not eligible before this</span>
+retry_limit   <span class="w">3</span>
+retry_count   <span class="w">0</span>
+created_on    <span class="w">2026-09-07 09:19:58+00</span></pre>
+      </div>
+
+      <p>
+        Everything else follows from that. Creating a job is an
+        <code>INSERT</code>. Claiming one is an <code>UPDATE … RETURNING</code>
+        that flips <code>state</code> to <code>active</code>. Finishing is
+        another <code>UPDATE</code>. Retrying is resetting the state and pushing
+        <code>start_after</code> into the future.
+      </p>
+
+      <p>
+        This is why the whole system survives being killed. There is no
+        in-memory queue to lose. Pull the plug mid-job and the row is still
+        there in state <code>active</code>; a supervisor notices it has been
+        active longer than its expiry and puts it back.
+      </p>
+    </section>
+
+    <!-- ========================================================= CREATED -->
+    <section id="created">
+      <div class="sec-head">
+        <span class="kicker">Step one</span>
+        <h2>How a job gets created</h2>
+      </div>
+
+      <p>Exactly three things create jobs in this system.</p>
+
+      <h3>1. A cron schedule</h3>
+      <p>
+        A row in <code>pgboss.schedule</code> says "queue <code>poll</code>,
+        cron <code>*/12 * * * *</code>, timezone UTC". A loop inside the worker
+        wakes every 30 seconds, asks "did any schedule's time pass in the last
+        minute?", and inserts a job when one did. This is how the heartbeat
+        fires, how polls fire, and how the 7&nbsp;a.m. digest fires.
+      </p>
+
+      <h3>2. Another job</h3>
+      <p>
+        A job handler can enqueue more work. When a poll gets a
+        <code>429 Too Many Requests</code> from Reddit, it doesn't sleep and it
+        doesn't fail &mdash; it enqueues a fresh copy of itself with
+        <code>startAfter</code> set to whatever the server's
+        <code>Retry-After</code> header asked for, then completes cleanly.
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>apps/worker/src/jobs/poll.ts</span></div>
+<pre><span class="k">if</span> (outcome.rateLimited) {
+  <span class="c">// A 429 is expected traffic shaping, not an error. Re-enqueueing</span>
+  <span class="c">// instead of throwing means we don't burn a retry attempt on it.</span>
+  <span class="k">await</span> boss.send(POLL_QUEUE, job.data, {
+    startAfter: outcome.retryAfterSeconds ?? <span class="w">60</span>,
+    singletonKey: pollSingletonKey(job.data),
+  });
+}</pre>
+      </div>
+
+      <h3>3. A human at the CLI</h3>
+      <p>
+        <code>pnpm cli run-poll --watch=&lt;id&gt;</code>. In the concierge phase
+        this is the admin interface. It doesn't even enqueue &mdash; it calls the
+        same function the job handler calls, directly, so you see the result
+        immediately without a worker running.
+      </p>
+
+      <div class="note">
+        <span class="note-label">Why that matters</span>
+        <p>
+          <code>runPoll()</code> is a plain async function. The queue handler is
+          a thin wrapper around it, and so is the CLI. That separation is worth
+          copying: the thing that does the work should never know it was called
+          by a queue, which is what makes it testable and runnable by hand.
+        </p>
+      </div>
+    </section>
+
+    <!-- ========================================================= CLAIMED -->
+    <section id="claimed">
+      <div class="sec-head">
+        <span class="kicker">Step two</span>
+        <h2>How a worker claims it</h2>
+      </div>
+
+      <p>
+        The worker holds a long-lived loop per queue. Every few seconds it asks
+        the database for work. The question it asks is the interesting part,
+        because two workers must never get the same row.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 860 380" role="img" aria-label="Job state machine: a created job is claimed by a worker and becomes active; on success it becomes completed; on a thrown error it either returns to created for a retry with backoff or, once retries are exhausted, becomes failed; if the worker dies while the job is active, a supervisor expires it back to created.">
+            <defs>
+              <marker id="s-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <rect x="30" y="150" width="150" height="56" rx="6" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".45"/>
+            <text x="105" y="176" font-family="IBM Plex Mono, monospace" font-size="13" fill="currentColor" text-anchor="middle">created</text>
+            <text x="105" y="194" font-size="11" fill="currentColor" text-anchor="middle" opacity=".6">waiting to be claimed</text>
+
+            <rect x="320" y="150" width="150" height="56" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+            <text x="395" y="176" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--accent-ink)" text-anchor="middle">active</text>
+            <text x="395" y="194" font-size="11" fill="currentColor" text-anchor="middle" opacity=".7">handler running</text>
+
+            <rect x="640" y="60" width="180" height="56" rx="6" fill="none" stroke="var(--ok)" stroke-width="1.5"/>
+            <text x="730" y="86" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ok)" text-anchor="middle">completed</text>
+            <text x="730" y="104" font-size="11" fill="currentColor" text-anchor="middle" opacity=".6">handler returned</text>
+
+            <rect x="640" y="250" width="180" height="56" rx="6" fill="none" stroke="var(--crit)" stroke-width="1.5"/>
+            <text x="730" y="276" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--crit)" text-anchor="middle">failed</text>
+            <text x="730" y="294" font-size="11" fill="currentColor" text-anchor="middle" opacity=".6">retries exhausted</text>
+
+            <!-- claim -->
+            <line x1="186" y1="178" x2="314" y2="178" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#s-ar)" color="var(--accent)"/>
+            <text x="250" y="168" font-size="11.5" fill="var(--accent-ink)" text-anchor="middle">claim</text>
+            <text x="250" y="199" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" text-anchor="middle" opacity=".55">FOR UPDATE SKIP LOCKED</text>
+
+            <!-- success -->
+            <path d="M 476 166 L 560 166 L 560 88 L 634 88" fill="none" stroke="var(--ok)" stroke-width="1.6" marker-end="url(#s-ar)" color="var(--ok)"/>
+            <text x="566" y="130" font-size="11.5" fill="var(--ok)">returns</text>
+
+            <!-- failure -->
+            <path d="M 476 190 L 560 190 L 560 278 L 634 278" fill="none" stroke="var(--crit)" stroke-width="1.6" marker-end="url(#s-ar)" color="var(--crit)"/>
+            <text x="566" y="232" font-size="11.5" fill="var(--crit)">throws, 4th time</text>
+
+            <!-- retry loop -->
+            <path d="M 395 144 C 395 92, 105 92, 105 144" fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity=".6" marker-end="url(#s-ar)"/>
+            <text x="250" y="86" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".7">throws &mdash; retry with backoff (5s, 10s, 20s)</text>
+
+            <!-- expiry loop -->
+            <path d="M 395 212 C 395 268, 105 268, 105 212" fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity=".6" stroke-dasharray="5 4" marker-end="url(#s-ar)"/>
+            <text x="250" y="288" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".7">worker died &mdash; supervisor expires it back</text>
+
+            <text x="30" y="344" font-size="12.5" fill="currentColor" opacity=".7">A job is only ever in one of these states, and the state lives in Postgres &mdash;</text>
+            <text x="30" y="363" font-size="12.5" fill="currentColor" opacity=".7">never in the worker's memory. That is why killing the worker loses nothing.</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>The claim is a database transaction, not a lock in the app.</b>
+          <code>SKIP LOCKED</code> is what lets ten workers hammer the same table
+          and each get different rows: a worker that finds a row already locked
+          steps over it instead of waiting. That one Postgres feature is the
+          reason a queue can live in your existing database.
+        </figcaption>
+      </figure>
+
+      <h3>Singleton keys: the other half</h3>
+      <p>
+        <code>SKIP LOCKED</code> stops two workers running the <em>same row</em>.
+        It does nothing to stop two <em>different</em> rows both polling
+        r/SaaS at the same moment. That's what the singleton key is for.
+      </p>
+
+      <p>
+        The poll queue uses <code>singletonKey: "&lt;watchId&gt;:&lt;source&gt;"</code>
+        with a queue policy allowing at most one job queued and one running per
+        key. So a slow Reddit response can never build a backlog that then
+        stampedes. The tenth attempt to enqueue the same poll is silently
+        dropped, which is exactly what you want.
+      </p>
+    </section>
+
+    <!-- ============================================================= DAY -->
+    <section id="day">
+      <div class="sec-head">
+        <span class="kicker">Worked example</span>
+        <h2>A day in the life of a lead</h2>
+      </div>
+
+      <p class="lede">
+        A founder in London signs up. Their watch covers five subreddits and
+        Hacker News. Their digest hour is 7&nbsp;a.m. Here is one real post,
+        followed all the way through.
+      </p>
+
+      <p>
+        All times are UTC unless marked. September, so London is on BST
+        (UTC+1) &mdash; a detail that turns out to matter a great deal in
+        <a href="#seven">§ The 7&nbsp;a.m. problem</a>.
+      </p>
+
+      <ol class="timeline">
+        <li>
+          <span class="t-time">09:14:07 UTC &nbsp;·&nbsp; 10:14 London</span>
+          <span class="t-what">Someone posts on r/SaaS</span>
+          <p class="t-detail">
+            <em>"Spending 2 hours a day scrolling Reddit for people asking about
+            invoicing tools. There has to be a better way — what do you all
+            use?"</em> Reddit assigns it fullname <code>t3_1n9x2kq</code>.
+            Nothing in our system knows it exists.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:20:00</span>
+          <span class="t-what">The poll cron fires</span>
+          <p class="t-detail">
+            The timekeeper loop notices <code>*/12 * * * *</code> came due,
+            inserts a job into the internal dispatch queue, and a worker turns
+            that into a real <code>poll</code> job carrying
+            <code>{watchId, source: "reddit"}</code>. Roughly 20&ndash;40 seconds of
+            slop here; polls do not need second precision.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:20:31</span>
+          <span class="t-what">A worker claims the poll and calls Reddit</span>
+          <p class="t-detail">
+            It loads the watch, reads the cursor
+            (<code>{saas: "t3_1n8k4pp"}</code> &mdash; the newest post seen last
+            time), takes a token from the shared rate-limit bucket, and requests
+            <code>/r/saas/new?before=t3_1n8k4pp&amp;limit=100</code>. Reddit
+            returns 6 new posts. Ours is one of them.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:20:33</span>
+          <span class="t-what">The post becomes a row</span>
+          <p class="t-detail">
+            Upserted into <code>items</code> against
+            <code>UNIQUE(source, external_id)</code>, then linked into
+            <code>item_watches</code>. The cursor advances to
+            <code>t3_1n9x2kq</code> and one row lands in <code>api_usage</code>
+            recording the API call. If this job were retried right now it would
+            re-fetch the same six posts and insert nothing.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:25:00</span>
+          <span class="t-what">The classify job wakes</span>
+          <p class="t-detail">
+            It queries for <code>(item, watch)</code> pairs with no verdict yet
+            and finds 41, ours among them. It groups by watch, because the prompt
+            is per-customer and a batch cannot span two of them.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:25:00</span>
+          <span class="t-what">The pre-filter runs — free, no model</span>
+          <p class="t-detail">
+            Pure functions, no I/O. It drops job posts, memes, deleted authors,
+            and anything matching none of the watch's include terms. 41 in,
+            9 out. Ours survives on <code>monitor reddit</code>.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:25:04</span>
+          <span class="t-what">Haiku classifies the batch</span>
+          <p class="t-detail">
+            All 9 survivors go in one call, forced through a tool-use JSON
+            schema and Zod-validated on the way out. Ours comes back
+            <code>relevant: true</code>, <code>intent: buying_intent</code>,
+            <code>score: 62</code>.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:25:11</span>
+          <span class="t-what">62 is ambiguous, so Sonnet takes a second look</span>
+          <p class="t-detail">
+            The 40&ndash;70 band is the "genuinely uncertain" tier. Two of the nine
+            land in it and get re-run on the bigger model. Sonnet raises ours to
+            <strong>81</strong> and rewrites the reason. The expensive model was
+            paid for on 2 items, not 41.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">09:25:12</span>
+          <span class="t-what">The verdict is written</span>
+          <p class="t-detail">
+            One row in <code>classifications</code>: score, intent, the
+            one-sentence reason shown verbatim in the digest, the suggested reply
+            angle, and which model produced it. Token counts and cost go to
+            <code>api_usage</code>. The lead now exists and will not be
+            reclassified.
+          </p>
+        </li>
+
+        <li class="dim">
+          <span class="t-time">09:26 &rarr; 05:45 next morning</span>
+          <span class="t-what">Nothing happens to it</span>
+          <p class="t-detail">
+            Twenty hours of polls and classifications carry on around it. Our
+            lead sits in the database with a score of 81, waiting. Meanwhile
+            more leads accumulate for the same customer &mdash; that's the point of
+            a digest rather than an alert.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">05:45:00</span>
+          <span class="t-what">Engagement refresh</span>
+          <p class="t-detail">
+            Fifteen minutes before the send, the top ~30 candidates get their
+            upvote and comment counts re-read. A post that has since collected
+            40 comments is a hotter lead than when it was fetched &mdash; and one
+            that went nowhere is cooler. Only the top candidates, to stay inside
+            the rate budget.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">06:00:00 UTC &nbsp;·&nbsp; 07:00 London</span>
+          <span class="t-what">The digest job fires</span>
+          <p class="t-detail">
+            Scoring ranks the day's leads. Near-duplicates collapse. The top
+            5&ndash;15 are grouped by intent, rendered from React Email components,
+            and handed to Resend. A row goes into <code>digests</code> and the
+            chosen items into <code>digest_items</code>.
+          </p>
+        </li>
+
+        <li>
+          <span class="t-time">06:00:04</span>
+          <span class="t-what">It arrives</span>
+          <p class="t-detail">
+            Under <strong>Buying intent</strong>, second from top: the post, the
+            link, <em>"Spending two hours a day manually scrolling for exactly
+            the conversations you monitor"</em>, and an angle to reply from. The
+            founder reads it over coffee and writes the reply themselves. The
+            product never posts anything.
+          </p>
+        </li>
+      </ol>
+
+      <p>
+        Elapsed from post to verdict: <strong>about eleven minutes</strong>.
+        From post to inbox: <strong>under twenty-one hours</strong>. The long
+        wait is deliberate &mdash; a digest people actually read beats an alert
+        stream they mute.
+      </p>
+    </section>
+
+    <!-- ============================================================ POLL -->
+    <section id="poll">
+      <div class="sec-head">
+        <span class="kicker">Stage one</span>
+        <h2>Inside the poll job</h2>
+      </div>
+
+      <p>
+        One execution is <strong>one watch against one source</strong>. Never
+        both sources at once, never two watches. That granularity is what makes
+        the singleton key meaningful and keeps a failure small.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Step</th><th>What happens</th><th>Why it's in this order</th></tr></thead>
+          <tbody>
+            <tr><td class="mono-cell">1. load watch</td><td>Read the watch row; bail if inactive.</td><td>A paused customer must cost nothing.</td></tr>
+            <tr><td class="mono-cell">2. load cursor</td><td>Read <code>cursors</code> for this (watch, source).</td><td>Turns "fetch everything" into "fetch what's new".</td></tr>
+            <tr><td class="mono-cell">3. take a token</td><td>Wait on the shared rate-limit bucket.</td><td>The budget belongs to the source, not the customer — ten customers share one Reddit ceiling.</td></tr>
+            <tr><td class="mono-cell">4. fetch</td><td>One request per subreddit, plus one combined keyword search.</td><td>Bounded: a watch cannot issue unlimited calls.</td></tr>
+            <tr><td class="mono-cell">5. validate</td><td>Zod-parse the provider payload.</td><td>A silent shape change upstream must fail loudly here, not surface as <code>undefined</code> in an email.</td></tr>
+            <tr><td class="mono-cell">6. upsert items</td><td><code>ON CONFLICT (source, external_id) DO UPDATE</code>.</td><td>Refreshes scores and edits; a re-poll inserts nothing new.</td></tr>
+            <tr><td class="mono-cell">7. link</td><td>Insert into <code>item_watches</code>, conflict ignored.</td><td>One post can match three customers; each gets its own verdict.</td></tr>
+            <tr><td class="mono-cell">8. record cost</td><td>Accumulate calls into today's <code>api_usage</code> row.</td><td>Per-customer margins are a feature, not an afterthought.</td></tr>
+            <tr><td class="mono-cell">9. advance cursor</td><td>Save the newest fullname seen. <strong>Last.</strong></td><td>If anything above threw, the next run re-fetches the same page — which the unique index makes free.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="note-label">The ordering rule</span>
+        <p>
+          Advance the cursor <em>after</em> the data is safely stored, never
+          before. Get this backwards and a crash between "cursor moved" and
+          "items written" silently loses a window of posts forever &mdash; with no
+          error, no retry, and nothing in the logs. The cost of the safe order
+          is re-fetching a page you already have, which deduplication makes
+          free.
+        </p>
+      </div>
+    </section>
+
+    <!-- ======================================================== CLASSIFY -->
+    <section id="classify">
+      <div class="sec-head">
+        <span class="kicker">Stage two and three</span>
+        <h2>Inside the classify job</h2>
+      </div>
+
+      <p>
+        This is where money gets spent, so it is where the most care goes. Two
+        gates stand between a fetched post and a model call.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 880 400" role="img" aria-label="Classification funnel: 41 candidate pairs enter, the free rules-based pre-filter drops 32, the remaining 9 are classified by Haiku in one call, 2 of them score in the ambiguous 40 to 70 band and are re-run on Sonnet, and all 9 verdicts are written to the classifications table.">
+            <defs>
+              <marker id="c-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- input -->
+            <rect x="20" y="30" width="180" height="52" rx="5" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".35"/>
+            <text x="110" y="52" font-size="13" fill="currentColor" text-anchor="middle">41 unclassified pairs</text>
+            <text x="110" y="70" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" text-anchor="middle" opacity=".6">item_watches</text>
+
+            <line x1="110" y1="86" x2="110" y2="112" stroke="currentColor" stroke-width="1.5" opacity=".6" marker-end="url(#c-ar)"/>
+
+            <!-- filter -->
+            <rect x="20" y="116" width="180" height="66" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="110" y="140" font-size="13.5" fill="var(--accent-ink)" text-anchor="middle" font-weight="600">Pre-filter</text>
+            <text x="110" y="158" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".75">pure functions</text>
+            <text x="110" y="174" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)" text-anchor="middle">$0.00</text>
+
+            <!-- dropped -->
+            <line x1="206" y1="149" x2="286" y2="149" stroke="currentColor" stroke-width="1.4" opacity=".45" marker-end="url(#c-ar)"/>
+            <rect x="292" y="126" width="150" height="46" rx="5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="4 3"/>
+            <text x="367" y="146" font-size="12.5" fill="currentColor" text-anchor="middle" opacity=".6">32 dropped</text>
+            <text x="367" y="163" font-size="10.5" fill="currentColor" text-anchor="middle" opacity=".45">no row written anywhere</text>
+
+            <line x1="110" y1="186" x2="110" y2="212" stroke="currentColor" stroke-width="1.5" opacity=".6" marker-end="url(#c-ar)"/>
+            <text x="122" y="203" font-size="11.5" fill="currentColor" opacity=".7">9 survive</text>
+
+            <!-- haiku -->
+            <rect x="20" y="216" width="180" height="66" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+            <text x="110" y="240" font-size="13.5" fill="var(--accent-ink)" text-anchor="middle" font-weight="600">Haiku</text>
+            <text x="110" y="258" font-size="11.5" fill="currentColor" text-anchor="middle" opacity=".75">one call, all 9</text>
+            <text x="110" y="274" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)" text-anchor="middle">$1 / $5 per Mtok</text>
+
+            <!-- band split -->
+            <path d="M 206 240 L 300 240 L 300 216 L 380 216" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".5" marker-end="url(#c-ar)"/>
+            <rect x="386" y="192" width="180" height="48" rx="5" fill="none" stroke="currentColor" stroke-opacity=".4"/>
+            <text x="476" y="212" font-size="12.5" fill="currentColor" text-anchor="middle" opacity=".7">7 confident</text>
+            <text x="476" y="229" font-size="10.5" fill="currentColor" text-anchor="middle" opacity=".5">score &lt;40 or &gt;70 — done</text>
+
+            <path d="M 206 258 L 300 258 L 300 292 L 380 292" fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#c-ar)" color="var(--accent)"/>
+            <rect x="386" y="268" width="180" height="48" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="476" y="288" font-size="12.5" fill="var(--accent-ink)" text-anchor="middle">2 ambiguous</text>
+            <text x="476" y="305" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--accent-ink)" text-anchor="middle">score 40–70</text>
+
+            <line x1="572" y1="292" x2="632" y2="292" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#c-ar)" color="var(--accent)"/>
+
+            <!-- sonnet -->
+            <rect x="638" y="266" width="180" height="52" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+            <text x="728" y="288" font-size="13.5" fill="var(--accent-ink)" text-anchor="middle" font-weight="600">Sonnet</text>
+            <text x="728" y="306" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--accent-ink)" text-anchor="middle">$2 / $10 per Mtok</text>
+
+            <!-- merge to output -->
+            <path d="M 728 262 L 728 214 L 640 214" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".5" marker-end="url(#c-ar)"/>
+            <text x="700" y="206" font-size="11" fill="currentColor" text-anchor="end" opacity=".6">re-scored verdict wins</text>
+
+            <line x1="476" y1="186" x2="476" y2="160" stroke="currentColor" stroke-width="1.5" opacity=".55" marker-end="url(#c-ar)"/>
+            <rect x="386" y="106" width="180" height="50" rx="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="476" y="127" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--accent-ink)" text-anchor="middle">classifications</text>
+            <text x="476" y="145" font-size="11" fill="currentColor" text-anchor="middle" opacity=".65">9 verdicts written</text>
+
+            <text x="20" y="352" font-size="12.5" fill="currentColor" opacity=".72">The cost shape: the free gate removes 78% of the work, and the expensive model</text>
+            <text x="20" y="371" font-size="12.5" fill="currentColor" opacity=".72">is paid for on 2 items out of 41. Remove either gate and the unit economics invert.</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>Two gates, in cost order.</b> The free one runs first and does the
+          heavy lifting; the cheap model handles volume; the expensive model sees
+          only what the cheap one admitted it was unsure about. This is the whole
+          reason the product can charge $49 and keep an 85% margin.
+        </figcaption>
+      </figure>
+
+      <h3>How the prompt is assembled</h3>
+      <p>Four parts, in this order, and the order is load-bearing:</p>
+
+      <ol>
+        <li><strong>The rubric</strong> — identical bytes for every customer and every request. What counts as a lead, the five intent types, the scoring bands, the hard disqualifiers.</li>
+        <li><strong>The customer profile</strong> — their product, their ICP, their competitors, their disqualifiers. This is why classification beats a keyword alert: the same post is a lead for one customer and noise for another.</li>
+        <li><strong>Few-shot examples</strong> — harvested from that customer's own 👍/👎 on past digests, so the model calibrates to their taste rather than a generic one.</li>
+        <li><strong>The items</strong> — the only genuinely volatile part, and therefore last.</li>
+      </ol>
+
+      <p>
+        That ordering exists so the stable prefix can be cached. Anything that
+        varies per request has to come after the cache breakpoint, or the cache
+        is invalidated on every single call and you pay full price forever
+        without any error telling you so.
+      </p>
+
+      <h3>Why the scoring bands are written out</h3>
+      <p>
+        An unanchored 0&ndash;100 scale collapses. Models cluster everything between
+        50 and 70, and the ranking downstream becomes noise dressed up as
+        precision. Naming what each band <em>means</em> is what makes the number
+        usable:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Band</th><th>Meaning</th><th>What happens to it</th></tr></thead>
+          <tbody>
+            <tr><td class="num mono-cell">85–100</td><td>Explicitly asking for a recommendation in this exact category, and in the ICP.</td><td>Top of the digest.</td></tr>
+            <tr><td class="num mono-cell">70–84</td><td>Clear need plus clear fit, or a complaint about a named competitor.</td><td>In the digest.</td></tr>
+            <tr><td class="num mono-cell">40–69</td><td>Genuine ambiguity — right problem, unclear fit; or thin, or old.</td><td><strong>Escalated to Sonnet.</strong></td></tr>
+            <tr><td class="num mono-cell">15–39</td><td>Adjacent. No evident need, or outside the ICP, or a vendor rather than a buyer.</td><td>Stored, not shown.</td></tr>
+            <tr><td class="num mono-cell">0–14</td><td>Unrelated or disqualified outright.</td><td>Stored, not shown.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ RANK -->
+    <section id="rank">
+      <div class="sec-head">
+        <span class="kicker">Stage four</span>
+        <h2>Scoring and ranking <span class="tag soon">M3</span></h2>
+      </div>
+
+      <p>
+        The model's 0&ndash;100 is a judgement about the <em>post</em>. Ranking is a
+        judgement about <em>today's inbox</em>, which is a different question.
+        Four adjustments turn one into the other:
+      </p>
+
+      <ul>
+        <li><strong>Recency decay</strong>, half-life around 24 hours. A thread from three days ago has had its replies; arriving late reads as spam.</li>
+        <li><strong>Venue weight.</strong> A post in a narrow, high-intent subreddit is worth more than the same words on the HN front page.</li>
+        <li><strong>Engagement velocity.</strong> Upvotes and comments accumulated since fetch — re-read just before the digest for the top candidates only.</li>
+        <li><strong>Near-duplicate collapse.</strong> One author cross-posting to three subreddits is one lead with three links, not three leads.</li>
+      </ul>
+
+      <p>
+        All pure functions. No I/O, no clock reads inside them — the time is
+        passed in — so the whole ranking is unit-testable and deterministic.
+      </p>
+    </section>
+
+    <!-- =========================================================== SEVEN -->
+    <section id="seven">
+      <div class="sec-head">
+        <span class="kicker">The hard part nobody expects</span>
+        <h2>The 7 a.m. problem</h2>
+      </div>
+
+      <p class="lede">
+        "Send at 7&nbsp;a.m." sounds like the simplest requirement in the
+        document. It is the one most likely to page you at 6&nbsp;a.m. on a
+        Sunday in late October.
+      </p>
+
+      <p>
+        Cron schedules run in a fixed timezone. Customers live in many. And the
+        offset between a customer's local time and UTC <em>is not constant</em> —
+        it moves twice a year, on different dates in different countries.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 880 300" role="img" aria-label="Timezone diagram: a customer whose digest hour is 7am local in London is sent at 06:00 UTC during British Summer Time and at 07:00 UTC after the clocks change, while a customer in New York is sent at 11:00 UTC then 12:00 UTC. Storing a fixed UTC hour breaks at the DST boundary.">
+            <defs>
+              <marker id="t-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <text x="20" y="28" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55" letter-spacing="1">STORED PER CUSTOMER</text>
+            <rect x="20" y="40" width="200" height="66" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="34" y="62" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--accent-ink)">tz: "Europe/London"</text>
+            <text x="34" y="80" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--accent-ink)">digest_hour: 7</text>
+            <text x="34" y="98" font-size="11" fill="currentColor" opacity=".65">an IANA name, never an offset</text>
+
+            <line x1="226" y1="73" x2="286" y2="73" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#t-ar)" color="var(--accent)"/>
+            <text x="256" y="64" font-size="10.5" fill="var(--accent-ink)" text-anchor="middle">resolve</text>
+
+            <!-- summer -->
+            <rect x="292" y="34" width="250" height="52" rx="5" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+            <text x="306" y="54" font-size="12.5" fill="currentColor" opacity=".8">7 Sept — BST, UTC+1</text>
+            <text x="306" y="73" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ok)">07:00 local = 06:00 UTC</text>
+
+            <!-- winter -->
+            <rect x="292" y="98" width="250" height="52" rx="5" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+            <text x="306" y="118" font-size="12.5" fill="currentColor" opacity=".8">7 Nov — GMT, UTC+0</text>
+            <text x="306" y="137" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ok)">07:00 local = 07:00 UTC</text>
+
+            <!-- the trap -->
+            <rect x="292" y="176" width="560" height="92" rx="5" fill="none" stroke="var(--crit)" stroke-width="1.5"/>
+            <text x="306" y="198" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--crit)" letter-spacing="1">THE TRAP</text>
+            <text x="306" y="220" font-size="12.5" fill="currentColor" opacity=".85">Compute "06:00 UTC" once at signup and store that number, and on</text>
+            <text x="306" y="238" font-size="12.5" fill="currentColor" opacity=".85">26 October every London customer starts receiving their 7 a.m. digest</text>
+            <text x="306" y="256" font-size="12.5" fill="currentColor" opacity=".85">at 6 a.m. Nothing errors. Nobody is paged. They just quietly churn.</text>
+
+            <line x1="417" y1="154" x2="417" y2="172" stroke="var(--crit)" stroke-width="1.4" marker-end="url(#t-ar)" color="var(--crit)"/>
+
+            <!-- second customer -->
+            <rect x="602" y="34" width="250" height="116" rx="5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="4 3"/>
+            <text x="616" y="54" font-size="12.5" fill="currentColor" opacity=".7">Same hour, New York:</text>
+            <text x="616" y="76" font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor" opacity=".7">Sept  07:00 = 11:00 UTC</text>
+            <text x="616" y="96" font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor" opacity=".7">Nov   07:00 = 12:00 UTC</text>
+            <text x="616" y="122" font-size="11" fill="currentColor" opacity=".55">and the US changes on a</text>
+            <text x="616" y="138" font-size="11" fill="currentColor" opacity=".55">different date than the UK</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>Store the intent, not the arithmetic.</b> Keep the IANA timezone name
+          and the local hour the customer asked for; resolve to UTC at the moment
+          of scheduling, every time. A stored UTC hour is a correct answer to a
+          question that stops being true twice a year.
+        </figcaption>
+      </figure>
+
+      <h3>Two ways to build it</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Approach</th><th>How</th><th>Trade-off</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Cron per customer</strong></td>
+              <td>One schedule row per customer, with the cron expression and the customer's IANA timezone stored alongside it, so the scheduler does the conversion each firing.</td>
+              <td>Simple and direct, and DST is handled for you. Needs a schedule row created and cleaned up per customer.</td>
+            </tr>
+            <tr>
+              <td><strong>Hourly sweeper</strong></td>
+              <td>One job, every hour on the hour. It asks: which customers' local time is 7 a.m. right now, and haven't been sent to today?</td>
+              <td>One schedule for all customers, trivially handles signups and churn. Resolution is capped at one hour and every customer's send is computed 24× a day.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note caution">
+        <span class="note-label">Either way</span>
+        <p>
+          The digest job must be idempotent regardless, because the ambiguous
+          hour during a DST fall-back genuinely happens twice. The defence isn't
+          clever scheduling &mdash; it's the check in the next section.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================ SEND -->
+    <section id="send">
+      <div class="sec-head">
+        <span class="kicker">Stage five</span>
+        <h2>Sending, exactly once <span class="tag soon">M3</span></h2>
+      </div>
+
+      <p>
+        Every other stage in this pipeline is idempotent because a repeat is
+        harmless &mdash; an upsert writes the same row twice and nothing notices.
+        Sending is different. <strong>You cannot un-send an email.</strong>
+      </p>
+
+      <p>So the digest job opens by asking whether it has already run today:</p>
+
+      <div class="code-block">
+        <div class="code-title"><span>the shape of the guard</span></div>
+<pre><span class="c">-- has this customer already been sent to, on their own local day?</span>
+<span class="k">SELECT</span> <span class="w">1</span> <span class="k">FROM</span> digests
+<span class="k">WHERE</span> customer_id = $1
+  <span class="k">AND</span> channel    = <span class="s">'email'</span>
+  <span class="k">AND</span> (sent_at <span class="k">AT TIME ZONE</span> $2)::date = $3;   <span class="c">-- $2 = customer tz</span></pre>
+      </div>
+
+      <p>
+        Note it asks about the customer's local day, not the UTC day. A digest
+        sent at 23:30 UTC and another at 00:30 UTC are the same local morning
+        for someone in Auckland, and a UTC-day check would happily send twice.
+      </p>
+
+      <p>
+        The stronger version of this guard is a unique index rather than a
+        query, so that two workers racing cannot both pass the check before
+        either writes. Belt and braces: check first for a clean skip, and let
+        the constraint catch the race.
+      </p>
+
+      <h3>What actually goes out</h3>
+      <ul>
+        <li>Top 5&ndash;15 leads, grouped by intent type, best first.</li>
+        <li>Each with: title and snippet, a link to the thread, the model's one-sentence <em>why this matters</em>, and a suggested reply angle.</li>
+        <li>A 👍/👎 link per lead — a signed URL hitting the web app, writing to <code>feedback</code>, which becomes next month's few-shot examples.</li>
+      </ul>
+
+      <div class="note">
+        <span class="note-label">The rule that never bends</span>
+        <p>
+          The digest drafts an <em>angle</em>. A human writes and sends the
+          reply. No auto-posting to any platform, ever &mdash; it is an instant ban
+          on most of them and a trust-destroyer on all of them.
+        </p>
+      </div>
+    </section>
+
+    <!-- ========================================================== BROKEN -->
+    <section id="broken">
+      <div class="sec-head">
+        <span class="kicker">Failure modes</span>
+        <h2>When things break</h2>
+      </div>
+
+      <p>
+        The governing rule: <strong>silence is the only unacceptable failure.</strong>
+        A product whose promise is "you won't miss leads" cannot respond to
+        trouble by sending nothing.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>What breaks</th><th>Response</th></tr></thead>
+          <tbody>
+            <tr><td>Reddit returns 429</td><td>The job reschedules itself for the server's <code>Retry-After</code> and completes cleanly. No retry burned, no hammering.</td></tr>
+            <tr><td>Reddit is down entirely</td><td>The digest still sends, carrying "Reddit data delayed today". HN and Bluesky leads still arrive.</td></tr>
+            <tr><td>The classifier fails</td><td>Send a keyword-only digest, flagged as degraded. A worse digest beats no digest.</td></tr>
+            <tr><td>A provider changes its payload shape</td><td>Zod rejects it at the boundary and the job fails loudly, rather than writing <code>undefined</code> into somebody's email.</td></tr>
+            <tr><td>The worker is killed mid-job</td><td>The row stays <code>active</code>; a supervisor expires it back to <code>created</code> and another worker picks it up.</td></tr>
+            <tr><td>A job fails four times</td><td>It lands in <code>failed</code>, where a daily ops job reports it to Slack. Failures accumulate somewhere visible instead of vanishing.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>The failure this design does <em>not</em> catch</h3>
+
+      <div class="note danger">
+        <span class="note-label">A real bug, found while writing this</span>
+        <p>
+          Look again at the first diagram: items dropped by the pre-filter get
+          <strong>no row anywhere</strong>. The classify job selects pairs "with
+          no verdict yet" — and a filtered item never gets a verdict, so it
+          matches that query <em>forever</em>. Every run re-selects the same
+          rejected items, and each one occupies a slot in the per-run limit.
+        </p>
+        <p>
+          At a realistic drop rate the backlog fills the entire limit within
+          about a day, after which the job classifies <strong>zero new
+          items</strong> — while logging a perfectly cheerful "pre-filter
+          complete" every five minutes. No error, no alert, no missing metric.
+          Just leads quietly ceasing to arrive.
+        </p>
+        <p>
+          This is the shape of bug worth learning to recognise: not a crash, but
+          a query whose result set never shrinks. The fix is to persist the
+          filter's verdict so a rejected item is <em>decided</em> rather than
+          merely <em>unclassified</em>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ========================================================== STATUS -->
+    <section id="status">
+      <div class="sec-head">
+        <span class="kicker">Honesty</span>
+        <h2>What is actually built</h2>
+      </div>
+
+      <p>
+        This document describes the designed system end to end. Rather more of
+        it is drawing than code. Here is the real state:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Stage</th><th>Status</th><th>Evidence</th></tr></thead>
+          <tbody>
+            <tr><td>Queue, cron, retries, health endpoint</td><td><span class="tag live">running</span></td><td>Heartbeat verified across three consecutive minutes</td></tr>
+            <tr><td>HN adapter, cursors, dedup</td><td><span class="tag live">running</span></td><td>400 real items fetched; re-poll produced 400 duplicates, 0 new</td></tr>
+            <tr><td>Reddit adapter</td><td><span class="tag soon">untested</span></td><td>8 tests against recorded fixtures; never hit the live API</td></tr>
+            <tr><td>Pre-filter</td><td><span class="tag broken">defective</span></td><td>Measured recall 29% — drops 12 of 17 labelled leads</td></tr>
+            <tr><td>Classifier, rubric, cascade</td><td><span class="tag soon">unmeasured</span></td><td>Written and typechecked; no successful live call yet</td></tr>
+            <tr><td>Golden set + eval harness</td><td><span class="tag live">built</span></td><td>72 real posts, hand-labelled, 17 relevant</td></tr>
+            <tr><td>Scoring and ranking</td><td><span class="tag soon">M3</span></td><td>Not started</td></tr>
+            <tr><td>Digest render and send</td><td><span class="tag soon">M3</span></td><td>Not started</td></tr>
+            <tr><td>The 7 a.m. schedule</td><td><span class="tag soon">M4</span></td><td>Not started</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The 7&nbsp;a.m. send in the worked example above has never happened. The
+        timeline is what the system is <em>designed</em> to do, and roughly the
+        first half of it genuinely works today. It's worth reading the whole
+        thing anyway: knowing where the pipeline is going is what makes the
+        current milestone's decisions legible.
+      </p>
+
+      <p class="closer">
+        Companion to <span class="mono">Inside the IntentOwl Worker</span>, which
+        covers the skeleton this pipeline runs on. The authoritative spec is
+        <span class="mono">docs/ARCHITECTURE.md</span>; where this walkthrough
+        and that document disagree, the spec wins.
+      </p>
+    </section>
+
+  </main>
+</div>

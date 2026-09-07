@@ -161,10 +161,24 @@ export const itemWatches = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    /**
+     * Set when the pre-filter rejected this pair, so it is *decided* rather
+     * than merely unclassified.
+     *
+     * Without this the classify job starves: it selects pairs with no
+     * classification row, a filtered pair never gets one, so the same rejects
+     * are re-selected every run until they fill the per-run limit and no new
+     * item is ever classified again — silently, while the logs report success.
+     */
+    filteredAt: timestamp("filtered_at", { withTimezone: true }),
+    /** Which rule rejected it, for debugging a customer's watch. */
+    filterReason: text("filter_reason"),
   },
   (t) => [
     primaryKey({ columns: [t.itemId, t.watchId] }),
     index("item_watches_watch_id_idx").on(t.watchId),
+    // The classify job's hot path: undecided pairs for a watch.
+    index("item_watches_pending_idx").on(t.watchId, t.filteredAt),
   ],
 );
 

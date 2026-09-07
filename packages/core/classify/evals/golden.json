@@ -1,0 +1,1129 @@
+{
+  "profile": {
+    "name": "IntentOwl",
+    "productDesc": "IntentOwl is a daily intent-lead digest for SaaS founders. It monitors Reddit, Hacker News and Bluesky for posts showing buying intent or describing a problem the customer's product solves, classifies each one with Claude against the customer's ICP, and emails a ranked digest with a suggested reply angle for every lead. It never posts replies - a human always sends them.",
+    "icpDesc": "Solo founders and small SaaS teams (1-10 people) doing community marketing by hand: manually scrolling subreddits, wiring up keyword alerts, or simply missing the threads where someone is asking for exactly what they build. Usually technical, short on time, and uncomfortable with marketing. They have a live product and are trying to reach early customers.",
+    "competitors": [
+      "GummySearch",
+      "Syften",
+      "F5Bot",
+      "Brand24",
+      "Mention",
+      "BuzzSumo",
+      "Google Alerts"
+    ],
+    "disqualifiers": [
+      "Job postings, recruitment, and people advertising their own availability",
+      "Agencies and freelancers looking for clients - we sell to product companies, not services businesses",
+      "Anyone building or promoting their own social listening, brand monitoring or lead-monitoring tool: they are a competitor, not a buyer",
+      "Customer support, billing and enterprise contract questions - a different problem from finding customers"
+    ]
+  },
+  "filter": {
+    "includeTerms": [
+      "find customers",
+      "first customers",
+      "first users",
+      "beta users",
+      "find users",
+      "attract users",
+      "customer acquisition",
+      "market saas",
+      "marketing saas",
+      "marketing founder",
+      "marketing solo",
+      "monitor reddit",
+      "social listening",
+      "brand mentions",
+      "monitor mentions"
+    ],
+    "excludeTerms": [
+      "\"who is hiring\"",
+      "\"for hire\"",
+      "upwork",
+      "fiverr"
+    ]
+  },
+  "cases": [
+    {
+      "id": "1934644",
+      "url": "https://news.ycombinator.com/item?id=1934644",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN Successful Startups: How did you find your first customer?",
+      "body": "It was inspiring to read the post from a couple of days ago 'Who is living off their startup fulltime?' http://news.ycombinator.com/item?id=1924909 I would like to learn the art of finding your FIRST customer, arranging meeting/phone call with them, getting them to talk to you and eventually signing them up as your beta customer. How did you go about this? Thanks",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 40,
+        "maxScore": 75
+      },
+      "note": "Founder asking how others found their first customers - the acquisition problem IntentOwl serves."
+    },
+    {
+      "id": "11247715",
+      "url": "https://news.ycombinator.com/item?id=11247715",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How did you find your first 10 customers for your startup?",
+      "body": "Wondering?",
+      "expect": {
+        "relevant": true,
+        "intent": "question",
+        "minScore": 35,
+        "maxScore": 70
+      },
+      "note": "Same question, near-empty body: genuinely ambiguous, belongs in the escalation band."
+    },
+    {
+      "id": "36776391",
+      "url": "https://news.ycombinator.com/item?id=36776391",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to find first Customers as a freelancer?",
+      "body": "I have FAANG, Unicorn Startup, Solopreneur experience and worked with a lot of stuff already. Still, I'm not able to find any clients. I looked at Online guides which has advice like \"Tell ur friends and family\" and such. The problem is that I live in India, and I'll earn much more in a corporate than freelancing for Rupees. How do I get attention of Western clients then?",
+      "expect": {
+        "relevant": false,
+        "intent": "pain_point",
+        "minScore": 15,
+        "maxScore": 40
+      },
+      "note": "Freelancer chasing clients, not a SaaS founder. ICP miss."
+    },
+    {
+      "id": "36457108",
+      "url": "https://news.ycombinator.com/item?id=36457108",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How did you find your first B2B customer(s) and/or product idea(s)?",
+      "body": "Based on the recent: https://news.ycombinator.com/item?id=36431268 I agree with the thread that B2B solutions can be a good area to start a company, but how do you break in? As an outsider, it's hard to identify what businesses need. Where did you get your B2B product idea and/or first customer(s)?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 40,
+        "maxScore": 75
+      },
+      "note": "B2B founder asking how to find first customers."
+    },
+    {
+      "id": "22239125",
+      "url": "https://news.ycombinator.com/item?id=22239125",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How did you find your first customers?",
+      "body": "Hi, there are thousands of possible ways how someone could find their first customers. I’m curious about how you actually found your first paying customer/s?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 40,
+        "maxScore": 75
+      },
+      "note": "Founder asking how others found first paying customers."
+    },
+    {
+      "id": "3616059",
+      "url": "https://news.ycombinator.com/item?id=3616059",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "How to find first customers for mobile development company?",
+      "body": "Still working fulltime at my regular job, I've just started my own company and my aim is to develop mobile applications. I'm wondering what are the best ways to find my first customers? I believe after a couple of first customers all will be much easier, will it not?",
+      "expect": {
+        "relevant": false,
+        "intent": "pain_point",
+        "minScore": 10,
+        "maxScore": 40
+      },
+      "note": "Mobile dev agency seeking clients - agencies are a stated disqualifier."
+    },
+    {
+      "id": "44144473",
+      "url": "https://news.ycombinator.com/item?id=44144473",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Anyone making a living from a paid API?",
+      "body": "Are there any solo devs or small teams out there genuinely paying their rent from selling API access? What's your API? How much MRR? What's your pricing model? How did you find your first paying customers? And most importantly - what problem are you solving that people will actually pay for monthly? Bonus points if you can share: - Your biggest challenge (rate limiting? customer support? competition?) - Whether you'd do it again - Any \"I wish I knew this before starting\" wisdom",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 30
+      },
+      "note": "API monetisation and pricing, not audience discovery."
+    },
+    {
+      "id": "2643189",
+      "url": "https://news.ycombinator.com/item?id=2643189",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How can I find a \"mission critical\" company/consumer problem?",
+      "body": "Steven Blank describes in The Four Steps to the Epiphany that successful startups supply a \"must-have\" consumer product or solve a mission critical company problem. My problem has been with idea creation. I've been developing 'cool' ideas, but nothing that people absolutely need. I really like Blank's book and I agree with his theory about developing a product hypothesis then talking to potential customers to test if the product is needed. This is basically a way to find customers first, see what they want then begin to build. But my question is, what if you don’t have a product hypothesis? How can you generate product/service ideas that are \"must-have?\" I've been told to \"scratch my own itch,\" but many great startups are B2B. And finding problems that specific businesses face without being apart of that business is difficult. The same can be said for specific consumer markets.",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 30
+      },
+      "note": "Looking for a problem to solve, not for customers."
+    },
+    {
+      "id": "46901498",
+      "url": "https://news.ycombinator.com/item?id=46901498",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How Did You Validate?",
+      "body": "Dear founders, I'm trying to understand common startup wisdom and it doesn't make sense to me. For example, if you give me the source code of Dropbox, I don't think I'll cross the 100K ARR in the first year. Maybe, even 1K goal would be a stretch. What would you do to get an abstract Dropbox to 1M ARR? Start with cold emails? Define ICP and spam them through Linkedin Sales Navigator, aka B2B sales playbook? I find common advice on validation super generic, which means it doesn't work as it lacks specifics and nuance. For example, competition is good because it proves demand, but \"scrappy MVP\" doesn't sell in competitive markets. I'm arriving at the point that the only way to succeed is to get your product embedded into some kind of value delivery pipeline through offline sales: meetups, trade shows, etc. Go to a place where your customers hang out offline. Did you validate your idea befo",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 10,
+        "maxScore": 35
+      },
+      "note": "Validation methodology question."
+    },
+    {
+      "id": "48300260",
+      "url": "https://news.ycombinator.com/item?id=48300260",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Advice on transitioning from employed dev to independent consultant",
+      "body": "Hi everyone, I’m currently a software engineer and I’d like to transition from being an employee to working independently as a consultant or advisor. My main concerns are, unsurprisingly, how to build a network and how to find the first customers. I’d love to hear from experienced independent developers: if you had to start from scratch today, what would you do to find clients? What worked for you, what didn’t, and what would you avoid? Thank you.",
+      "expect": {
+        "relevant": false,
+        "intent": "pain_point",
+        "minScore": 10,
+        "maxScore": 35
+      },
+      "note": "Employee to consultant transition. ICP miss."
+    },
+    {
+      "id": "2243939",
+      "url": "https://news.ycombinator.com/item?id=2243939",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to get more users for a startup website.",
+      "body": "For the last 6 months I've been working on building my first startup. It was finally ready and launched last month. I'm trying to build a community to help people classified ads via video. I believe if everyone can watch videos of what people are selling they can save so much time traveling from place to place to check out the product. They can enjoy watching classified ads videos without leaving the comfort of their homes. It's like craigslist but by videos instead of posting photos. It's been about 1 month, we have about 200 members signed up but not many actually uploading videos. I'm thinking of running a contest to encourage them to upload their unwanted things lying around their houses. Are there any other ways for them to start uploading videos? Plus how can I get more users to join a site like this. I'm a bit new on marketing for a startup website and looking forward to learn fro",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 50,
+        "maxScore": 85
+      },
+      "note": "Launched, now trying to build a community and get users. Direct fit."
+    },
+    {
+      "id": "37683637",
+      "url": "https://news.ycombinator.com/item?id=37683637",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to find potentials users for my startup",
+      "body": "I am currently working on a startup idea, and I would like to get some user feedback by people who have the problem I am trying to solve. How do I find people with a specific problem? (Apart from friends of friends or acquaintances). For example: If I was working on a solution for learning a language, how do I find people who are trying to learn a language?",
+      "expect": {
+        "relevant": true,
+        "intent": "buying_intent",
+        "minScore": 55,
+        "maxScore": 90
+      },
+      "note": "Wants to find people who already have the problem - literally what IntentOwl does."
+    },
+    {
+      "id": "18813679",
+      "url": "https://news.ycombinator.com/item?id=18813679",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to attract beta users for my SaaS startup",
+      "body": "I have launched beta version of my agile retrospective tool. And now looking to attract beta users. What are the best practices others have used to get initial users and feedback. here is link: www.reetro.io",
+      "expect": {
+        "relevant": true,
+        "intent": "buying_intent",
+        "minScore": 55,
+        "maxScore": 90
+      },
+      "note": "SaaS beta, asking for practices to attract users. Strong buying intent."
+    },
+    {
+      "id": "26959986",
+      "url": "https://news.ycombinator.com/item?id=26959986",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Help me get users for my finished MVP and change the world",
+      "body": "I know this is a long shot, but I was inspired by Brian Armstrong soliciting HN and getting a chilly reception back in 2012. But I believe that there are some killers here on HN who want to enable Visigoth like sacking of competition! We have a completed MVP of something new and exciting in the social space. Think Tiktok but with a subreddit/hashtag hybrid style organizational structure with short audio, video, pics, or thoughts (tweet like text); combined with better groupchats, w/ highlights of those groupchats appearing also in the feed as well, so the feed has both content from both private gcs and public boards. I did a beta launch @ a few Ivy League clubs, and the retention is good. Here’s our niche: - “I’m into kickboxing, but it doesn’t make sense for me to post something kickboxing specific on Insta/Tiktok. Reddit is too anonymous for personal stuff. But, if there’s a social pla",
+      "expect": {
+        "relevant": false,
+        "intent": "pain_point",
+        "minScore": 10,
+        "maxScore": 35
+      },
+      "note": "Soliciting HN directly to promote an MVP."
+    },
+    {
+      "id": "2334048",
+      "url": "https://news.ycombinator.com/item?id=2334048",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: The redesign of my startup, please review it.",
+      "body": "A couple weeks ago I asked HN to give me feedbacks on my website. I received great feedbacks and did a revision of my website, changing the user interface and build a community forum around it. Well the idea of my startup is very simple but I believe very meaningful. I'm trying to connect local buyers and sellers together via videos instead of photos. Giving users and sellers a better way to showcase their second hand products. Right now we're focusing on users acquisition and marketing but kind of stuck, meaning no growth. We're getting about 500 visits/day and around 5-10 people register/day but not many people are uploading videos. We want to get users more involved in the community and eventually list their used stuff with us. As of now I'm bootstrapping my startup where capital is very limited. I'm thinking of 1. reaching out to bloggers and get some PR to increase more traffic to t",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 25
+      },
+      "note": "Website redesign feedback request."
+    },
+    {
+      "id": "1949809",
+      "url": "https://news.ycombinator.com/item?id=1949809",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Building my web startup in Drupal vs. Rails?",
+      "body": "I'm the non-technical side of our startup and while I trust my partner, I just wanted to get some perspective on how we're currently building our website. We're just building a prototype at the moment, and to do this as quickly as possible my partner is using Drupal. He's new to Drupal so is learning how to use it along the way. My first feeling when he said he wanted to use Drupal was \"hmmm, a CMS - that doesn't feel like the right choice\". However, I don't really have any justification for that feeling: it is just that whenever I read about people building web startups they are using Python/Django or Ruby on Rails etc. Our startup is not anything especially complicated - it's a review website - like Yelp or TripAdvisor - where the users get points for submitting reviews. When we talk about the product build it does seem like there is a Drupal module to cover most things. So maybe it is",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Drupal vs Rails stack choice."
+    },
+    {
+      "id": "31456463",
+      "url": "https://news.ycombinator.com/item?id=31456463",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Is there a web app to collect emails?",
+      "body": "I made a landing page for my startup, and I've so many things to do, so I'd prefer to save up energy and not setup Mailgun, a separate db table for emails, form validation and all that. Maybe there is a service that provides an iframe for email submission so that I could slap it on my landing page, and get my future users' emails in Airtable or something?",
+      "expect": {
+        "relevant": false,
+        "intent": "buying_intent",
+        "minScore": 10,
+        "maxScore": 35
+      },
+      "note": "Shopping for an email-collection tool - buying intent, wrong category."
+    },
+    {
+      "id": "2164593",
+      "url": "https://news.ycombinator.com/item?id=2164593",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Review my startup, PeerLeaf",
+      "body": "http://PeerLeaf.com/ It's in private beta now - let me know if you or anyone you know would like to participate. Any advice from established guys on how to get more private beta users for a service like mine?",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Review-my-startup promotion."
+    },
+    {
+      "id": "48390168",
+      "url": "https://news.ycombinator.com/item?id=48390168",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Laid off. Broke. Depressed. & idk how to market my SaaS",
+      "body": "I live in a third-world country with a family who's dependent on me. I used to work as a Software Engineer specializing in MERN Stack. I was laid off a month ago, didn't have any saving cos I was already hand-to-mouth, supporting a family of 5 with funding my brother's University fee. I am really depressed and have done nearly everything I knew to market my SaaS products but nothing's working. Tried: 1. Submitting my product on SaaS directories + on LTD ones (got rejections & some didn't respond), 2. Built in Public (no response), 3. Got Permanently Banned from Reddit (cos I did self-promotion as I wasn't aware - my mistake, i accept), 4. Wrote Articles & submitted on GSC, almost a month has passed & still not indexed, 5. Cold outreach (0 response rate, did personalized outreach, researched about each person + their products & mentioned I'll give free 3 months access) 6. Approached micro",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 55,
+        "maxScore": 90
+      },
+      "note": "Solo founder, laid off, explicitly cannot market their SaaS. Strong fit."
+    },
+    {
+      "id": "32323260",
+      "url": "https://news.ycombinator.com/item?id=32323260",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to market my API SaaS?",
+      "body": "Hello HN! I’m a developer and I’ve spent the last 5 years building an open source library for WebAuthn (the tech behind Passkeys) called fido2-net-lib [0]. To make adoption even easier (and the workload sustainable) we built an API [1] that really makes the technology easy to adopt and accessible within minutes. I’ve managed to get both some free and paid customers but I’m struggling with finding an efficient marketing channel/strategy. I’m here asking for your help. I need all the advice I can get. What can I do to onboard more users and customers? [0]: https://github.com/passwordless-lib/fido2-net-lib [1]: https://www.passwordless.dev/",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 50,
+        "maxScore": 85
+      },
+      "note": "Developer asking how to market an API SaaS."
+    },
+    {
+      "id": "14079048",
+      "url": "https://news.ycombinator.com/item?id=14079048",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Landing page improvement suggestions and ideas how to market my SaaS?",
+      "body": "Hello HN, I am soon launching my first paid SaaS product and I would love to improve my landing page to be more informative and relevant. The SaaS product is targeting a very specific audience so my current version of the landing page[1] assumes that the user knows what a (web)hook is. I am an author of an open-source self hosted tool named webhook[2] and it has validated that the problem I had, others have as well and that there are users who need an incoming server that would execute their code. Main problems with my open-source tool is that managing all these hooks is PITA. If you have more than 5 hooks, you'll start getting lost in your JSON configuration. Providing a web interface in the open-source tool would clash with my philosophy of doing one thing and doing it well. Additionally, I would like to monetize this, and that's the reason I am launching a SaaS which does what my open",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 45,
+        "maxScore": 80
+      },
+      "note": "Launching a SaaS, asking how to market it."
+    },
+    {
+      "id": "8807343",
+      "url": "https://news.ycombinator.com/item?id=8807343",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Is my SaaS a cost saver or a value provider?",
+      "body": "I have a SaaS that let's people extract data from PDF and Video files. The reason I'm asking is I want to know on what side of the fence I am on in order to know how to price and market my SaaS better. Common theme about all of my customers is that. They are already have the pdf and video files that they wish to target. They have tried other methods such as manual or paying someone. They have successfully been able to extract data using my SaaS. Now I charge an \"all you can extract\", unlimited plan for my three plans (small, medium, large). The only difference is the number of workers as you go up the plan. The more workers, the faster your overall data extraction. The price range starts from a few hundred dollars a month to a thousand dollars a month. I am guessing that the main value from my SaaS comes from saving people lot of manual and time consuming labor. Am I a cost saver? I am a",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 10,
+        "maxScore": 35
+      },
+      "note": "Positioning question, not acquisition."
+    },
+    {
+      "id": "26197854",
+      "url": "https://news.ycombinator.com/item?id=26197854",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to market and sale SaaS product?",
+      "body": "The classic problem: we have a product, 4-5 people validated it and two bought it. But, how do I market my SaaS product? Without spending thousands of dollars on user acquisition, are there any ways new founders with little network can employ? I have tried posting to Reddit, but mods removed post aggressively. I haven’t tried PH and HN. Any other suggestions for solo founders?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 55,
+        "maxScore": 90
+      },
+      "note": "How to market a SaaS without spending thousands. Bullseye."
+    },
+    {
+      "id": "20734274",
+      "url": "https://news.ycombinator.com/item?id=20734274",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "How can I market my SaaS product to founders?",
+      "body": "I have an online equity calculator tool for the founders of early-stage, bootstrapped companies. What are some good ways to target this audience?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 50,
+        "maxScore": 85
+      },
+      "note": "Asking how to reach a specific founder audience."
+    },
+    {
+      "id": "12393607",
+      "url": "https://news.ycombinator.com/item?id=12393607",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Handle my two SaaS platforms as one single brand or 2 independent ones?",
+      "body": "Here’s the brief background story: I am running a Digital Business Card platform called Pixelhub (http://pixelhub.me) since 2009. The platform allows users to build a personal page that works as their contact card and personal hub. While the service has evolved over the years, we have noticed that there’s many people (mostly freelancers) that don’t have the need for an independent personal page (as Pixelhub.me offers), but would like to use Pixelhub’s vCard import feature (Pixelhub offers a call-to-action for this) with a business page they already use. I started working on a minimum viable product around the idea of offering a device-independent call-to-action that would encourage website visitors to save people’s contact information to easily get in touch at a later date. During development I nicknamed this new tool “Hellobox”, I even registered the domain gethellobox.com. The first , ",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 30
+      },
+      "note": "Brand architecture question across two products."
+    },
+    {
+      "id": "42975014",
+      "url": "https://news.ycombinator.com/item?id=42975014",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Learned to code, built a SaaS, now have paid customers from 40 countries",
+      "body": "6 months ago I first had the idea for my latest project. I wanted to create a platform where founders get everything they need to build their products. The core of it would be an AI that learns about their project as they build. Now I’m proud to say that we have 4000+ founders on our platform. But let’s back up a bit so you can see how I got here. Here’s a high level overview of my story: - Ran a successful SaaS with two friends but had serious issues scaling it further than $30k/month - I had 0 coding skills at this point and got tired of the whole project being so dependent on our developer. Things weren’t moving fast enough - July of 2023 I finally decided to take things into my own hands and learned to code - Spent 5 months going through the App Academy course - December of 2023 I had a decent foundation and I started building the first project on my own as practice. Was super exciti",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Revenue success story, promotional."
+    },
+    {
+      "id": "47667504",
+      "url": "https://news.ycombinator.com/item?id=47667504",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How do you handle marketing as a solo technical founder?",
+      "body": "I've shipped multiple products over the past few years. Every single one followed the same pattern: build, post, get 12 likes from friends, a bit of organic traction, then nothing. Back to coding a new thing. I know I need marketing help but giving equity to someone I met online feels like a huge risk. At the same time hiring a paid marketer when you have zero revenue feels just as scary. And I'm not dancing on TikTok, that's for sure. Have any of you actually taken on a marketing co-founder? What made you say yes to that person specifically? Was it their track record, the way they pitched, a trial period first?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 65,
+        "maxScore": 95
+      },
+      "note": "Marketing as a solo technical founder - the exact ICP and the exact pain."
+    },
+    {
+      "id": "47309684",
+      "url": "https://news.ycombinator.com/item?id=47309684",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "How do you balance building vs. marketing as a solo founder?",
+      "body": "I'm curious how other technical founders handle this. I can code for 12 hours straight, but 30 minutes of writing social media posts feels like torture. Yet every successful founder says marketing is essential from day one. I've been building an AI tool to automate marketing across developer communities (Reddit, HN, Twitter, etc.) because I got tired of choosing between shipping features and getting users. But I'm wondering — is this avoidance healthy, or should I just force myself to get better at marketing? How do you split your time, and what marketing activities actually moved the needle for you?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 60,
+        "maxScore": 95
+      },
+      "note": "Building vs marketing as a solo founder. Bullseye ICP."
+    },
+    {
+      "id": "28055444",
+      "url": "https://news.ycombinator.com/item?id=28055444",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Solo-founder question regarding marketing",
+      "body": "Super early stage start up focusing on blockchain tech and being a solo founder, there are so many things to focus on: tech, talking to potential users, posting to build following, etc. My challenge/question is regarding consistent posting and building the tribe… being a solo-founder (not married to it but here we are) is paying for assistance in building the brand and talking about the product a good idea or stay away from it? What methods have you used to create awareness about your solution while also focusing on many other aspects of the development?",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 50,
+        "maxScore": 85
+      },
+      "note": "Solo founder asking how to approach marketing."
+    },
+    {
+      "id": "36040006",
+      "url": "https://news.ycombinator.com/item?id=36040006",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Technical Solo Founder Seeking Sales/Marketing Co-Founder",
+      "body": "Hi y'all, I'm a technical Founder building https://singlebase.cloud . It's an alternative to Firebase and Supabase. I'm seeking a Sales/Marketing/Product Co-Founder. About the product: It's Backend as a service, similar to Firebase and Supabase. The core products (Datastore, Auth, Storage, Images, Search) are completed including the console/admin panel. The documentation site ( https://docs.singlebasecloud.com ) is in progress, along with the homepage. Here's a video demo of the console/admin: https://www.youtube.com/watch?v=H0X-Yw7N2t4 Please message me -> [ mardix at singlebasecloud.com ] if you are interested or want to know more. Thanks",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Seeking a co-founder - recruitment."
+    },
+    {
+      "id": "44673286",
+      "url": "https://news.ycombinator.com/item?id=44673286",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Built a new aggregated search engine for shopping",
+      "body": "I'll give you the main details. Personally, I don't like unnecessary distributedness. With shopping, that exists - cos every day there is a great new shopping app coming out for different things. They all have wishlists, a cart, order lists. For me, this was not good. For brands I realised, it's even worse. They keep spending on this marketing and that marketing, including but not limited to hiring, SEO, ads, influencers, cashbacks etc.The shopping space was crowded. Crowded is not convenient. In my mind, it felt like there was space in the domain - to unify it all. For simplicity, which I am a big fan of. I had read a bunch of startup books by then, so I knew I had to validate this. Released a google form, got 250 responses, turns out people mostly shop from the big big platforms (small brand issue kinda validated), and other people did have some issues with distributedness (not a major",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Promoting their own shopping search engine."
+    },
+    {
+      "id": "21117408",
+      "url": "https://news.ycombinator.com/item?id=21117408",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Marketing graphic design templates or apps for solo founder?",
+      "body": "I'm pretty hopeless at graphic design, but I can manipulate stuff OK in photoshop or sketch. I want to create basic cover photos, heros, etc for use in Twitter, blog posts, Intercom announcements, landing pages, and the like. Not reinventing the wheel, SaaS companies do this all time and usually include a title, half sentence, screenshot/image, and background gradient/color. Any suggestions? I've tried Envato, but there's a lot of crap to sift through, and the templates are usually too busy.",
+      "expect": {
+        "relevant": false,
+        "intent": "buying_intent",
+        "minScore": 15,
+        "maxScore": 40
+      },
+      "note": "Shopping for graphic design tools. Wrong category."
+    },
+    {
+      "id": "39816766",
+      "url": "https://news.ycombinator.com/item?id=39816766",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "I parsed 968 launches from /r/SideProject and analyzed them with Claude 3 Opus",
+      "body": "The data: I searched for all posts from /r/SideProjects that contained these strings: \"I built\", \"I made an alternative to\", \"I created a clone of\". Most posts are <=1 year old. Reddit API does not allow parsing older posts hence the amount \"968\" I wish I could parse more. The list of clones of popular apps: Loom (screen recording app) (6‼) Typeform (form builders) (7‼) Resume/CV apps (3) Pastebin (5) Habit trackers (12‼) Link in bio (5) Screenshot making tools (3) Todo lists (3) Bookmarking tools (8) Website builders 29 (‼‼) Notes taking tools (10‼ classic ) Health, fitness, and wellness apps (19‼) Feedback gathering tools (10‼) Time tracking and invoicing tools (4) Patreon alternatives (2) Bookmarking tools (8) Twitter (16‼‼‼ wtf?) Product Hunt (6‼) Pomodoro timers: (1) Categories: Language learning (4) Directory/list (7) Chrome extension (21) Crypto or decentralized (5) Finance (15) D",
+      "expect": {
+        "relevant": true,
+        "intent": "question",
+        "minScore": 35,
+        "maxScore": 70
+      },
+      "note": "Analysed r/SideProject launches - interested in exactly this data. Ambiguous: user or competitor."
+    },
+    {
+      "id": "44575733",
+      "url": "https://news.ycombinator.com/item?id=44575733",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Why Marketing Software Hasn't Had Its 'Cursor Moment' Yet",
+      "body": "After building AI marketing tools for 2 years, I've become convinced most AI applications are, in the words of Pete Koomen, \"horseless carriages\" - they bolt AI onto existing interfaces instead of building AI-native experiences. The marketing problem: Marketers context-switch between 5-8 tools for a single campaign. Hootsuite for scheduling, Canva for design, ChatGPT for copy, Analytics for insights. The cognitive overhead of switching kills productivity and creative flow. Traditional marketing software forces you to learn multiple interfaces. We're experimenting with a different approach: conversation that dynamically generates interfaces. Instead of navigating to the \"social media scheduler,\" you say \"build me a X thread on the latest AI trends\" and the appropriate UI appears displaying a preview of the post and publishing capabilities. Similar idea across other marketing use cases. Te",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 5,
+        "maxScore": 30
+      },
+      "note": "Building AI marketing tools - a vendor, not a buyer."
+    },
+    {
+      "id": "41611934",
+      "url": "https://news.ycombinator.com/item?id=41611934",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: 1000+ visitors but 1 customer, how to get more conversions on your SaaS?",
+      "body": "I have a saas, and I seem to gotten the hang of getting traffic to my site. However, the conversions remain low. Over 1000 people have viewed the website, ~400 users, 1 paying customer. How do I make this rate better? Any generalized tip that could apply here? For reference, my saas is a AI tool that assists in video production. I have been not paying for marketing yet. I wanted to exhaust my options with free marketing on reddit, directories, etc., and optimize the conversion rate before I shell out money. Thank you in advance!",
+      "expect": {
+        "relevant": true,
+        "intent": "pain_point",
+        "minScore": 55,
+        "maxScore": 90
+      },
+      "note": "Traffic but no conversions - SaaS founder with a marketing problem."
+    },
+    {
+      "id": "43174100",
+      "url": "https://news.ycombinator.com/item?id=43174100",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "My app makes me $2,700/month after 6 months",
+      "body": "So developing the basic version of this app took about 30 days. I did it together with my brother and we also did marketing for it together. We constantly work to improve it and the growth has been crazy for us the last few months. The idea started as just giving AI memory to make it easier for ourselves to build our products (didn't exist in LLMs when we started). Then we continued to improve upon it and add new features like searching through Reddit discussions to validate ideas, following specific phases from ideation to building and marketing, and adding tools to make the whole process more actionable. All we did to market it was talk about our journey building the app on X in the Build in Public community (great way to get attention early on btw). We also launched on Product Hunt which got us our first paying customers. 54 days after launch we hit $1,000 MRR 98 days after we hit $2,",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Revenue success story, promotional."
+    },
+    {
+      "id": "44171881",
+      "url": "https://news.ycombinator.com/item?id=44171881",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "I couldn't find a co-founder, so I built one",
+      "body": "I’m a solo founder who couldn’t land someone to share both coding and strategy, so I built AI Co-Founder (https://aicofounder.dev). It can: Write code, and push commits to GitHub Handle marketing: draft emails, post on X/Reddit/LinkedIn, make marketing content like posters (OpenAI Image gen api) Look for investors and automate outreach Send daily summaries and dashboard reports …and much more to be a true partner It’s not an assistant or an automation tool, it’s a true partner with its own email account and phone line. You can text it, call it, and it builds a real founder-level relationship with you. Core features are ~50% done. Plan: finish MVP by June, onboard early users in July, go production-ready in August, then apply to YC Fall 2025. If you’ve ever struggled to find a co-founder, join the waitlist.",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Promoting their AI Co-Founder product."
+    },
+    {
+      "id": "37777816",
+      "url": "https://news.ycombinator.com/item?id=37777816",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "SaaS Products Can Benefit from Reputation Management Platforms",
+      "body": "How SaaS Products Can Achieve Brand Credibility and User Loyalty with Reputation Management Platforms. In today's hyper-connected world, where a vast majority of businesses operate online, it has become increasingly challenging to manage their reputation effectively. One bad review or negative remark can severely damage the reputation of a business, which can result in the loss of potential customers and revenue. This is where reputation management platforms come in. They can help businesses maintain a positive reputation, especially in the case of SaaS products. SaaS or Software as a Service is a popular business model that involves delivering software applications over the internet. The benefits of SaaS products include affordability, scalability, and accessibility. However, the success of a SaaS product depends heavily on the reputation of the business. Reputation management platforms",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "SEO content about reputation management."
+    },
+    {
+      "id": "19024784",
+      "url": "https://news.ycombinator.com/item?id=19024784",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "LOOQME",
+      "body": "LOOQME is a service for PR managers which helps to monitor all brand mentions in media and get full PR campaign analytics. Using our service PR managers can design, optimize and control the goals of their communication strategies in a few clicks, measure campaigns efficiency, and get useful insights. LOOQME system gathers needed data from media and codes it. Based on this it creates full analytics about the impact of every mention, competitor’s activity and market situation in real time. LOOQME service provides media monitoring, alerts, analytics. LOOQME helps PR professionals to save time and resources, improve KPIs, always stay informed and maintain a good reputation in media.",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "LOOQME is a competing brand-monitoring product. Seller, not buyer."
+    },
+    {
+      "id": "444877",
+      "url": "https://news.ycombinator.com/item?id=444877",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Review our startup - MightyBrand.com",
+      "body": "After months of hard work and wistfully watching many other HN members debut their startups to this community, I'm proud to announce that MightyBrand.com is up and live. Please take a look and let us know how you like the idea, and more importantly, how you like the execution. Elevator pitch: MightyBrand monitors social channels for mentions of your brand, analyzes those conversations, and gives you tools to easily engage in those conversations. http://mightybrand.com If needed, my contact info is in my HN profile...I'd love to hear from you! Edit: for those of you who are wondering, MightyBrand is a rebranded and much-improved relaunch of BlueSwarm.com, which we applied to YC with for the last round.",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Review-our-startup promotion."
+    },
+    {
+      "id": "557121",
+      "url": "https://news.ycombinator.com/item?id=557121",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Review new MightyBrand project, micro-monitoring your brand via Twitter",
+      "body": "MightyTweets is a new side project we're experimenting with at MightyBrand. We're collecting all this data and we're looking for useful things we can do with it, so now you can use Twitter to monitor blogs, Twitter, Digg, news, etc. You don't have to sign up for anything, just follow these instructions: 1. Follow @mightytweets on Twitter. 2. Wait for your welcome message from us (usually delivered in a couple of minutes) 3. Send us a direct message with the brand you want to track. (example: D mightytweets track yourbrand) We'll send you a DM every time someone mentions your brand, or once per hour if you get a lot of mentions. We'd love to know what HN thinks. Is this useful?",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "MightyBrand brand monitoring - a direct competitor promoting itself."
+    },
+    {
+      "id": "43933727",
+      "url": "https://news.ycombinator.com/item?id=43933727",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "We Built Mentionedby.ai to Track How AI Models Answer Questions",
+      "body": "Hey HN, I'm Nikin, one of the creators of MentionedBy.ai — a platform we built to track how your brand is being mentioned inside AI-generated answers across ChatGPT, Claude, Perplexity, Gemini, and other LLMs. We didn’t start this as a marketing tool. It began as a frustration. We noticed our startup wasn’t showing up in ChatGPT responses, even for queries where we clearly should have. Meanwhile, bigger or SEO-heavy brands were dominating AI answers — regardless of actual relevance. It wasn’t Google rankings anymore. It was model completions. That sparked the question: how do you monitor and optimize your brand's visibility across these black-box models? What It Does: Scrapes and audits responses from multiple LLMs using structured prompts. Benchmarks your brand against competitors on frequency, sentiment, answer placement, and hallucination risk. Tracks changes over time — e.g., if Clau",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Mentionedby.ai - a competing monitoring product."
+    },
+    {
+      "id": "16261136",
+      "url": "https://news.ycombinator.com/item?id=16261136",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: 5 months and counting waiting for Coinbase customer support. Advice?",
+      "body": "So Coinbase's disastrous customer service has come up on HN before [1]. But my issue is rather more extreme than a wire transfer that takes a few weeks to go through - I've been waiting for over five months for Coinbase to unlock my account and allow me to access my funds. Since August 20 of 2017 to be exact. I've never experienced or even heard of such a long wait time for action to be taken on an open customer support ticket and I honestly have no idea how to proceed. Should I start contacting the CFPB or BBB, writing registered letters, etc? To be clear, I have had contact with various Coinbase customer service reps since August. I also have tried emailing and tweeting at the CEO and Coinbase executives. The refrain is always the same: \"We're expanding fast and adding to our customer service team. Your case has been escalated for further review. Please bear with us.\" I've been patient",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Coinbase customer support complaint. Support is not acquisition."
+    },
+    {
+      "id": "10644539",
+      "url": "https://news.ycombinator.com/item?id=10644539",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How do you handle customer support on your site?",
+      "body": "Hi, Customer support can make or break a site but for those with small businesses, handling customer support can be a real nightmare (esp. technical and billing questions). You can of course hire full time employee(s) but that is not an option until your site is making a sizable income, or you are funded. So for the rest of us: - what are the ways to handle customer support? - Do you do it yourself, outsource it to some other site / person, or have hired person(s) do it? - What is the average time it takes you to resolve customer queries? - How much budget do you allocate for handling customer support?",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 25
+      },
+      "note": "How to handle customer support. Different problem entirely."
+    },
+    {
+      "id": "38073881",
+      "url": "https://news.ycombinator.com/item?id=38073881",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: What companies have blown you away with their customer support?",
+      "body": "I'm curious about stories of excellent customer support because it seems so rare these days, especially with corporates.",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Customer support anecdotes."
+    },
+    {
+      "id": "32317230",
+      "url": "https://news.ycombinator.com/item?id=32317230",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How do you deal with the emotions of customer support?",
+      "body": "I’m a sole developer building software integrations, and automations. I find customer support very difficult: everything feels like a personal attack, and I can’t help but get defensive. How do you, or your team, deal with the emotions of customer support?",
+      "expect": {
+        "relevant": false,
+        "intent": "pain_point",
+        "minScore": 5,
+        "maxScore": 25
+      },
+      "note": "Emotional toll of customer support. Real pain, wrong pain."
+    },
+    {
+      "id": "36010270",
+      "url": "https://news.ycombinator.com/item?id=36010270",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Tell HN: OpenAI's billing features and customer support are barely functional",
+      "body": "Thought I'd give a small warning to people thinking of paying for ChatGPT Plus. You're forced to use an intercom chat widget to open up customer support tickets, but the response times are abysmal. Currently I have this[1] issue, where an account doesn't get upgraded after going through the payment flow. It's been over a week with no reply. I paid money for a service that I'm not receiving. When/if they do respond, I have no idea if they'll reimburse the days I paid for nothing, who knows, there's no comms about it on their page. Note that it's a known problem, given they have a dedicated page for it on their help docs, and there's a massive thread[2] about it on their forums. Their refund policy[3] goes through the same chat flow, so one could end up paying for two months before they're finally issued a refund. I know they're scaling up, but I'm shocked at how bad this is, especially gi",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "OpenAI billing complaint."
+    },
+    {
+      "id": "48087925",
+      "url": "https://news.ycombinator.com/item?id=48087925",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Will low quality AI customer support be the new normal?",
+      "body": "Now whenever I reach for customer's support chat or phone I get an AI agent replying to me and I get into a useless loop for a couple of minutes before I start begging it to link me to a real person. Will companies start losing customers because of that or people will eventually get used to this?",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 0,
+        "maxScore": 20
+      },
+      "note": "Speculation about AI customer support."
+    },
+    {
+      "id": "8582470",
+      "url": "https://news.ycombinator.com/item?id=8582470",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Browserstack hack",
+      "body": "https://twitter.com/browserstack Dear BrowserStack User, We are unfortunately displeased to announce that BrowserStack will be shutting down. After much consideration on our part, we have realized we were negligent in the services we claimed to offer. In our terms of service, we state the following: [...] after the restoration process is complete, the virtual machines are guaranteed to be tamper-proof. [...] The machines themselves are in a secure network, and behind strong firewalls to present the safest environment possible. [...] At any given time, you have sole access to a virtual machine. Your testing session cannot be seen or accessed by other users, including BrowserStack administrators. Once you release a virtual machine, it is taken off the grid, and restored to its initial settings. All your data is destroyed in this process. Unfortunately, we have blatantly lied. Not only do a",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "BrowserStack incident notice."
+    },
+    {
+      "id": "15862494",
+      "url": "https://news.ycombinator.com/item?id=15862494",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Huge enterprise customer wants to see our source code",
+      "body": "We are a small 5-person enterprise software startup, operating in the data analytics/ML space. We are working on starting a proof-of-concept with a huge potential customer ($50+bn in revenue). We recently identified our first use case, and are ready to get into contract negotiations. But then they got back to us with an odd request: they want to see our source code (likely upon completion of the PoC). Given that our core IP is our models and algorithms, we are reluctant to agree. Their justification is: \"we want to see how your algorithms made their decisions.\" We know that they have lots of resources and are building up internal data science team. And yet it was pointed out to me that their goal might not necessarily be to outright steal our IP, but rather to cover their bases. But we are still worried they might be \"inspired\" by the parts they see and get their internal teams to replic",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 25
+      },
+      "note": "Enterprise source-code escrow question."
+    },
+    {
+      "id": "9075768",
+      "url": "https://news.ycombinator.com/item?id=9075768",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How do your enterprise customers pay you?",
+      "body": "If you are a SaaS company, how do your customers pay you? Credit, ACH, etc, monthly vs. annual contract. Any good resources on the subject?",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 25
+      },
+      "note": "How enterprise customers pay. Billing, not acquisition."
+    },
+    {
+      "id": "36736795",
+      "url": "https://news.ycombinator.com/item?id=36736795",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How to price your first enterprise customer?",
+      "body": "We are a small SaaS company with a recently launched product. Currently we have mostly smaller customers (50+ users is \"large\" for us at the moment). We now have, somewhat unexpectedly this early, the interest of a large enterprise that wants a deal to onboard 5000+ users. The problem is that we have no idea how to price this, as we have not yet had time to scale up our pricing enough to gain the necessary experience. Our current pricing model, for smaller customers, is a simple, linear $49 per-seat plan. - How do pricing for enterprise SaaS usually work? - What kind of volume discounts are they expecting? - Should we offer a \"flat\" price for 1-3 year contract, or per-seat model? - How did you handle your first large-scale customers? We honestly feel a bit thrown into the deep end here, and we don't want to miss this opportunity just because we are inexperienced.",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 30
+      },
+      "note": "Enterprise pricing question."
+    },
+    {
+      "id": "9071583",
+      "url": "https://news.ycombinator.com/item?id=9071583",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: How do your enterprise customers pay you?",
+      "body": "If you are a SaaS company, how do your customers pay you? Credit, ACH, etc, monthly vs. annual contract. Any good resources on the subject?",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 5,
+        "maxScore": 25
+      },
+      "note": "Duplicate of the enterprise payment question."
+    },
+    {
+      "id": "8304382",
+      "url": "https://news.ycombinator.com/item?id=8304382",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "ActionIQ is hiring its first engineers – come build the next Salesforce in NYC",
+      "body": "ActionIQ was recently started in NYC by Tasso Argyros, the founder of Aster Data (one of the very first software MPP databases out of Stanford and a $300M exit) and Nitay Joffe, a key open source Big Data developer at Facebook & Powerset (and committer at Apache HBase & Apache Giraph). Our vision is to marry powerful distributed systems technology with beautiful web-based interfaces and change the way enterprises user their data to win in the marketplace. We were recently funded by Sequoia Capital and some of the best NYC VCs. We are working on a very tall stack: we think about web-based responsive UX the one minute and minimize CPU cache misses via bytecode generation the other. We do everything in-memory. We are using a number of languages, including Scala. We love hard systems/performance & algorithmic problems. It used to be that great engineers didn’t care about marketing, and marke",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Hiring post."
+    },
+    {
+      "id": "8938727",
+      "url": "https://news.ycombinator.com/item?id=8938727",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Why is getting more than 1% equity rare, even for the first employee?",
+      "body": "It seems odd that I hear people talking about getting 0.5% equity joining as the first engineer of a startup. Chances are you are getting paid at least 25% less than you could elsewhere, and let's assume you're making $100k/y. Trading $25,000 of salary for 0.5% suggests the company is worth $5 million. That seems incredibly unlikely for startups hiring their first engineer, and also doesn't account for the tremendous increase of working hours and the greatly diminished job security. This is never a deal I would take, even as a junior developer not making six figures.",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Equity for a first employee."
+    },
+    {
+      "id": "11291223",
+      "url": "https://news.ycombinator.com/item?id=11291223",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Best/worst way to onboard new employees?",
+      "body": "We’re hiring our first engineering employee and wondering if anyone has any advice on how best to onboard them? Any great tips? Anything to not do? What’s the best first week experience you’ve had?",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Employee onboarding."
+    },
+    {
+      "id": "39830777",
+      "url": "https://news.ycombinator.com/item?id=39830777",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Aks HN: How do you excel in ambiguous environments?",
+      "body": "The higher the pay, the more it is required from the engineer to \"just figure out problems and their solutions\". For example: A StartUp is hiring the first 5 engineers. Some of the first ones come in, and see: \"Oh, the structure of the code is not quite as good\" or \"we should really implement x instead of y here for these reasons.\" What if you struggle in these environments and want to learn how to excel there? Is it just applying past experiences to a new situation, or can you learn to look for solutions? TL;DR: How to find problems and solutions to them in the codebase (and product) without a vast prior experience in that specific environment or industry.",
+      "expect": {
+        "relevant": false,
+        "intent": "question",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Career advice."
+    },
+    {
+      "id": "29012230",
+      "url": "https://news.ycombinator.com/item?id=29012230",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Are you thinking what I am thinking?",
+      "body": "Today(27th Oct 2021), on HN front page there is a job post from one of the YC companies. The title of the post is: \"GiveCampus (YC S15) Is Hiring Our First Senior QA Engineer\" Hmmm...after reading that title, are you thinking what I am thinking?",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Meta commentary about job posts."
+    },
+    {
+      "id": "12250926",
+      "url": "https://news.ycombinator.com/item?id=12250926",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Show HN: Feedback that anyone can launch gather, share, and use",
+      "body": null,
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Show HN launch - the author is selling."
+    },
+    {
+      "id": "7833427",
+      "url": "https://news.ycombinator.com/item?id=7833427",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Show HN: Feedback on our new multiplayer game API?",
+      "body": "This is a two man team and we're in full-on development of a new platform to assist in multiplayer games. We're looking to launch in about a month or two with an OpenID server accessible to customers (or they can use provider like Facebook/Twitter) and a couple cool multiplayer features. After we launch development will continue until we have a well-rounded API.<p>We're primarily targeting HTML5+JS developers but the system will work with any language that can make RESTful API calls. We know there's some stiff competition out there but we're looking for feedback and what features may make you swing towards our pay-for model?",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Show HN multiplayer game API - selling."
+    },
+    {
+      "id": "3013144",
+      "url": "https://news.ycombinator.com/item?id=3013144",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Show HN: Feedback on our app to help Freelancers manage project/client leads?",
+      "body": "http://www.jobbrew.com Would love some feedback on the idea, landing page for an app we hope to launch early next month. \" Jobbrew is an app that makes lead management for freelancers as easy as bookmarking on delicious. Most freelancers scour the web for new clients, they respond to some, bookmark others. Quite often converting a lead to a client takes multiple rounds of discussion or a timely reminder. Still even for the most careful of people, it's easy for some of them to slip through the cracks. Once you `bookmark` or add a lead on Jobbrew, we'll send you an email(on your chosen date), reminding you to follow up. It also gives you a historical record of all client leads you've collected so far, giving you a vast reserve of people to reach out to during the 'great depression'. We'll also send personalized list of new leads straight to your inbox(or your feed reader), along with you w",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Show HN freelancer lead tool - selling, and an adjacent competitor."
+    },
+    {
+      "id": "35265810",
+      "url": "https://news.ycombinator.com/item?id=35265810",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Show HN: Analyze Feedback with AI – Essense.io",
+      "body": "Hey everyone! Excited to show off something i've been working on recently. Essense.io Short pitch: Analyze user feedback with AI to generate actionable insights. Longer Pitch: Have you ever wanted to analyze your own product or that of a competitors' to figure out what the product is doing right? (and more importantly, what it's doing wrong?). With a few clicks you can figure out what users love and hate most about a product based on reviews posted to the Appstore, Playstore, Trustpilot, and more! You can also import your tickets from HubSpot or custom client transcripts to run the analysis against it. Notes: - Some folks may feel uncomfortable sharing private data (HubSpot tickets, Transcripts, etc...) with Open AI, totally get it. I'm working on fine tuning a llama model to extract insights so i don't have to send anything over but for an initial launch it seems to work well. For exist",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Show HN feedback analysis - selling."
+    },
+    {
+      "id": "33273651",
+      "url": "https://news.ycombinator.com/item?id=33273651",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Show HN: FeedbackForms.io – Convert Positive Experiences to Public Reviews",
+      "body": "I built FeedbackForms.io because I wanted a way to filter customers who had a positive experience before asking them for a public review -- and I wanted negative feedback to go directly to me. The concept is simple: find out in as few questions as possible if the customer had a positive experience, then give them a branched exit: positive outcomes are asked for a public review. Negative outcomes get a text form asking what they didn't like, along with the options to leave an email or phone. There's tons of free and paid survey platforms out there... here's why I didn't want to use them. Paid: 1. Too Expensive: without naming names, I didn't want to \"monkey\" around (lol) with something for $40 / Month. For reference, this is more than most no-code website builders. 2. Clunky Features and annoying upsell limitations/solicitations: Features are typically revealed after you can't use them --",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Show HN review collection - selling."
+    },
+    {
+      "id": "43075395",
+      "url": "https://news.ycombinator.com/item?id=43075395",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Show HN: Feedback to Me, 360° feedback powered by AI",
+      "body": "Hey HN, Feedback to Me is a personal project I've been working on for the last few weeks which I've started to \"soft launch\" with a few people. A few years back, my employer paid for all middle-management to get a full \"360 feedback\" process done - an external consultancy came in with a bespoke platform to let us send feedback questionnaires to lots of people we worked with, and after they'd made sure nothing identifiable was in there, they created a report on strengths/weaknesses... in the end, it was useful, but also time-consuming and expensive, so we never did it again. Feedback to Me is my attempt to automate much of that process using LLMs (in this case, Gemini): they extract themes from your feedback, ensure it's all anonymous, and then use a big reasoning model to bring it all together into feedback you can hopefully use. The code base is open-source (< https://github.com/Andreas",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 15
+      },
+      "note": "Show HN 360 feedback - selling."
+    },
+    {
+      "id": "14514591",
+      "url": "https://news.ycombinator.com/item?id=14514591",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Rust Performance Pitfalls",
+      "body": null,
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Rust performance article."
+    },
+    {
+      "id": "44234080",
+      "url": "https://news.ycombinator.com/item?id=44234080",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Rust compiler performance",
+      "body": null,
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Rust compiler performance."
+    },
+    {
+      "id": "45977386",
+      "url": "https://news.ycombinator.com/item?id=45977386",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "The Rust Performance Book (2020)",
+      "body": null,
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Rust performance book."
+    },
+    {
+      "id": "18115359",
+      "url": "https://news.ycombinator.com/item?id=18115359",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Lolbench: automagically and empirically discovering Rust performance regressions",
+      "body": null,
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Rust benchmarking tool."
+    },
+    {
+      "id": "31580763",
+      "url": "https://news.ycombinator.com/item?id=31580763",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: If Kubernetes is the solution, why are there so many DevOps jobs?",
+      "body": "Arguable the goals of DevOps align partly with the goals of system administrators in former days: Provide reliable compute infrastructure for 1) internal users: mainly developers by providing CI/CD 2) external users: end users Nowadays we call people that do 1) DevOps and people that do 2) SREs (so one could argue that the role of sys admins just got more specialized). The platform of choice is mostly Kubernetes these days, which promises among other things stuff like - load balancing - self-healing - rollbacks/rollouts - config management Before the cloud days, this stuff has been implemented using a conglomerate of different software and shell scripts, issued at dedicated \"pet\" servers. In particular, a main critic is \"state\" and the possibility to change that state by e.g. messing with config files via SSH, which makes running and maintaining these servers more error-prone. However, m",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Kubernetes and the DevOps job market."
+    },
+    {
+      "id": "32304834",
+      "url": "https://news.ycombinator.com/item?id=32304834",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: Have You Left Kubernetes?",
+      "body": "If so, what did you replace it with?",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Leaving Kubernetes."
+    },
+    {
+      "id": "31892384",
+      "url": "https://news.ycombinator.com/item?id=31892384",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: What is your Kubernetes nightmare?",
+      "body": "Everything self-hosted has its maintenance tax but why Kubernetes (especially self hosted) is so hard? What aspect is that makes Kubernetes operationally so hard? - Is it the networking model that is simple from the consumption standpoint but has too many moving parts for it to be implemented? - Is it the storage model, CSI and friends? - Is it the bunch of controller loops doing their own things with nothing that gives a \"wholesome\" picture to identify the root cause? For me personally, first and foremost thing on my mind is the networking details. They are \"automatically generated\" by each CNI solution in slightly different ways and constructs (iptables, virtual bridges, routing daemons, eBPF etc etc) and because they are generated, it is not uncommon to find hundreds of iptable rules and chains on a single node and/or similar configuration. Being automated, these solutions generate to",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Kubernetes operational pain. Wrong domain."
+    },
+    {
+      "id": "27155526",
+      "url": "https://news.ycombinator.com/item?id=27155526",
+      "source": "hn",
+      "venue": "news.ycombinator.com",
+      "title": "Ask HN: What do you think will come after Kubernetes?",
+      "body": "I mean, Kubernetes became a thing after Docker became a thing before(and so on, all the way down to VMs), so it's reasonable to assume that something new will eventually emerge and become the industry-standard.",
+      "expect": {
+        "relevant": false,
+        "intent": "none",
+        "minScore": 0,
+        "maxScore": 10
+      },
+      "note": "Speculation about what follows Kubernetes."
+    }
+  ]
+}

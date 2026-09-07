@@ -14,7 +14,8 @@
     "db:migrate": "pnpm --filter @intentowl/db db:migrate",
     "db:studio": "pnpm --filter @intentowl/db db:studio",
     "cli": "pnpm --filter @intentowl/worker cli",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "eval": "pnpm --filter @intentowl/core eval"
   },
   "devDependencies": {
     "turbo": "2.10.12",

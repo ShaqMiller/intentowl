@@ -2,6 +2,7 @@ import type { PgBoss } from "pg-boss";
 
 import type { Db } from "@intentowl/db";
 
+import { registerClassify, createWorkerClassifier } from "./classify.ts";
 import { registerHeartbeat } from "./heartbeat.ts";
 import { registerPoll, type AdapterRegistry } from "./poll.ts";
 
@@ -12,8 +13,8 @@ import { registerPoll, type AdapterRegistry } from "./poll.ts";
  * all upserts — because the worker re-registers on every boot and Railway
  * restarts it freely.
  *
- * M2 adds classify, M3 digest, M4 the per-watch poll crons and per-customer
- * digest crons, M6 engagement-refresh and ops-daily (ARCHITECTURE.md § 7).
+ * M3 adds digest, M4 the per-watch poll crons and per-customer digest crons,
+ * M6 engagement-refresh and ops-daily (ARCHITECTURE.md § 7).
  */
 export async function registerJobs(
   boss: PgBoss,
@@ -22,9 +23,16 @@ export async function registerJobs(
 ): Promise<void> {
   await registerHeartbeat(boss, db);
   await registerPoll(boss, db, adapters);
+  await registerClassify(boss, db, createWorkerClassifier());
 }
 
 export { HEARTBEAT_QUEUE } from "./heartbeat.ts";
+export {
+  CLASSIFY_QUEUE,
+  createWorkerClassifier,
+  runClassify,
+  type ClassifyOutcome,
+} from "./classify.ts";
 export {
   POLL_QUEUE,
   pollSingletonKey,

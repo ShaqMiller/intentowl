@@ -6,19 +6,25 @@
   "exports": {
     ".": "./index.ts",
     "./env": "./env.ts",
-    "./adapters": "./adapters/index.ts"
+    "./adapters": "./adapters/index.ts",
+    "./filter": "./filter/rules.ts",
+    "./classify": "./classify/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "harvest": "tsx classify/evals/harvest.ts",
+    "eval": "tsx classify/evals/run.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.124.0",
     "zod": "4.5.4"
   },
   "devDependencies": {
     "typescript": "5.9.3",
     "vitest": "5.0.0",
     "msw": "2.15.0",
-    "@types/node": "22.20.1"
+    "@types/node": "22.20.1",
+    "tsx": "4.23.13"
   }
 }

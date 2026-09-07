@@ -25,6 +25,8 @@ const schema = z.object({
   REDDIT_USER_AGENT: z.string().optional(),
   // M2
   ANTHROPIC_API_KEY: z.string().optional(),
+  /** Only needed when the API key is org-scoped rather than workspace-scoped. */
+  ANTHROPIC_WORKSPACE_ID: z.string().optional(),
   // M3
   RESEND_API_KEY: z.string().optional(),
   APP_URL: z.url().default("http://localhost:3000"),
