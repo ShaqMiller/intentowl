@@ -78,6 +78,7 @@ with it, flag the conflict instead of silently diverging.
 - `pnpm db:generate` / `pnpm db:migrate` — Drizzle migrations
 - `pnpm eval` — classifier golden-set evals
 - `pnpm cli run-poll --watch=<id>` / `pnpm cli send-digest --customer=<id> [--dry-run]`
+- `pnpm cli classify-batch` — drain the backlog through the Batch API at 50% off
 - `pnpm cli seed --file=<customer.json>` — onboard a customer
 
 (Wire these scripts up in M0/M1 if missing.)

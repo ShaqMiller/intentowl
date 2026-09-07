@@ -14,6 +14,8 @@ import { createDb, schema } from "@intentowl/db";
 import { eq, sql } from "drizzle-orm";
 
 import { createAdapters } from "./adapters.ts";
+import { createBoss } from "./boss.ts";
+import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
 import { runPoll } from "./jobs/poll.ts";
 import { logger } from "./logger.ts";
@@ -26,6 +28,10 @@ const USAGE = `intentowl cli
   run-poll --watch=<id> [--source=<name>] [--dry-run]
       Fetch new items for one watch. Omit --source to poll every source
       configured on the watch. --dry-run fetches but writes nothing.
+
+  classify-batch
+      Submit the pending backlog through the Batch API at 50% off. Returns
+      immediately; the worker polls and collects. Requires a running worker.
 
   send-digest --customer=<id> [--dry-run]      (M3)
   seed --file=<customer.json>                  (M4)
@@ -41,6 +47,9 @@ async function main(): Promise<number> {
 
     case "run-poll":
       return await runPollCommand(flags);
+
+    case "classify-batch":
+      return await classifyBatchCommand();
 
     case "send-digest":
     case "seed":
@@ -63,6 +72,26 @@ async function ping(): Promise<number> {
     return 0;
   } finally {
     await pool.end();
+  }
+}
+
+async function classifyBatchCommand(): Promise<number> {
+  const boss = createBoss();
+  try {
+    await boss.start();
+    const id = await startBatchRun(boss);
+    if (id === null) {
+      // The queue is stately, so a run already in flight is not an error.
+      process.stdout.write("a batch run is already queued or active\n");
+      return 0;
+    }
+    process.stdout.write(
+      `batch run queued (job ${id}). The worker submits, polls and collects; ` +
+        `watch its logs for "batch collected".\n`,
+    );
+    return 0;
+  } finally {
+    await boss.stop({ graceful: true, close: true, timeout: 10_000 });
   }
 }
 

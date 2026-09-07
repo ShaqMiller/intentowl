@@ -95,6 +95,95 @@ export interface ClassifyRequest {
   fewShots?: readonly FewShot[];
 }
 
+/**
+ * Build the Messages request for one batch of items.
+ *
+ * Shared verbatim by the synchronous path and the Batch API path. If the two
+ * ever built their prompts separately they would drift, and `pnpm eval` — which
+ * runs the synchronous path — would stop measuring what production sends.
+ */
+export function buildRequestParams(
+  model: string,
+  request: ClassifyRequest,
+  disableThinking: boolean,
+): Anthropic.MessageCreateParamsNonStreaming {
+  return {
+    model,
+    // A generous floor, not just a per-item budget. Sizing purely off item
+    // count meant a 3-item escalation got ~1,180 tokens — and since Sonnet 5
+    // runs adaptive thinking by default, it would spend them all thinking and
+    // emit no tool block at all: no verdicts, full bill, one warning line.
+    max_tokens: Math.min(16_000, 2_000 + request.items.length * 400),
+    // Classification is a judgement the rubric already scaffolds, not a
+    // reasoning problem. Thinking here buys little and costs output budget.
+    // Haiku 4.5 has no thinking to disable and rejects `effort`.
+    ...(disableThinking ? { thinking: { type: "disabled" as const } } : {}),
+    system: [
+      {
+        type: "text",
+        text: RUBRIC,
+        // Byte-identical across customers and requests, so it is the one thing
+        // worth caching. Everything volatile follows it.
+        cache_control: { type: "ephemeral" },
+      },
+    ],
+    tools: [
+      {
+        name: CLASSIFY_TOOL_NAME,
+        description:
+          "Record a classification for every item in the batch, in the order given.",
+        input_schema:
+          CLASSIFY_TOOL_SCHEMA as unknown as Anthropic.Tool["input_schema"],
+        // Guarantees arguments validate against the schema before we see them;
+        // Zod is the second line of defence.
+        strict: true,
+      },
+    ],
+    tool_choice: { type: "tool", name: CLASSIFY_TOOL_NAME },
+    messages: [
+      {
+        role: "user",
+        content: renderUserMessage({
+          profile: request.profile,
+          ...(request.fewShots === undefined ? {} : { fewShots: request.fewShots }),
+          items: request.items,
+        }),
+      },
+    ],
+  };
+}
+
+/**
+ * Pull the classification batch out of a Messages response, wherever it came
+ * from — a live call or a Batch API result line.
+ */
+export function extractClassifications(
+  model: string,
+  response: Anthropic.Message,
+): { classifications: Classification[]; warnings: string[] } {
+  const warnings: string[] = [];
+
+  const toolUse = response.content.find(
+    (block): block is Anthropic.ToolUseBlock =>
+      block.type === "tool_use" && block.name === CLASSIFY_TOOL_NAME,
+  );
+
+  if (toolUse === undefined) {
+    warnings.push(
+      `${model} returned no ${CLASSIFY_TOOL_NAME} call (stop_reason=${response.stop_reason})`,
+    );
+    return { classifications: [], warnings };
+  }
+
+  const parsed = parseClassificationBatch(toolUse.input);
+  if (!parsed.ok) {
+    warnings.push(`${model} returned an invalid batch: ${parsed.error}`);
+    return { classifications: [], warnings };
+  }
+
+  return { classifications: parsed.value.classifications, warnings };
+}
+
 export function createClassifier(options: ClassifierOptions = {}) {
   const client =
     options.client ??
@@ -119,51 +208,9 @@ export function createClassifier(options: ClassifierOptions = {}) {
   }> {
     const warnings: string[] = [];
 
-    const response = await client.messages.create({
-      model,
-      // A generous floor, not just a per-item budget. Sizing purely off item
-      // count meant a 3-item escalation got ~1,180 tokens — and since Sonnet 5
-      // runs adaptive thinking by default, it would spend all of them thinking
-      // and emit no tool block at all: no verdicts, full bill, one warning line.
-      max_tokens: Math.min(16_000, 2_000 + request.items.length * 400),
-      // Classification is a judgement call the rubric already scaffolds, not a
-      // reasoning problem. Thinking here buys little and costs the output
-      // budget. Haiku 4.5 has no thinking to disable and rejects `effort`.
-      ...(model === haikuModel
-        ? {}
-        : { thinking: { type: "disabled" as const } }),
-      system: [
-        {
-          type: "text",
-          text: RUBRIC,
-          // The rubric is byte-identical across customers and requests, so it
-          // is the one thing worth caching. Everything volatile follows it.
-          cache_control: { type: "ephemeral" },
-        },
-      ],
-      tools: [
-        {
-          name: CLASSIFY_TOOL_NAME,
-          description:
-            "Record a classification for every item in the batch, in the order given.",
-          input_schema: CLASSIFY_TOOL_SCHEMA as unknown as Anthropic.Tool["input_schema"],
-          // Guarantees the arguments validate against the schema before we
-          // ever see them; Zod below is the second line of defence.
-          strict: true,
-        },
-      ],
-      tool_choice: { type: "tool", name: CLASSIFY_TOOL_NAME },
-      messages: [
-        {
-          role: "user",
-          content: renderUserMessage({
-            profile: request.profile,
-            ...(request.fewShots === undefined ? {} : { fewShots: request.fewShots }),
-            items: request.items,
-          }),
-        },
-      ],
-    });
+    const response = await client.messages.create(
+      buildRequestParams(model, request, model !== haikuModel),
+    );
 
     const usage: ClassifyUsage = {
       model,
@@ -173,27 +220,12 @@ export function createClassifier(options: ClassifierOptions = {}) {
       cacheWriteTokens: response.usage.cache_creation_input_tokens ?? 0,
     };
 
-    const toolUse = response.content.find(
-      (block): block is Anthropic.ToolUseBlock =>
-        block.type === "tool_use" && block.name === CLASSIFY_TOOL_NAME,
-    );
-
-    if (toolUse === undefined) {
-      // Degrade rather than throw: silence is the unacceptable failure mode,
-      // so the caller falls back to a keyword-only, flagged digest.
-      warnings.push(
-        `${model} returned no ${CLASSIFY_TOOL_NAME} call (stop_reason=${response.stop_reason})`,
-      );
-      return { classifications: [], usage, warnings };
-    }
-
-    const parsed = parseClassificationBatch(toolUse.input);
-    if (!parsed.ok) {
-      warnings.push(`${model} returned an invalid batch: ${parsed.error}`);
-      return { classifications: [], usage, warnings };
-    }
-
-    return { classifications: parsed.value.classifications, usage, warnings };
+    // Degrades rather than throws: silence is the unacceptable failure mode,
+    // so a malformed response leaves the caller free to fall back to a
+    // keyword-only, flagged digest.
+    const extracted = extractClassifications(model, response);
+    warnings.push(...extracted.warnings);
+    return { classifications: extracted.classifications, usage, warnings };
   }
 
   return {

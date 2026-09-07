@@ -57,6 +57,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: 0.124.0
+        version: 0.124.0(zod@4.5.4)
       '@hono/node-server':
         specifier: 2.1.1
         version: 2.1.1(hono@4.13.7)

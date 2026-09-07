@@ -2,7 +2,12 @@ import type { PgBoss } from "pg-boss";
 
 import type { Db } from "@intentowl/db";
 
-import { registerClassify, createWorkerClassifier } from "./classify.ts";
+import { registerClassifyBatch } from "./classify-batch.ts";
+import {
+  createAnthropicClient,
+  createWorkerClassifier,
+  registerClassify,
+} from "./classify.ts";
 import { registerHeartbeat } from "./heartbeat.ts";
 import { registerPoll, type AdapterRegistry } from "./poll.ts";
 
@@ -24,11 +29,18 @@ export async function registerJobs(
   await registerHeartbeat(boss, db);
   await registerPoll(boss, db, adapters);
   await registerClassify(boss, db, createWorkerClassifier());
+  await registerClassifyBatch(boss, db, createAnthropicClient());
 }
 
 export { HEARTBEAT_QUEUE } from "./heartbeat.ts";
 export {
+  CLASSIFY_BATCH_QUEUE,
+  startBatchRun,
+  type ClassifyBatchData,
+} from "./classify-batch.ts";
+export {
   CLASSIFY_QUEUE,
+  createAnthropicClient,
   createWorkerClassifier,
   runClassify,
   type ClassifyOutcome,
