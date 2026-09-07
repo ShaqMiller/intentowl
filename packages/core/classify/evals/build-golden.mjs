@@ -5,6 +5,20 @@
  * the code, and they are meant to be argued with: edit golden.json directly,
  * or edit the table here and re-run `node classify/evals/build-golden.mjs`.
  *
+ * STATUS: founder-reviewed 2026-09-07, all 72 cases. Agreement on 71; the one
+ * challenge was #3 (a freelancer asking how to find clients, which the reviewer
+ * initially read as a founder). Re-reading the body settled it — he is
+ * freelancing and comparing it to a corporate job, and "Unicorn Startup" is CV
+ * history, not a company he runs. The label stands.
+ *
+ * The disagreement surfaced a product decision rather than a labelling one:
+ * freelancers and agencies are OUT of the ICP, deliberately. They are easier to
+ * sell to and the market is larger, but serving them means monitoring job
+ * boards rather than problem-space communities — a different product, not a
+ * different segment. The pipeline is multi-tenant, so they can be added later
+ * as their own profile without a rewrite. Recorded here because the rubric's
+ * "match the kind of business" rule now depends on it.
+ *
  * Labelling standard used, applied consistently to all 72:
  *   relevant=true  the author is a founder / solo dev / small product team AND
  *                  describes a customer-acquisition or audience-visibility

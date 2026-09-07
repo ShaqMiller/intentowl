@@ -4,6 +4,7 @@
  *   pnpm eval                  Haiku + Sonnet cascade, as production runs
  *   pnpm eval -- --no-escalate Haiku alone, to see what the cascade buys
  *   pnpm eval -- --verbose     print every disagreement
+ *   pnpm eval -- --few-shots   calibrate from a held-out slice, score the rest
  *
  * M2's exit test is >=80% precision. Precision is the headline because of the
  * asymmetry in the product: a false positive is a bad lead in someone's inbox,
@@ -24,7 +25,7 @@ import {
   estimateCostUsd,
   type ClassifyUsage,
 } from "../classifier.ts";
-import type { CustomerProfile, PromptItem } from "../prompt.ts";
+import type { CustomerProfile, FewShot, PromptItem } from "../prompt.ts";
 import type { Classification, Intent } from "../schema.ts";
 
 interface GoldenCase {
@@ -62,6 +63,51 @@ function argv(flag: string): boolean {
   return process.argv.includes(`--${flag}`);
 }
 
+/**
+ * Deterministic train/test split.
+ *
+ * Only relevant when few-shots are enabled. Putting golden cases into the
+ * prompt and then scoring on those same cases measures memorisation, not
+ * quality — the number goes up and the product does not. Sorted by id and
+ * split by position, so the same cases land in the same slice on every run and
+ * results stay comparable across rubric changes.
+ */
+function splitCases(cases: readonly GoldenCase[]): {
+  train: GoldenCase[];
+  test: GoldenCase[];
+} {
+  const sorted = [...cases].sort((a, b) => a.id.localeCompare(b.id));
+  const train: GoldenCase[] = [];
+  const test: GoldenCase[] = [];
+  sorted.forEach((c, i) => (i % 4 === 0 ? train : test).push(c));
+  return { train, test };
+}
+
+/**
+ * Draw calibration examples from the train slice.
+ *
+ * Deliberately weighted toward the hard cases — a wide expected score band is
+ * this set's marker for "genuinely ambiguous" — and toward negatives, because
+ * the failure that costs trust is a bad lead in the inbox, and the hardest
+ * negatives share almost every word with a real lead.
+ */
+function pickFewShots(train: readonly GoldenCase[]): FewShot[] {
+  const byAmbiguity = (a: GoldenCase, b: GoldenCase) =>
+    b.expect.maxScore - b.expect.minScore - (a.expect.maxScore - a.expect.minScore);
+
+  const positives = train.filter((c) => c.expect.relevant).sort(byAmbiguity).slice(0, 2);
+  const negatives = train.filter((c) => !c.expect.relevant).sort(byAmbiguity).slice(0, 3);
+
+  return [...positives, ...negatives].map((c) => ({
+    title: c.title,
+    body: c.body,
+    relevant: c.expect.relevant,
+    intent: c.expect.intent,
+    score: Math.round((c.expect.minScore + c.expect.maxScore) / 2),
+    reason: c.note,
+  }));
+}
+
 async function main(): Promise<number> {
   loadRootEnv();
   if (process.env.ANTHROPIC_API_KEY === undefined) {
@@ -74,12 +120,22 @@ async function main(): Promise<number> {
 
   const escalate = !argv("no-escalate");
   const verbose = argv("verbose");
+  const useFewShots = argv("few-shots");
+
+  // Without few-shots there is nothing to contaminate, so score everything.
+  const { train, test } = splitCases(golden.cases);
+  const scored = useFewShots ? test : golden.cases;
+  const fewShots = useFewShots ? pickFewShots(train) : [];
 
   console.log(
-    `\ngolden set: ${golden.cases.length} cases ` +
-      `(${golden.cases.filter((c) => c.expect.relevant).length} relevant)`,
+    `\ngolden set: ${scored.length} cases scored ` +
+      `(${scored.filter((c) => c.expect.relevant).length} relevant)` +
+      (useFewShots ? ` · ${train.length} held out for few-shots` : ""),
   );
-  console.log(`cascade   : ${escalate ? "Haiku -> Sonnet on 40-70" : "Haiku only"}\n`);
+  console.log(`cascade   : ${escalate ? "Haiku -> Sonnet on 40-69" : "Haiku only"}`);
+  console.log(
+    `few-shots : ${useFewShots ? `${fewShots.length} from the train slice` : "none"}\n`,
+  );
 
   const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
   const classifier = createClassifier({
@@ -91,8 +147,8 @@ async function main(): Promise<number> {
   const warnings: string[] = [];
 
   const started = Date.now();
-  for (let i = 0; i < golden.cases.length; i += BATCH_SIZE) {
-    const batch = golden.cases.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < scored.length; i += BATCH_SIZE) {
+    const batch = scored.slice(i, i + BATCH_SIZE);
     const items: PromptItem[] = batch.map((c) => ({
       id: c.id,
       source: c.source,
@@ -104,7 +160,11 @@ async function main(): Promise<number> {
     process.stdout.write(
       `  batch ${Math.floor(i / BATCH_SIZE) + 1} (${batch.length} items)... `,
     );
-    const result = await classifier.classify({ profile: golden.profile, items });
+    const result = await classifier.classify({
+      profile: golden.profile,
+      items,
+      ...(fewShots.length > 0 ? { fewShots } : {}),
+    });
     for (const c of result.classifications) predictions.set(c.item_id, c);
     usage.push(...result.usage);
     warnings.push(...result.warnings);
@@ -125,7 +185,7 @@ async function main(): Promise<number> {
   const falsePositives: { c: GoldenCase; p: Classification }[] = [];
   const falseNegatives: { c: GoldenCase; p: Classification }[] = [];
 
-  for (const c of golden.cases) {
+  for (const c of scored) {
     const p = predictions.get(c.id);
     if (p === undefined) continue;
     judged += 1;
@@ -151,14 +211,14 @@ async function main(): Promise<number> {
   // stay, because the digest only ever shows the top of the ranking.
   const ranked = [...predictions.values()].sort((a, b) => b.score - a.score);
   const top20 = ranked.slice(0, 20);
-  const expectedById = new Map(golden.cases.map((c) => [c.id, c.expect.relevant]));
+  const expectedById = new Map(scored.map((c) => [c.id, c.expect.relevant]));
   const top20Hits = top20.filter((p) => expectedById.get(p.item_id) === true).length;
   const precisionAt20 = top20.length === 0 ? 0 : top20Hits / top20.length;
 
   const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
 
   console.log("\n─────────────────────────────────────────────");
-  console.log(`  judged            ${judged}/${golden.cases.length}`);
+  console.log(`  judged            ${judged}/${scored.length}`);
   console.log(`  precision         ${pct(precision)}   (${tp} tp / ${tp + fp} predicted relevant)`);
   console.log(`  recall            ${pct(recall)}   (${tp} tp / ${tp + fn} actually relevant)`);
   console.log(`  F1                ${pct(f1)}`);

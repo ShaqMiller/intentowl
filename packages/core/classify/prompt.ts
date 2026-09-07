@@ -94,6 +94,20 @@ Set relevant=false and score below 15 regardless of anything else when the post 
 
 Someone building the same thing the customer sells is **not** a lead — they are a competitor. Score below 15.
 
+## Match the kind of business, not just the problem
+
+The hardest false positives share almost every word with a real lead. "How do I find my first customers?" is asked by product founders, by freelancers looking for contract work, by agencies looking for retainers, and by people selling courses. The customer-acquisition *problem* is identical; the *business* is not, and only some of them are in this customer's ICP.
+
+So before scoring on need, ask what the author actually sells:
+
+- **A product** — software, an app, a service that runs without them.
+- **Their own time** — freelancing, consulting, contracting, an agency or dev shop.
+- **Nothing yet** — still choosing an idea, or asking hypothetically.
+
+Then check that against the ICP above. If the ICP is product companies, a freelancer or agency asking how to land clients is **not relevant**, however sharply they describe the pain — score 15-39 as adjacent, not as a lead. If the ICP is services businesses, the reverse applies.
+
+Past experience is not a current business. "I have startup experience but can't find freelance clients" is a freelancer, not a founder. Judge what they are doing now, not what they have done.
+
 ## Reason and reply angle
 
 **reason** — one sentence under 30 words, written to the customer, naming the specific thing in the post that makes it worth their time. It is shown verbatim in the digest, so no preamble and no hedging. Bad: "This post may be relevant to your product." Good: "Asking which tool to use for monitoring subreddits after outgrowing a manual spreadsheet."
