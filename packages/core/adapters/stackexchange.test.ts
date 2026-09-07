@@ -181,7 +181,7 @@ describe("stackexchange adapter", () => {
     expect(result.warnings?.join(" ")).toContain("quota");
   });
 
-  it("caps requests per poll however many terms a watch has", async () => {
+  it("caps requests per poll, tighter without a key", async () => {
     let calls = 0;
     server.use(
       http.get(SEARCH, () => {
@@ -190,12 +190,37 @@ describe("stackexchange adapter", () => {
       }),
     );
 
+    // 300/day shared across customers cannot survive an unbounded loop.
     await adapter().fetchNew(
       { ...watch, includeTerms: ["a", "b", "c", "d", "e", "f", "g", "h"] },
       null,
     );
-    // 300/day shared across customers cannot survive an unbounded loop.
     expect(calls).toBeLessThanOrEqual(6);
+
+    calls = 0;
+    // A key buys 10,000/day, so every term can be searched.
+    await adapter("k").fetchNew(
+      { ...watch, includeTerms: ["a", "b", "c", "d", "e", "f", "g", "h"] },
+      null,
+    );
+    expect(calls).toBeGreaterThan(6);
+    expect(calls).toBeLessThanOrEqual(24);
+  });
+
+  it("names the terms it cannot afford to search", async () => {
+    server.use(http.get(SEARCH, () => HttpResponse.json(envelope([]))));
+    // One cursor covers the whole source, so a skipped term is not delayed --
+    // the cursor moves past its window and those posts are never seen.
+    const result = await adapter().fetchNew(
+      {
+        ...watch,
+        // Seven terms against a six-request anonymous budget on one site.
+        includeTerms: ["a", "b", "c", "d", "e", "f", "skipped-term"],
+        sourceConfig: { stackexchange: { sites: ["softwareengineering"] } },
+      },
+      null,
+    );
+    expect(result.warnings?.join(" ")).toContain("skipped-term");
   });
 
   it("advances the cursor to the newest question seen", async () => {

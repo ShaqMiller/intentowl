@@ -45,16 +45,29 @@ const API = "https://api.stackexchange.com/2.3/search/advanced";
  */
 const DEFAULT_SITES = ["softwareengineering", "stackoverflow"] as const;
 
-/** Hard ceiling per poll. Quota is 300/day unauthenticated and shared. */
-const MAX_REQUESTS_PER_POLL = 6;
+/**
+ * Requests per poll, by whether a key is configured.
+ *
+ * Unauthenticated is 300/day shared across every customer, which at a poll
+ * every twelve minutes is only ~2 requests per poll before the day is gone. A
+ * free key raises the ceiling to 10,000 and makes searching every term on
+ * every site affordable.
+ */
+const MAX_REQUESTS_WITH_KEY = 24;
+const MAX_REQUESTS_ANONYMOUS = 6;
 
 /** Stop calling entirely below this, so one watch cannot starve the rest. */
 const QUOTA_RESERVE = 20;
 
 const PAGE_SIZE = 50;
 
-/** First run has no cursor; a week back at this volume is plenty. */
-const COLD_START_LOOKBACK_SECONDS = 7 * 24 * 60 * 60;
+/**
+ * First run has no cursor. Far longer than HN's week because these sites are
+ * low-volume: a seven-day window over softwareengineering returns nothing at
+ * all for most watches, which reads as a broken adapter rather than a quiet
+ * corner of the internet.
+ */
+const COLD_START_LOOKBACK_SECONDS = 90 * 24 * 60 * 60;
 
 const question = z.object({
   question_id: z.number(),
@@ -123,12 +136,32 @@ export function createStackExchangeAdapter(
       let calls = 0;
       let quotaRemaining: number | null = null;
 
+      const maxRequests =
+        options.apiKey === undefined
+          ? MAX_REQUESTS_ANONYMOUS
+          : MAX_REQUESTS_WITH_KEY;
+
       // Budget the requests across sites so one site cannot consume the poll.
-      const perSite = Math.max(1, Math.floor(MAX_REQUESTS_PER_POLL / sites.length));
+      const perSite = Math.max(1, Math.floor(maxRequests / sites.length));
+      const terms = watch.includeTerms.slice(0, perSite);
+
+      // There is one cursor for the whole source, so a term skipped this poll
+      // is not merely delayed — the cursor advances past its window and those
+      // posts are never seen. Say which terms are being dropped rather than
+      // letting them look like terms that simply never match.
+      if (watch.includeTerms.length > terms.length) {
+        warnings.push(
+          `Stack Exchange budget covers ${terms.length} of ${watch.includeTerms.length} terms per site; ` +
+            `these are never searched: ${watch.includeTerms.slice(terms.length).join(", ")}. ` +
+            (options.apiKey === undefined
+              ? "Register a free key at stackapps.com to raise the ceiling."
+              : "Reduce the term list or the site list."),
+        );
+      }
 
       outer: for (const site of sites) {
-        for (const term of watch.includeTerms.slice(0, perSite)) {
-          if (calls >= MAX_REQUESTS_PER_POLL) break outer;
+        for (const term of terms) {
+          if (calls >= maxRequests) break outer;
           if (quotaRemaining !== null && quotaRemaining <= QUOTA_RESERVE) {
             warnings.push(
               `Stack Exchange quota down to ${quotaRemaining}; stopping early. Register a free key at stackapps.com to raise it from 300/day to 10,000.`,

@@ -325,6 +325,10 @@ async function upsertItems(
           title: sql`excluded.title`,
           body: sql`excluded.body`,
           url: sql`excluded.url`,
+          // Refreshed too: venue derivation is adapter logic, and when a bug in
+          // it is fixed, re-polling should heal the rows it got wrong rather
+          // than leaving them permanently unweightable.
+          venue: sql`excluded.venue`,
           engagement: sql`excluded.engagement`,
           fetchedAt: sql`now()`,
         },
