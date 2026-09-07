@@ -17,7 +17,18 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M0 complete** (exit test passed) ← next up is M1, on request.
+- Current milestone: **M2** (M0, M1 complete).
+
+## Open items carried forward
+
+- **Reddit API access is unverified.** The adapter is built and covered by
+  tests against recorded fixtures, but it has never touched the live API:
+  reddit.com/prefs/apps refuses app creation on the owner account. M1 was
+  closed on HN evidence instead. Two things still to do: (a) get a script app
+  created and run `pnpm cli run-poll --watch=<id> --source=reddit` twice to
+  finish M1's literal exit test, (b) file Reddit's commercial-use approval
+  request — reviews reportedly take 2–4 weeks and selling digests is
+  commercial use (ARCHITECTURE.md §4.10).
 
 ## Stack (locked — do not substitute)
 

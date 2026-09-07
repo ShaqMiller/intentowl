@@ -1,5 +1,6 @@
 import { createDb } from "@intentowl/db";
 
+import { createAdapters } from "./adapters.ts";
 import { createBoss } from "./boss.ts";
 import { env } from "./env.ts";
 import { startHttpServer } from "./http.ts";
@@ -18,7 +19,7 @@ async function main(): Promise<void> {
   await boss.start();
   logger.info("pg-boss started");
 
-  await registerJobs(boss, db);
+  await registerJobs(boss, db, createAdapters());
 
   const http = startHttpServer(db);
 

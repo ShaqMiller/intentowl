@@ -1,0 +1,1520 @@
+<title>Inside the IntentOwl Worker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  /* ---- tokens: light is the base, both dark states override only these ---- */
+  :root {
+    --ground:      #F4F6F7;
+    --surface:     #FFFFFF;
+    --surface-2:   #EDF1F3;
+    --ink:         #131A20;
+    --ink-soft:    #3D4A55;
+    --muted:       #5F6E7A;
+    --faint:       #8695A1;
+    --line:        #D9E0E5;
+    --line-strong: #BFCAD2;
+    --accent:      #0E6E78;
+    --accent-soft: #DCEEF0;
+    --accent-ink:  #0A545C;
+    --ok:          #2E7D53;
+    --warn:        #9A6510;
+    --crit:        #B3352F;
+    --code-bg:     #10181E;
+    --code-ink:    #D6E2EA;
+    --code-dim:    #7E93A2;
+    --shadow:      0 1px 2px rgba(19, 26, 32, .05), 0 8px 24px -12px rgba(19, 26, 32, .18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E1418;
+      --surface:     #151D23;
+      --surface-2:   #1B252C;
+      --ink:         #E4ECF1;
+      --ink-soft:    #C0CEd8;
+      --muted:       #93A5B1;
+      --faint:       #71838F;
+      --line:        #26323A;
+      --line-strong: #38474F;
+      --accent:      #45B5C0;
+      --accent-soft: #13343A;
+      --accent-ink:  #7FD3DB;
+      --ok:          #5CBF88;
+      --warn:        #D9A441;
+      --crit:        #E8776F;
+      --code-bg:     #0A1015;
+      --code-ink:    #CFDDE6;
+      --code-dim:    #6E8492;
+      --shadow:      0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1418;
+    --surface:     #151D23;
+    --surface-2:   #1B252C;
+    --ink:         #E4ECF1;
+    --ink-soft:    #C0CED8;
+    --muted:       #93A5B1;
+    --faint:       #71838F;
+    --line:        #26323A;
+    --line-strong: #38474F;
+    --accent:      #45B5C0;
+    --accent-soft: #13343A;
+    --accent-ink:  #7FD3DB;
+    --ok:          #5CBF88;
+    --warn:        #D9A441;
+    --crit:        #E8776F;
+    --code-bg:     #0A1015;
+    --code-ink:    #CFDDE6;
+    --code-dim:    #6E8492;
+    --shadow:      0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    text-wrap: balance;
+    line-height: 1.16;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  code, pre, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-ligatures: none;
+  }
+
+  a { color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  /* ---------------------------------------------------------------- masthead */
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .masthead-inner {
+    max-width: 1280px; margin: 0 auto; padding: 52px 28px 44px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px; font-weight: 500; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 18px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .eyebrow .sep { width: 22px; height: 1px; background: currentColor; opacity: .5; }
+  .masthead h1 { font-size: clamp(34px, 5.2vw, 54px); max-width: 17ch; }
+  .standfirst {
+    margin: 20px 0 0; max-width: 62ch; font-size: 18px; color: var(--ink-soft);
+  }
+  .meta-strip {
+    margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 14px 40px;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-item dt {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--faint); margin: 0;
+  }
+  .meta-item dd { margin: 0; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* ------------------------------------------------------------------ shell */
+  .shell { max-width: 1280px; margin: 0 auto; padding: 0 28px 96px; }
+  @media (min-width: 1100px) {
+    .shell { display: grid; grid-template-columns: 216px minmax(0, 1fr); gap: 64px; align-items: start; }
+  }
+
+  /* -------------------------------------------------------------------- toc */
+  .toc { padding-top: 48px; }
+  @media (min-width: 1100px) { .toc { position: sticky; top: 28px; max-height: calc(100vh - 56px); overflow-y: auto; } }
+  .toc h2 {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; font-weight: 500;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--faint);
+    margin-bottom: 14px;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+  .toc a {
+    display: block; padding: 5px 10px; font-size: 13.5px; color: var(--muted);
+    text-decoration: none; border-left: 2px solid var(--line); line-height: 1.35;
+  }
+  .toc a:hover { color: var(--accent); border-left-color: var(--accent); background: var(--surface); }
+
+  /* ------------------------------------------------------------------- main */
+  main { padding-top: 48px; min-width: 0; }
+  section { scroll-margin-top: 24px; }
+  section + section { margin-top: 68px; }
+
+  .sec-head { border-top: 2px solid var(--ink); padding-top: 14px; margin-bottom: 26px; }
+  .sec-head h2 { font-size: clamp(24px, 3vw, 31px); max-width: 24ch; }
+  .sec-head .kicker {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .11em;
+    text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 9px;
+  }
+
+  h3 { font-size: 19px; margin: 38px 0 12px; }
+  h4 { font-size: 15.5px; margin: 26px 0 8px; letter-spacing: 0; }
+
+  p { margin: 0 0 17px; max-width: 68ch; }
+  ul, ol { max-width: 68ch; margin: 0 0 17px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  li::marker { color: var(--faint); }
+  strong { font-weight: 600; }
+
+  p code, li code, td code, dd code {
+    font-size: .875em; background: var(--surface-2); color: var(--accent-ink);
+    padding: 1.5px 5px; border-radius: 3px; border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  .lede { font-size: 17.5px; color: var(--ink-soft); max-width: 64ch; }
+
+  /* ------------------------------------------------------------------- code */
+  .code-block {
+    margin: 22px 0; border-radius: 7px; overflow: hidden;
+    border: 1px solid var(--line); background: var(--code-bg); box-shadow: var(--shadow);
+  }
+  .code-title {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .07em;
+    color: var(--code-dim); padding: 9px 15px; border-bottom: 1px solid rgba(255,255,255,.07);
+    display: flex; justify-content: space-between; gap: 16px; text-transform: uppercase;
+  }
+  .code-block pre {
+    margin: 0; padding: 15px; overflow-x: auto; font-size: 12.8px; line-height: 1.68;
+    color: var(--code-ink);
+  }
+  .code-block pre .c { color: var(--code-dim); }
+  .code-block pre .k { color: #7FD3DB; }
+  .code-block pre .s { color: #9FD59B; }
+  .code-block pre .w { color: #E0B457; }
+
+  /* ------------------------------------------------------------------ table */
+  .table-wrap { overflow-x: auto; margin: 22px 0; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 15px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--muted); font-weight: 500;
+    background: var(--surface-2); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono-cell { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; white-space: nowrap; color: var(--accent-ink); }
+
+  .tag {
+    display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px;
+    letter-spacing: .04em; padding: 1.5px 7px; border-radius: 3px; white-space: nowrap;
+    border: 1px solid; font-weight: 500;
+  }
+  .tag.now  { color: var(--ok);   border-color: color-mix(in srgb, var(--ok) 45%, transparent);   background: color-mix(in srgb, var(--ok) 11%, transparent); }
+  .tag.next { color: var(--muted); border-color: var(--line-strong); background: var(--surface-2); }
+
+  /* ----------------------------------------------------------------- figure */
+  figure { margin: 30px 0; }
+  figure svg { display: block; width: 100%; height: auto; max-width: 100%; }
+  .fig-frame {
+    border: 1px solid var(--line); border-radius: 7px; background: var(--surface);
+    padding: 22px 20px; overflow-x: auto;
+  }
+  figcaption {
+    margin-top: 12px; font-size: 13.5px; color: var(--muted); max-width: 70ch;
+    padding-left: 13px; border-left: 2px solid var(--line-strong);
+  }
+  figcaption b { color: var(--ink-soft); font-weight: 600; }
+
+  /* ------------------------------------------------------------------ notes */
+  .note {
+    margin: 24px 0; padding: 16px 18px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent); font-size: 14.5px;
+  }
+  .note p { margin: 0; max-width: none; }
+  .note p + p { margin-top: 10px; }
+  .note .note-label {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 6px;
+  }
+  .note.caution { border-left-color: var(--warn); }
+  .note.caution .note-label { color: var(--warn); }
+
+  /* --------------------------------------------------------------- glossary */
+  .glossary { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: var(--surface); }
+  .gloss-row { display: grid; gap: 4px 24px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  @media (min-width: 660px) { .gloss-row { grid-template-columns: 190px minmax(0, 1fr); align-items: baseline; } }
+  .gloss-row:last-child { border-bottom: none; }
+  .gloss-row dt { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 500; color: var(--accent-ink); }
+  .gloss-row dd { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  /* ------------------------------------------------------------------ steps */
+  .steps { list-style: none; padding: 0; counter-reset: step; max-width: 70ch; }
+  .steps > li {
+    counter-increment: step; position: relative; padding-left: 42px; margin-bottom: 18px;
+  }
+  .steps > li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute; left: 0; top: 1px;
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600;
+    color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background: var(--accent-soft);
+    width: 28px; height: 22px; display: grid; place-items: center; border-radius: 3px;
+  }
+
+  /* ----------------------------------------------------------------- footer */
+  .closer {
+    margin-top: 76px; padding-top: 26px; border-top: 2px solid var(--ink);
+    font-size: 14px; color: var(--muted); max-width: 70ch;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">IntentOwl <span class="sep"></span> Milestone M0 <span class="sep"></span> Engineering walkthrough</p>
+    <h1>Inside the IntentOwl Worker</h1>
+    <p class="standfirst">
+      A line-by-line tour of the skeleton we just built &mdash; what a job queue actually is,
+      how a cron tick travels from a Postgres row to a log line, why the health endpoint exists,
+      and why the whole thing is a background process instead of a web server.
+      Written for someone who has shipped a CRUD app but never run a worker.
+    </p>
+    <dl class="meta-strip">
+      <div class="meta-item"><dt>Commit</dt><dd class="mono">d933620</dd></div>
+      <div class="meta-item"><dt>Files</dt><dd>40 tracked</dd></div>
+      <div class="meta-item"><dt>Tables</dt><dd>11 + 5 enums</dd></div>
+      <div class="meta-item"><dt>Exit test</dt><dd>Passed &mdash; 3 ticks</dd></div>
+      <div class="meta-item"><dt>Database</dt><dd>Supabase&nbsp;/ Postgres&nbsp;17</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#shape">The shape of the thing</a></li>
+      <li><a href="#worker">Why a worker, not a server</a></li>
+      <li><a href="#repo">The four packages</a></li>
+      <li><a href="#db">The database</a></li>
+      <li><a href="#idempotent">Idempotency</a></li>
+      <li><a href="#queue">What a job queue is</a></li>
+      <li><a href="#cron">The heartbeat, traced</a></li>
+      <li><a href="#drift">Why ticks drift</a></li>
+      <li><a href="#healthz">The health endpoint</a></li>
+      <li><a href="#env">Crashing on purpose</a></li>
+      <li><a href="#logs">Logs you can query</a></li>
+      <li><a href="#run">Running it yourself</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+      <li><a href="#next">What comes next</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ============================================================ SHAPE -->
+    <section id="shape">
+      <div class="sec-head">
+        <span class="kicker">Orientation</span>
+        <h2>The shape of the thing</h2>
+      </div>
+
+      <p class="lede">
+        IntentOwl watches Reddit, Hacker News and Bluesky for people describing a problem your
+        customer's product solves, ranks those posts, and emails a daily digest of the best ones.
+        M0 built none of that. M0 built the <em>skeleton it all hangs off</em>.
+      </p>
+
+      <p>
+        That distinction matters, because the temptation with a project like this is to write the
+        Reddit fetcher first &mdash; it's the fun part. But a fetcher with nowhere to put its results,
+        no way to be scheduled, and no way to be retried when Reddit returns a 429 is not progress.
+        It's a script you'll throw away.
+      </p>
+
+      <p>
+        So M0 built the parts every later milestone needs: a place to put data (the database schema),
+        a thing that runs code on a schedule and retries it when it fails (the job queue), and proof
+        that both work &mdash; a job that fires every minute and writes a line to the log.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 900 430" role="img" aria-label="Diagram of the IntentOwl system showing that M0 built the worker process, the Postgres schema and the heartbeat job, while the source adapters, pipeline jobs, digest delivery and web checkout remain stubbed for later milestones.">
+            <defs>
+              <marker id="ar-solid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+              <marker id="ar-dash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" opacity=".45"/>
+              </marker>
+            </defs>
+
+            <!-- sources (future) -->
+            <rect x="16" y="52" width="150" height="120" rx="6" fill="none" stroke="currentColor" stroke-opacity=".38" stroke-dasharray="5 4"/>
+            <text x="30" y="46" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55" letter-spacing="1">SOURCES</text>
+            <text x="30" y="80" font-size="13" fill="currentColor" opacity=".62">Reddit API</text>
+            <text x="30" y="104" font-size="13" fill="currentColor" opacity=".62">HN Algolia</text>
+            <text x="30" y="128" font-size="13" fill="currentColor" opacity=".62">Bluesky</text>
+            <text x="30" y="154" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".45">M1 &middot; M6</text>
+
+            <!-- worker -->
+            <rect x="255" y="30" width="300" height="230" rx="7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="271" y="24" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" letter-spacing="1">APPS/WORKER &mdash; ALWAYS ON</text>
+
+            <rect x="273" y="52" width="264" height="34" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+            <text x="287" y="74" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--accent-ink)">heartbeat &mdash; every minute</text>
+
+            <rect x="273" y="96" width="264" height="30" rx="4" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="5 4"/>
+            <text x="287" y="116" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor" opacity=".55">poll &mdash; per watch, 10&ndash;15 min</text>
+
+            <rect x="273" y="134" width="264" height="30" rx="4" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="5 4"/>
+            <text x="287" y="154" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor" opacity=".55">classify &mdash; batches of 20&ndash;50</text>
+
+            <rect x="273" y="172" width="264" height="30" rx="4" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="5 4"/>
+            <text x="287" y="192" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor" opacity=".55">digest &mdash; daily per customer</text>
+
+            <rect x="273" y="212" width="264" height="32" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+            <text x="287" y="233" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--accent-ink)">GET /healthz</text>
+
+            <!-- postgres -->
+            <rect x="645" y="30" width="240" height="230" rx="7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="661" y="24" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" letter-spacing="1">POSTGRES &mdash; SUPABASE</text>
+
+            <rect x="663" y="56" width="204" height="76" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.3"/>
+            <text x="677" y="78" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--accent-ink)">schema: public</text>
+            <text x="677" y="98" font-size="12.5" fill="currentColor" opacity=".75">11 tables, 5 enums</text>
+            <text x="677" y="118" font-size="12.5" fill="currentColor" opacity=".75">the product's data</text>
+
+            <rect x="663" y="146" width="204" height="76" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.3"/>
+            <text x="677" y="168" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--accent-ink)">schema: pgboss</text>
+            <text x="677" y="188" font-size="12.5" fill="currentColor" opacity=".75">queues, schedules,</text>
+            <text x="677" y="208" font-size="12.5" fill="currentColor" opacity=".75">job history</text>
+
+            <!-- web -->
+            <rect x="255" y="318" width="300" height="76" rx="7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            <text x="271" y="312" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" letter-spacing="1">APPS/WEB &mdash; NEXT.JS</text>
+            <text x="273" y="348" font-size="13" fill="currentColor" opacity=".8">Landing page placeholder</text>
+            <text x="273" y="372" font-size="12.5" fill="currentColor" opacity=".5">Stripe checkout arrives in M5</text>
+
+            <!-- delivery -->
+            <rect x="645" y="318" width="240" height="76" rx="7" fill="none" stroke="currentColor" stroke-opacity=".38" stroke-dasharray="5 4"/>
+            <text x="661" y="312" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55" letter-spacing="1">DELIVERY</text>
+            <text x="663" y="348" font-size="13" fill="currentColor" opacity=".62">Resend email</text>
+            <text x="663" y="372" font-size="13" fill="currentColor" opacity=".62">Slack webhook &middot; M3</text>
+
+            <!-- arrows -->
+            <g color="currentColor" opacity=".45">
+              <line x1="168" y1="112" x2="248" y2="112" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ar-dash)"/>
+              <text x="176" y="103" font-size="11" fill="currentColor">fetch</text>
+            </g>
+            <g color="var(--accent)">
+              <line x1="558" y1="128" x2="638" y2="128" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ar-solid)"/>
+              <line x1="638" y1="152" x2="558" y2="152" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#ar-solid)"/>
+              <text x="562" y="120" font-size="11" fill="var(--accent-ink)">claims jobs</text>
+              <text x="562" y="173" font-size="11" fill="var(--accent-ink)">writes rows</text>
+            </g>
+            <g color="currentColor" opacity=".45">
+              <line x1="558" y1="356" x2="638" y2="356" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ar-dash)"/>
+              <line x1="405" y1="312" x2="405" y2="268" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ar-dash)"/>
+            </g>
+
+            <!-- legend -->
+            <line x1="16" y1="404" x2="46" y2="404" stroke="var(--accent)" stroke-width="2"/>
+            <text x="54" y="408" font-size="11.5" fill="currentColor" opacity=".75">built and running in M0</text>
+            <line x1="196" y1="404" x2="226" y2="404" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" opacity=".45"/>
+            <text x="234" y="408" font-size="11.5" fill="currentColor" opacity=".55">stubbed &mdash; arrives in a later milestone</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>What M0 actually delivered.</b> The solid path is live today: the worker process claims
+          jobs from Postgres, writes rows back, and answers a health check. Everything dashed is a
+          named, empty slot &mdash; the interfaces exist, the implementations arrive in M1 through M6.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- =========================================================== WORKER -->
+    <section id="worker">
+      <div class="sec-head">
+        <span class="kicker">The core decision</span>
+        <h2>Why a worker, not a server</h2>
+      </div>
+
+      <p>
+        Most web work you've done has one shape: a request arrives, you do something for a few
+        hundred milliseconds, you return a response. Express, Rails, Django, a Next.js route handler
+        &mdash; all the same contract. Something is waiting on the other end of a socket, so you have
+        to be quick, and when you're done you forget everything and go back to sleep.
+      </p>
+
+      <p>IntentOwl's actual work has the opposite shape:</p>
+
+      <ul>
+        <li><strong>Nobody is waiting.</strong> No user triggered the 10&nbsp;a.m. Reddit poll. It just needs to happen.</li>
+        <li><strong>It takes minutes, not milliseconds.</strong> Fetching 800 posts and classifying 150 of them through an LLM is not a request/response operation.</li>
+        <li><strong>It needs to remember things between runs.</strong> The Reddit rate limiter has to know how many calls it has made in the last minute. In a serverless function that memory is wiped every invocation.</li>
+        <li><strong>Failure is normal.</strong> Reddit returns 429. The LLM times out. These aren't errors to show a user &mdash; they're conditions to retry with backoff.</li>
+      </ul>
+
+      <p>
+        Bolting that onto Express means fighting the framework. You'd hit request timeouts on a job
+        that legitimately takes four minutes. You'd have no natural place for the rate limiter's
+        state. You'd need to invent retries yourself.
+      </p>
+
+      <p>
+        So <code>apps/worker</code> is a plain Node process. It boots, connects to Postgres, registers
+        what it can do, and then <em>stays running forever</em>, waking up when there's work. It has no
+        routes and no controllers. It has exactly one HTTP endpoint, and only because the hosting
+        platform needs somewhere to poke to check it's alive &mdash; that's what
+        <a href="#healthz"><code>/healthz</code></a> is, and we'll get to it.
+      </p>
+
+      <div class="note">
+        <span class="note-label">The mental model</span>
+        <p>
+          A server is a <em>waiter</em> &mdash; it stands there until someone orders, then brings one
+          thing quickly. A worker is a <em>night shift</em> &mdash; it works through a list at its own
+          pace, and nobody is watching. The web app and the worker in this repo are both, which is
+          why they're separate processes that share a database rather than one program doing both.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================= REPO -->
+    <section id="repo">
+      <div class="sec-head">
+        <span class="kicker">Layout</span>
+        <h2>The four packages</h2>
+      </div>
+
+      <p>
+        This is a <strong>monorepo</strong>: several projects in one Git repository that can import
+        each other directly. The alternative &mdash; four separate repos publishing to npm &mdash;
+        would mean a version bump and a release every time you change a shared type. For a solo
+        project that's pure friction.
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>repository root</span><span>40 files</span></div>
+<pre>intentowl/
+├─ apps/
+│  ├─ web/                     <span class="c">Next.js 15 &mdash; landing page, Stripe webhook later</span>
+│  │  ├─ app/(marketing)/page.tsx
+│  │  ├─ next.config.ts
+│  │  └─ src/env.ts            <span class="c">its own env schema</span>
+│  └─ worker/                  <span class="c">the always-on background process</span>
+│     └─ src/
+│        ├─ index.ts           <span class="c">boot + graceful shutdown</span>
+│        ├─ boss.ts            <span class="c">pg-boss setup, shared retry policy</span>
+│        ├─ env.ts             <span class="c">Zod-validated config</span>
+│        ├─ logger.ts          <span class="c">pino, structured JSON</span>
+│        ├─ http.ts            <span class="c">the ~30-line health endpoint</span>
+│        ├─ cli.ts             <span class="c">manual ops commands</span>
+│        └─ jobs/
+│           ├─ index.ts        <span class="c">the job registry</span>
+│           └─ heartbeat.ts    <span class="c">the M0 exit test</span>
+├─ packages/
+│  ├─ core/                    <span class="c">shared, mostly-pure code</span>
+│  │  └─ env.ts                <span class="c">loads .env, parses or exits</span>
+│  └─ db/
+│     ├─ schema.ts             <span class="c">SINGLE SOURCE OF TRUTH for the database</span>
+│     ├─ client.ts             <span class="c">connection pool + Drizzle instance</span>
+│     └─ migrations/           <span class="c">generated SQL, never hand-edited</span>
+├─ .env.example
+├─ turbo.json
+└─ pnpm-workspace.yaml</pre>
+      </div>
+
+      <h3>How the imports actually work</h3>
+
+      <p>
+        <code>pnpm-workspace.yaml</code> tells pnpm that anything under <code>apps/*</code> and
+        <code>packages/*</code> is a local package. When <code>apps/worker/package.json</code> lists
+        <code>"@intentowl/db": "workspace:*"</code>, pnpm symlinks the folder into
+        <code>node_modules</code> instead of downloading anything. So this import in the worker:
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>apps/worker/src/index.ts</span></div>
+<pre><span class="k">import</span> { createDb } <span class="k">from</span> <span class="s">"@intentowl/db"</span>;</pre>
+      </div>
+
+      <p>
+        resolves straight to <code>packages/db/index.ts</code> &mdash; the TypeScript source, not a
+        compiled bundle. There is no build step for the shared packages. Change a column in
+        <code>schema.ts</code> and the worker sees the new type immediately.
+      </p>
+
+      <p>
+        The one thing that makes this work is the explicit <code>.ts</code> on internal imports
+        (<code>./schema.ts</code>, not <code>./schema</code>). A literal filename resolves identically
+        under <code>tsx</code>, under Next.js's bundler, and under <code>drizzle-kit</code> &mdash; no
+        clever resolution rules to get wrong.
+      </p>
+
+      <p>
+        <strong>Turborepo</strong> is the last piece: <code>pnpm dev</code> at the root runs the
+        <code>dev</code> script of every package in parallel and merges their output. That's most of
+        what it does for us right now.
+      </p>
+    </section>
+
+    <!-- =============================================================== DB -->
+    <section id="db">
+      <div class="sec-head">
+        <span class="kicker">Data</span>
+        <h2>The database</h2>
+      </div>
+
+      <p>
+        <code>packages/db/schema.ts</code> describes every table in TypeScript. It is the
+        <em>only</em> place the schema is defined. You never write <code>CREATE TABLE</code> by hand
+        and you never edit a generated migration.
+      </p>
+
+      <p>The workflow is two commands:</p>
+
+      <div class="code-block">
+        <div class="code-title"><span>changing the schema</span></div>
+<pre><span class="c"># 1. edit packages/db/schema.ts, then:</span>
+pnpm db:generate   <span class="c"># diffs your schema against the last snapshot,</span>
+                   <span class="c"># writes a new .sql file into migrations/</span>
+
+pnpm db:migrate    <span class="c"># runs any migration the database hasn't seen yet</span></pre>
+      </div>
+
+      <p>
+        Drizzle tracks which migrations have run in a table it manages itself, so
+        <code>db:migrate</code> is safe to run repeatedly &mdash; it skips what's already applied.
+        That's the same idempotency idea as the next section, applied to schema changes.
+      </p>
+
+      <h3>The pipeline in table form</h3>
+
+      <p>
+        Data moves in one direction through five stages, and every stage writes to Postgres before
+        the next one reads. That's what lets any stage crash and be re-run without losing or
+        duplicating work.
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>the contract between stages</span></div>
+<pre>RawItem → NormalizedItem → <span class="c">(pre-filter)</span> → ClassifiedItem → ScoredLead → DigestEntry
+   ↓             ↓                                  ↓               ↓            ↓
+ adapter       items                        classifications    (in memory)    digests</pre>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Table</th><th>Holds</th><th>Filled by</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono-cell">customers</td><td>One row per paying customer. Email, status, Stripe id, and their IANA timezone so the digest lands at 7&nbsp;a.m. <em>their</em> time.</td><td><span class="tag next">M5</span></td></tr>
+            <tr><td class="mono-cell">profiles</td><td>The paragraph describing their product, ICP, competitors and disqualifiers. This gets injected into the classification prompt &mdash; it's why we beat keyword alerts.</td><td><span class="tag next">M4</span></td></tr>
+            <tr><td class="mono-cell">watches</td><td>What to monitor: which sources, which subreddits, which include/exclude terms.</td><td><span class="tag next">M1</span></td></tr>
+            <tr><td class="mono-cell">cursors</td><td>Last-seen position per (watch, source). Turns "fetch everything" into "fetch what's new".</td><td><span class="tag next">M1</span></td></tr>
+            <tr><td class="mono-cell">items</td><td>Every post we've fetched, from any source. Deduplicated by <code>UNIQUE(source, external_id)</code>.</td><td><span class="tag next">M1</span></td></tr>
+            <tr><td class="mono-cell">item_watches</td><td>Join table. One post can match three customers' watches; each match gets classified separately against that customer's profile.</td><td><span class="tag next">M1</span></td></tr>
+            <tr><td class="mono-cell">classifications</td><td>What the LLM decided: relevant, intent type, 0&ndash;100 score, one-sentence reason, suggested reply angle, plus token counts.</td><td><span class="tag next">M2</span></td></tr>
+            <tr><td class="mono-cell">digests</td><td>One row per email sent. Checking this table is how we avoid double-sending.</td><td><span class="tag next">M3</span></td></tr>
+            <tr><td class="mono-cell">digest_items</td><td>Which posts were in which digest, and in what order.</td><td><span class="tag next">M3</span></td></tr>
+            <tr><td class="mono-cell">feedback</td><td>👍/👎 from the digest emails. Feeds back into the prompt as few-shot examples.</td><td><span class="tag next">M6</span></td></tr>
+            <tr><td class="mono-cell">api_usage</td><td>Every external call and LLM token, per customer per day. This is how you know your margins before your bank does.</td><td><span class="tag next">M1</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="note-label">Why build all 11 now</span>
+        <p>
+          None of these have rows yet. Building them anyway is deliberate: every one of them hangs off
+          <code>customer_id</code>, which makes the pipeline multi-tenant from the first line of code.
+          Retrofitting multi-tenancy onto a single-customer schema later is one of the genuinely
+          painful migrations, and it always arrives at the worst moment &mdash; when customer two signs up.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====================================================== IDEMPOTENT -->
+    <section id="idempotent">
+      <div class="sec-head">
+        <span class="kicker">The rule everything obeys</span>
+        <h2>Idempotency</h2>
+      </div>
+
+      <p>
+        <strong>Idempotent</strong> means running something twice has the same effect as running it
+        once. Pressing a lift button twice doesn't summon two lifts.
+      </p>
+
+      <p>
+        This is the single most important property in the whole system, and here's why: the job queue
+        <em>will</em> run your job twice. Not might &mdash; will. The worker gets killed mid-job during
+        a deploy. The network drops after the work finished but before the "done" was recorded. The
+        job times out and gets retried while the first attempt is still running. Any queue that
+        guarantees "at least once" delivery &mdash; which is all the practical ones &mdash; hands you
+        this problem.
+      </p>
+
+      <p>
+        You cannot prevent double execution. You can only make it harmless. In this codebase that
+        means database constraints, not application logic:
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 840 300" role="img" aria-label="Comparison diagram: with a unique index on source and external_id, two polls that fetch the same Reddit post produce one row; without the index they produce two rows and the customer sees a duplicate lead in the digest.">
+            <defs>
+              <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- top: with index -->
+            <text x="14" y="20" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--accent-ink)" letter-spacing="1">WITH UNIQUE(source, external_id)</text>
+
+            <rect x="14" y="34" width="150" height="38" rx="4" fill="none" stroke="currentColor" stroke-opacity=".5"/>
+            <text x="26" y="52" font-size="12" fill="currentColor" opacity=".8">poll at 10:00</text>
+            <text x="26" y="66" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55">t3_abc123</text>
+
+            <rect x="14" y="82" width="150" height="38" rx="4" fill="none" stroke="currentColor" stroke-opacity=".5"/>
+            <text x="26" y="100" font-size="12" fill="currentColor" opacity=".8">poll at 10:15</text>
+            <text x="26" y="114" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55">t3_abc123 <tspan opacity=".8">(same post)</tspan></text>
+
+            <line x1="170" y1="53" x2="300" y2="70" stroke="currentColor" stroke-width="1.3" opacity=".55" marker-end="url(#ar2)"/>
+            <line x1="170" y1="101" x2="300" y2="84" stroke="currentColor" stroke-width="1.3" opacity=".55" marker-end="url(#ar2)"/>
+
+            <rect x="308" y="52" width="190" height="50" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+            <text x="322" y="72" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)">ON CONFLICT</text>
+            <text x="322" y="90" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)">DO UPDATE</text>
+
+            <line x1="504" y1="77" x2="600" y2="77" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ar2)"/>
+
+            <rect x="608" y="52" width="218" height="50" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.4"/>
+            <text x="622" y="72" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--accent-ink)">items: 1 row</text>
+            <text x="622" y="91" font-size="12" fill="currentColor" opacity=".75">one lead in the digest</text>
+
+            <line x1="14" y1="150" x2="826" y2="150" stroke="currentColor" stroke-opacity=".18"/>
+
+            <!-- bottom: without index -->
+            <text x="14" y="180" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".5" letter-spacing="1">WITHOUT IT</text>
+
+            <rect x="14" y="194" width="150" height="38" rx="4" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+            <text x="26" y="212" font-size="12" fill="currentColor" opacity=".6">poll at 10:00</text>
+            <text x="26" y="226" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".45">t3_abc123</text>
+
+            <rect x="14" y="242" width="150" height="38" rx="4" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+            <text x="26" y="260" font-size="12" fill="currentColor" opacity=".6">poll at 10:15</text>
+            <text x="26" y="274" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".45">t3_abc123</text>
+
+            <line x1="170" y1="213" x2="600" y2="213" stroke="currentColor" stroke-width="1.2" opacity=".35" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+            <line x1="170" y1="261" x2="600" y2="261" stroke="currentColor" stroke-width="1.2" opacity=".35" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+            <text x="300" y="205" font-size="11" fill="currentColor" opacity=".45">plain INSERT</text>
+
+            <rect x="608" y="194" width="218" height="86" rx="4" fill="none" stroke="var(--crit)" stroke-width="1.4"/>
+            <text x="622" y="216" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--crit)">items: 2 rows</text>
+            <text x="622" y="236" font-size="12" fill="currentColor" opacity=".7">same post, twice</text>
+            <text x="622" y="256" font-size="12" fill="currentColor" opacity=".7">customer sees a</text>
+            <text x="622" y="272" font-size="12" fill="currentColor" opacity=".7">duplicate lead</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>The unique index is the safety net, not the code.</b> Both halves run the exact same
+          fetch twice. The only difference is a database constraint &mdash; and that difference is
+          the whole gap between a trustworthy digest and one that repeats itself.
+        </figcaption>
+      </figure>
+
+      <p>The constraints we shipped in M0, and what each one protects:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Constraint</th><th>Stops</th></tr></thead>
+          <tbody>
+            <tr><td class="mono-cell">items (source, external_id)</td><td>The same Reddit post being stored twice when a poll retries.</td></tr>
+            <tr><td class="mono-cell">classifications (item, watch, model)</td><td>A retried classify job re-inserting a verdict &mdash; while still allowing Haiku <em>and</em> Sonnet to each store one, which the escalation cascade needs.</td></tr>
+            <tr><td class="mono-cell">api_usage (customer, source, day)</td><td>Cost tracking fanning out into thousands of rows. Retries increment one row per day instead.</td></tr>
+            <tr><td class="mono-cell">feedback (customer, item)</td><td>A customer clicking 👍 twice from two devices creating two votes.</td></tr>
+            <tr><td class="mono-cell">cursors (watch_id, source)</td><td>Two poll cursors for the same watch disagreeing about where we got to.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================ QUEUE -->
+    <section id="queue">
+      <div class="sec-head">
+        <span class="kicker">Mechanism</span>
+        <h2>What a job queue actually is</h2>
+      </div>
+
+      <p>
+        Strip away the library and a job queue is <strong>a table of work to be done</strong>. That's
+        genuinely it.
+      </p>
+
+      <ul>
+        <li>A <strong>producer</strong> inserts a row: <em>"someone should poll r/SaaS"</em>.</li>
+        <li>A <strong>consumer</strong> claims a row &mdash; locking it so no other worker takes the same one &mdash; does the work, and marks it done.</li>
+        <li>If the consumer dies mid-job, the lock expires and another worker picks it up.</li>
+      </ul>
+
+      <p>
+        <strong>pg-boss</strong> is that table plus the SQL to claim rows safely, retry failures with
+        backoff, run things on a cron schedule, and stop two workers doing the same job at once.
+        It creates its own <code>pgboss</code> schema in your database and manages it itself.
+      </p>
+
+      <h3>Why Postgres instead of Redis</h3>
+
+      <p>
+        The default answer in most tutorials is Redis with BullMQ. It's a fine choice at scale. It's
+        the wrong choice here, and the reasoning is worth internalising because it generalises:
+      </p>
+
+      <ul>
+        <li><strong>One datastore means one backup story.</strong> With Redis you now have two things to back up, and a restore where your jobs and your data disagree about what happened.</li>
+        <li><strong>One connection string to configure and rotate.</strong></li>
+        <li><strong>Transactional writes.</strong> Because jobs and data live in the same database, a future job can insert 40 items <em>and</em> enqueue the classify job in one transaction. Either both happen or neither does. Across two datastores that guarantee is gone.</li>
+        <li><strong>It's one fewer thing to be woken up by.</strong></li>
+      </ul>
+
+      <p>
+        The cost is throughput &mdash; Postgres won't match Redis at hundreds of thousands of jobs a
+        second. We need roughly one job per watch per ten minutes. The trade is not close.
+      </p>
+
+      <h3>The shared retry policy</h3>
+
+      <div class="code-block">
+        <div class="code-title"><span>apps/worker/src/boss.ts</span></div>
+<pre><span class="k">export const</span> DEFAULT_QUEUE_OPTIONS = {
+  retryLimit: <span class="w">3</span>,        <span class="c">// try 3 more times before giving up</span>
+  retryBackoff: <span class="k">true</span>,  <span class="c">// wait longer between each attempt</span>
+  retryDelay: <span class="w">5</span>,        <span class="c">// starting at 5 seconds</span>
+} <span class="k">as const</span>;</pre>
+      </div>
+
+      <p>
+        Backoff matters more than it looks. If Reddit rate-limits you and you retry instantly three
+        times, you've made the problem worse and burned your quota. Exponential backoff waits 5s,
+        then ~10s, then ~20s &mdash; long enough for a rate-limit window to reset. After the last
+        attempt the job lands in pg-boss's <code>failed</code> state, where a future <code>ops-daily</code>
+        job will find it and report it to Slack rather than letting it disappear.
+      </p>
+    </section>
+
+    <!-- ============================================================= CRON -->
+    <section id="cron">
+      <div class="sec-head">
+        <span class="kicker">Traced end to end</span>
+        <h2>The heartbeat, step by step</h2>
+      </div>
+
+      <p>
+        The M0 exit test was one sentence: <em>"worker logs a heartbeat job every minute."</em> It
+        sounds trivial &mdash; five lines and a <code>setInterval</code>. It is deliberately not that.
+      </p>
+
+      <p>
+        A <code>setInterval</code> proves your process is running. The heartbeat proves the entire
+        spine works: cron fired, a job was written to Postgres, a worker claimed it off the queue,
+        the handler ran, and the connection pool could still reach the database. If the heartbeat
+        stops, every scheduled job in the system has stopped with it &mdash; and you'll know within
+        a minute rather than at 7&nbsp;a.m. when a digest doesn't arrive.
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>apps/worker/src/jobs/heartbeat.ts</span><span>abridged</span></div>
+<pre><span class="k">export const</span> HEARTBEAT_QUEUE = <span class="s">"heartbeat"</span>;
+<span class="k">const</span> HEARTBEAT_CRON = <span class="s">"* * * * *"</span>;   <span class="c">// every minute</span>
+
+<span class="k">export async function</span> registerHeartbeat(boss, db) {
+  <span class="c">// 1. make sure the queue exists</span>
+  <span class="k">await</span> boss.createQueue(HEARTBEAT_QUEUE, {
+    retryLimit: <span class="w">0</span>,           <span class="c">// a missed minute isn't worth replaying —</span>
+    expireInSeconds: <span class="w">30</span>,    <span class="c">// the next tick is 60s away anyway</span>
+  });
+
+  <span class="c">// 2. say what to do when a job arrives</span>
+  <span class="k">await</span> boss.work(HEARTBEAT_QUEUE, { batchSize: <span class="w">1</span> }, <span class="k">async</span> (jobs) =&gt; {
+    <span class="k">for</span> (<span class="k">const</span> job <span class="k">of</span> jobs) <span class="k">await</span> runHeartbeat(job, db);
+  });
+
+  <span class="c">// 3. schedule it. This is an upsert keyed on (queue, key), so</span>
+  <span class="c">//    re-registering on every boot neither duplicates nor drifts.</span>
+  <span class="k">await</span> boss.schedule(HEARTBEAT_QUEUE, HEARTBEAT_CRON, <span class="k">null</span>, { tz: <span class="s">"UTC"</span> });
+}
+
+<span class="k">async function</span> runHeartbeat(job, db) {
+  <span class="k">const</span> startedAt = Date.now();
+  <span class="k">const</span> result = <span class="k">await</span> db.execute(sql<span class="s">`select now() as now`</span>);
+  logger.info({
+    queue: HEARTBEAT_QUEUE,
+    job_id: job.id,
+    db_time: result.rows[<span class="w">0</span>]?.now,
+    db_latency_ms: Date.now() - startedAt,
+  }, <span class="s">"heartbeat"</span>);
+}</pre>
+      </div>
+
+      <h3>What happens between the cron string and the log line</h3>
+
+      <p>
+        Here's the part that surprises people. <code>* * * * *</code> does not mean "Node fires a timer
+        every 60 seconds". The tick travels through six hops, alternating between rows in Postgres and
+        loops inside the worker process:
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 740 640" role="img" aria-label="Six-step vertical flow of a cron tick: a schedule row in Postgres is read by the worker's timekeeper loop every 30 seconds, which inserts a job into the internal send-it queue, which a worker claims every 5 seconds and uses to send a heartbeat job, which lands in the job table and is claimed by the heartbeat worker, whose handler queries the database and writes a log line.">
+            <defs>
+              <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- step 1 : DB -->
+            <rect x="30" y="14" width="470" height="62" rx="5" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".3"/>
+            <rect x="30" y="14" width="4" height="62" fill="currentColor" opacity=".35"/>
+            <text x="48" y="34" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".5" letter-spacing="1">POSTGRES</text>
+            <text x="48" y="53" font-size="13.5" fill="currentColor">One row in <tspan font-family="IBM Plex Mono, monospace" font-size="12.5">pgboss.schedule</tspan></text>
+            <text x="48" y="70" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor" opacity=".6">heartbeat &middot; "* * * * *" &middot; UTC</text>
+
+            <line x1="265" y1="80" x2="265" y2="104" stroke="currentColor" stroke-width="1.4" opacity=".55" marker-end="url(#ar3)"/>
+            <text x="516" y="96" font-size="11.5" fill="currentColor" opacity=".6">reads</text>
+
+            <!-- step 2 : PROC -->
+            <rect x="30" y="108" width="470" height="62" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-opacity=".55"/>
+            <rect x="30" y="108" width="4" height="62" fill="var(--accent)"/>
+            <text x="48" y="128" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--accent-ink)" opacity=".8" letter-spacing="1">WORKER PROCESS</text>
+            <text x="48" y="147" font-size="13.5" fill="currentColor">Timekeeper loop wakes</text>
+            <text x="48" y="164" font-size="11.5" fill="currentColor" opacity=".65">takes a database lock first, so 3 workers still tick once</text>
+            <text x="516" y="145" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)">every 30s</text>
+
+            <line x1="265" y1="174" x2="265" y2="198" stroke="currentColor" stroke-width="1.4" opacity=".55" marker-end="url(#ar3)"/>
+            <text x="516" y="190" font-size="11.5" fill="currentColor" opacity=".6">if due, inserts</text>
+
+            <!-- step 3 : DB -->
+            <rect x="30" y="202" width="470" height="62" rx="5" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".3"/>
+            <rect x="30" y="202" width="4" height="62" fill="currentColor" opacity=".35"/>
+            <text x="48" y="222" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".5" letter-spacing="1">POSTGRES</text>
+            <text x="48" y="241" font-size="13.5" fill="currentColor">A job in <tspan font-family="IBM Plex Mono, monospace" font-size="12.5">__pgboss__send-it</tspan></text>
+            <text x="48" y="258" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".6">singletonKey heartbeat__0 &middot; 60s window</text>
+
+            <line x1="265" y1="268" x2="265" y2="292" stroke="currentColor" stroke-width="1.4" opacity=".55" marker-end="url(#ar3)"/>
+            <text x="516" y="284" font-size="11.5" fill="currentColor" opacity=".6">claims</text>
+
+            <!-- step 4 : PROC -->
+            <rect x="30" y="296" width="470" height="62" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-opacity=".55"/>
+            <rect x="30" y="296" width="4" height="62" fill="var(--accent)"/>
+            <text x="48" y="316" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--accent-ink)" opacity=".8" letter-spacing="1">WORKER PROCESS</text>
+            <text x="48" y="335" font-size="13.5" fill="currentColor">The send-it worker polls</text>
+            <text x="48" y="352" font-size="11.5" fill="currentColor" opacity=".65">then calls boss.send("heartbeat")</text>
+            <text x="516" y="333" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)">every 5s</text>
+
+            <line x1="265" y1="362" x2="265" y2="386" stroke="currentColor" stroke-width="1.4" opacity=".55" marker-end="url(#ar3)"/>
+            <text x="516" y="378" font-size="11.5" fill="currentColor" opacity=".6">writes</text>
+
+            <!-- step 5 : DB -->
+            <rect x="30" y="390" width="470" height="62" rx="5" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".3"/>
+            <rect x="30" y="390" width="4" height="62" fill="currentColor" opacity=".35"/>
+            <text x="48" y="410" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".5" letter-spacing="1">POSTGRES</text>
+            <text x="48" y="429" font-size="13.5" fill="currentColor">A row in <tspan font-family="IBM Plex Mono, monospace" font-size="12.5">pgboss.job</tspan></text>
+            <text x="48" y="446" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".6">name heartbeat &middot; state created</text>
+
+            <line x1="265" y1="456" x2="265" y2="480" stroke="currentColor" stroke-width="1.4" opacity=".55" marker-end="url(#ar3)"/>
+            <text x="516" y="472" font-size="11.5" fill="currentColor" opacity=".6">claims</text>
+
+            <!-- step 6 : PROC -->
+            <rect x="30" y="484" width="470" height="78" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+            <rect x="30" y="484" width="4" height="78" fill="var(--accent)"/>
+            <text x="48" y="504" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--accent-ink)" opacity=".8" letter-spacing="1">WORKER PROCESS &mdash; OUR CODE</text>
+            <text x="48" y="523" font-size="13.5" fill="currentColor">The heartbeat worker runs the handler</text>
+            <text x="48" y="541" font-size="11.5" fill="currentColor" opacity=".7">select now() &nbsp;→&nbsp; pino writes the log line</text>
+            <text x="48" y="556" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent-ink)">state → completed</text>
+
+            <!-- legend -->
+            <rect x="30" y="592" width="14" height="12" rx="2" fill="var(--accent-soft)" stroke="var(--accent)"/>
+            <text x="52" y="602" font-size="11.5" fill="currentColor" opacity=".7">runs inside the Node process</text>
+            <rect x="250" y="592" width="14" height="12" rx="2" fill="var(--surface-2)" stroke="currentColor" stroke-opacity=".4"/>
+            <text x="272" y="602" font-size="11.5" fill="currentColor" opacity=".7">shared state, in Postgres</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>One tick, six hops.</b> Notice the alternation: every piece of <em>state</em> lives in
+          Postgres, every piece of <em>behaviour</em> lives in the process. That's what makes it safe
+          to run three workers, or to kill one mid-tick &mdash; nothing important is only in memory.
+        </figcaption>
+      </figure>
+
+      <h3>The bit that stops duplicate ticks</h3>
+
+      <p>
+        Step&nbsp;3 inserts with <code>singletonKey: "heartbeat__0"</code> and a 60-second window.
+        A singleton key means <em>at most one job with this key can exist in this window</em>. So if
+        you run three worker instances and two of them notice the same minute has passed, the second
+        insert is silently dropped. You get one tick, not three.
+      </p>
+
+      <p>
+        This is the same idea as the unique indexes in the last section, applied to jobs instead of
+        rows. It's also exactly what will stop two overlapping polls of the same subreddit in M1.
+      </p>
+
+      <h3>The actual output</h3>
+
+      <div class="code-block">
+        <div class="code-title"><span>worker log &mdash; three consecutive ticks</span><span>ansi stripped</span></div>
+<pre>[03:34:48.985] INFO: worker starting
+    env: <span class="s">"development"</span>
+[03:34:49.559] INFO: pg-boss started
+[03:34:49.852] INFO: heartbeat scheduled
+    queue: <span class="s">"heartbeat"</span>
+    cron: <span class="s">"* * * * *"</span>
+[03:34:49.855] INFO: health endpoint listening
+    port: <span class="w">8080</span>
+[03:34:49.855] INFO: worker ready
+
+[03:35:56.261] INFO: heartbeat
+    job_id: <span class="s">"17cfab09-dac5-4752-a4e0-a72e5e502d8e"</span>
+    db_time: <span class="s">"2026-09-07 03:35:59.094851+00"</span>
+    db_latency_ms: <span class="w">217</span>
+[03:36:50.484] INFO: heartbeat
+    job_id: <span class="s">"e5de9726-f159-4b89-b5b3-e95f7266c526"</span>
+    db_latency_ms: <span class="w">206</span>
+[03:37:50.650] INFO: heartbeat
+    job_id: <span class="s">"e3ce20e9-7286-44b7-aa34-589a63daa1df"</span></pre>
+      </div>
+
+      <p>
+        Three ticks, three <em>different</em> job ids &mdash; which is the detail that proves these are
+        genuinely separate jobs flowing through the queue rather than one handler being called in a
+        loop. Cross-checked against <code>pgboss.job</code>, all rows in state <code>completed</code>.
+      </p>
+    </section>
+
+    <!-- ============================================================ DRIFT -->
+    <section id="drift">
+      <div class="sec-head">
+        <span class="kicker">A thing worth knowing</span>
+        <h2>Why the ticks land at :50, not :00</h2>
+      </div>
+
+      <p>
+        Look at those timestamps again: <code>03:35:56</code>, <code>03:36:50</code>,
+        <code>03:37:50</code>. Sixty seconds apart, but consistently ~50 seconds <em>past</em> the
+        minute rather than on it. That's not a bug, and understanding why teaches you what kind of
+        scheduler this is.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 880 210" role="img" aria-label="Timeline across one minute showing that although the cron time is due at zero seconds, the timekeeper only wakes every 30 seconds, and after it inserts the job the send-it worker adds up to 5 more seconds, so the log line lands around 50 to 56 seconds past the minute.">
+            <defs>
+              <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <!-- axis -->
+            <line x1="56" y1="118" x2="828" y2="118" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/>
+            <g font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55" text-anchor="middle">
+              <line x1="56"  y1="113" x2="56"  y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="56"  y="140">:00</text>
+              <line x1="184" y1="113" x2="184" y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="184" y="140">:10</text>
+              <line x1="313" y1="113" x2="313" y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="313" y="140">:20</text>
+              <line x1="442" y1="113" x2="442" y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="442" y="140">:30</text>
+              <line x1="570" y1="113" x2="570" y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="570" y="140">:40</text>
+              <line x1="699" y1="113" x2="699" y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="699" y="140">:50</text>
+              <line x1="828" y1="113" x2="828" y2="124" stroke="currentColor" stroke-opacity=".45"/><text x="828" y="140">:60</text>
+            </g>
+
+            <!-- cron due -->
+            <line x1="56" y1="52" x2="56" y2="112" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3" opacity=".6"/>
+            <circle cx="56" cy="118" r="4" fill="currentColor" opacity=".6"/>
+            <text x="64" y="46" font-size="12" fill="currentColor" opacity=".75">cron time due</text>
+            <text x="64" y="62" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".5">the minute boundary</text>
+
+            <!-- timekeeper wakes -->
+            <circle cx="313" cy="118" r="4.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/>
+            <line x1="313" y1="118" x2="313" y2="88" stroke="currentColor" stroke-width="1.1" opacity=".45"/>
+            <text x="313" y="80" font-size="11.5" fill="currentColor" opacity=".6" text-anchor="middle">timekeeper wakes</text>
+
+            <circle cx="699" cy="118" r="5.5" fill="var(--accent)"/>
+            <line x1="699" y1="118" x2="699" y2="88" stroke="var(--accent)" stroke-width="1.4"/>
+            <text x="699" y="80" font-size="11.5" fill="var(--accent-ink)" text-anchor="middle">wakes, sees it's due</text>
+
+            <!-- 30s bracket -->
+            <line x1="313" y1="160" x2="699" y2="160" stroke="currentColor" stroke-width="1.1" opacity=".45"/>
+            <line x1="313" y1="155" x2="313" y2="165" stroke="currentColor" opacity=".45"/>
+            <line x1="699" y1="155" x2="699" y2="165" stroke="currentColor" opacity=".45"/>
+            <text x="506" y="177" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity=".6" text-anchor="middle">cronMonitorIntervalSeconds = 30</text>
+
+            <!-- tail -->
+            <line x1="705" y1="118" x2="790" y2="118" stroke="var(--accent)" stroke-width="2.4" marker-end="url(#ar4)" color="var(--accent)"/>
+            <circle cx="795" cy="118" r="5.5" fill="var(--accent)"/>
+            <text x="800" y="103" font-size="11.5" fill="var(--accent-ink)" text-anchor="end">log line</text>
+            <text x="800" y="176" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" opacity=".55" text-anchor="end">+ send-it poll ≤5s</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>Two polling layers stack.</b> The 30-second cron monitor decides <em>which minute</em> you
+          land in; the 5-second send-it poll adds the tail. Where in the minute you settle depends on
+          when the process booted &mdash; ours booted at <code>:48</code> and settled at <code>:50</code>.
+        </figcaption>
+      </figure>
+
+      <p>
+        So pg-boss guarantees <strong>"once per minute"</strong>, not <strong>"on the minute"</strong>.
+        That's the right guarantee for this product, and it costs nothing on any job we plan to run:
+      </p>
+
+      <ul>
+        <li>A poll that runs every 10&ndash;15 minutes does not care about 40 seconds.</li>
+        <li>A daily digest scheduled for 7&nbsp;a.m. arrives at 7:00:40. Nobody notices.</li>
+      </ul>
+
+      <div class="note caution">
+        <span class="note-label">Where this would bite</span>
+        <p>
+          If you ever need something to fire at an exact wall-clock second &mdash; a market open, a
+          countdown, an SLA measured in seconds &mdash; do not reach for a database-polling scheduler.
+          Know this limitation now so you recognise it later, rather than discovering it in
+          production.
+        </p>
+      </div>
+    </section>
+
+    <!-- ========================================================== HEALTHZ -->
+    <section id="healthz">
+      <div class="sec-head">
+        <span class="kicker">You asked about this one</span>
+        <h2>The health endpoint</h2>
+      </div>
+
+      <p>
+        The whole thing is thirty lines and it is the only HTTP in the entire worker:
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>apps/worker/src/http.ts</span></div>
+<pre>app.get(<span class="s">"/healthz"</span>, <span class="k">async</span> (c) =&gt; {
+  <span class="k">try</span> {
+    <span class="k">await</span> db.execute(sql<span class="s">`select 1`</span>);
+    <span class="k">return</span> c.json({ status: <span class="s">"ok"</span> });
+  } <span class="k">catch</span> (error) {
+    logger.error({ err: error }, <span class="s">"healthz database check failed"</span>);
+    <span class="k">return</span> c.json({ status: <span class="s">"degraded"</span>, database: <span class="s">"unreachable"</span> }, <span class="w">503</span>);
+  }
+});</pre>
+      </div>
+
+      <h3>Why it needs to exist at all</h3>
+
+      <p>
+        Here's the problem it solves. A worker has <strong>no user-visible surface</strong>. If a web
+        server dies, someone loads the page and sees an error within seconds. If a worker dies, it
+        dies <em>silently</em> &mdash; and you find out tomorrow morning when no digest arrives.
+        For a product whose entire promise is "you won't miss leads", that's the worst possible
+        failure.
+      </p>
+
+      <p>
+        So the worker exposes one URL that says "I'm fine". The hosting platform &mdash; Railway, in
+        our case &mdash; pings it on a schedule. If it stops returning <code>200</code>, Railway
+        restarts the container and can alert you. The worker gets an immune system it can't give
+        itself.
+      </p>
+
+      <figure>
+        <div class="fig-frame">
+          <svg viewBox="0 0 860 200" role="img" aria-label="Request path: Railway sends a GET to slash healthz, Hono handles it and runs a select 1 query against Postgres; if the query succeeds the endpoint returns 200 with status ok, and if it throws it returns 503 with status degraded, which causes Railway to restart the container.">
+            <defs>
+              <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+
+            <rect x="14" y="60" width="130" height="54" rx="5" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+            <text x="79" y="83" font-size="13" fill="currentColor" text-anchor="middle" opacity=".85">Railway</text>
+            <text x="79" y="100" font-size="11" fill="currentColor" text-anchor="middle" opacity=".55">pings on a schedule</text>
+
+            <line x1="150" y1="87" x2="222" y2="87" stroke="currentColor" stroke-width="1.4" opacity=".6" marker-end="url(#ar5)"/>
+            <text x="186" y="78" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".6" text-anchor="middle">GET /healthz</text>
+
+            <rect x="230" y="60" width="150" height="54" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+            <text x="305" y="83" font-size="13" fill="var(--accent-ink)" text-anchor="middle">Hono handler</text>
+            <text x="305" y="100" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="currentColor" text-anchor="middle" opacity=".65">in the worker</text>
+
+            <line x1="386" y1="87" x2="458" y2="87" stroke="currentColor" stroke-width="1.4" opacity=".6" marker-end="url(#ar5)"/>
+            <text x="422" y="78" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity=".6" text-anchor="middle">select 1</text>
+
+            <rect x="466" y="60" width="130" height="54" rx="5" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+            <text x="531" y="83" font-size="13" fill="currentColor" text-anchor="middle" opacity=".85">Postgres</text>
+            <text x="531" y="100" font-size="11" fill="currentColor" text-anchor="middle" opacity=".55">through the pool</text>
+
+            <!-- ok path -->
+            <path d="M 602 74 L 660 74 L 660 34 L 700 34" fill="none" stroke="var(--ok)" stroke-width="1.6" marker-end="url(#ar5)" color="var(--ok)"/>
+            <rect x="706" y="14" width="140" height="42" rx="5" fill="none" stroke="var(--ok)" stroke-width="1.5"/>
+            <text x="776" y="32" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ok)" text-anchor="middle">200 ok</text>
+            <text x="776" y="47" font-size="11" fill="currentColor" text-anchor="middle" opacity=".6">nothing happens</text>
+
+            <!-- fail path -->
+            <path d="M 602 100 L 660 100 L 660 146 L 700 146" fill="none" stroke="var(--crit)" stroke-width="1.6" marker-end="url(#ar5)" color="var(--crit)"/>
+            <rect x="706" y="122" width="140" height="52" rx="5" fill="none" stroke="var(--crit)" stroke-width="1.5"/>
+            <text x="776" y="141" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--crit)" text-anchor="middle">503 degraded</text>
+            <text x="776" y="157" font-size="11" fill="currentColor" text-anchor="middle" opacity=".6">Railway restarts</text>
+            <text x="776" y="170" font-size="11" fill="currentColor" text-anchor="middle" opacity=".6">the container</text>
+
+            <text x="614" y="66" font-size="10.5" fill="var(--ok)">query returns</text>
+            <text x="614" y="118" font-size="10.5" fill="var(--crit)">query throws</text>
+          </svg>
+        </div>
+        <figcaption>
+          <b>The endpoint checks a dependency, not just itself.</b> Answering the HTTP request at all
+          proves the process is alive; running <code>select 1</code> proves it can still do its job.
+          A worker that can't reach Postgres is running but useless &mdash; and reporting that
+          honestly is the point.
+        </figcaption>
+      </figure>
+
+      <h3>Liveness versus readiness</h3>
+
+      <p>These are two different questions, and mixing them up causes real outages:</p>
+
+      <ul>
+        <li><strong>Liveness</strong> &mdash; "is this process alive?" The cheapest possible answer is returning <code>200</code> with no work at all. If this fails, restarting definitely helps.</li>
+        <li><strong>Readiness</strong> &mdash; "can this process actually do its job?" Requires checking dependencies. If this fails, restarting might not help &mdash; the database could be down.</li>
+      </ul>
+
+      <p>
+        Ours is a readiness check, which is a deliberate trade. The risk is a <em>restart loop</em>:
+        if Supabase has a thirty-second blip, we return <code>503</code>, Railway restarts us, the new
+        process also can't reach the database, and round it goes.
+      </p>
+
+      <p>
+        We accepted that because a worker that can't reach Postgres genuinely cannot do anything
+        &mdash; every job it runs would fail anyway. The restart is noise, not damage. But you should
+        know the alternative exists: split into <code>/healthz</code> (always 200 if the process runs)
+        and <code>/readyz</code> (checks the database), and point the platform's restart policy at
+        the first one and your alerting at the second.
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>verified during the M0 exit test</span></div>
+<pre>$ curl -s -w <span class="s">"\nHTTP %{http_code}\n"</span> http://localhost:8080/healthz
+{<span class="s">"status"</span>:<span class="s">"ok"</span>}
+HTTP <span class="w">200</span></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================== ENV -->
+    <section id="env">
+      <div class="sec-head">
+        <span class="kicker">Configuration</span>
+        <h2>Crashing on purpose</h2>
+      </div>
+
+      <p>
+        Every environment variable is validated at boot against a Zod schema, and the process
+        <strong>exits immediately</strong> if anything is missing or malformed.
+      </p>
+
+      <p>
+        That sounds hostile. It's the opposite. Consider the alternative: a typo'd
+        <code>RESEND_API_KEY</code> in a worker with no validation. The process boots happily. It runs
+        for fourteen hours. At 7&nbsp;a.m. the digest job fires, the Resend call throws, the job
+        retries three times and fails, and your customer gets nothing. You find out from them.
+      </p>
+
+      <p>
+        With validation, the same typo kills the process on deploy, in front of you, with the variable
+        named. <strong>Fail at the moment of the mistake, not eight hours later in front of a
+        customer.</strong>
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>what a bad config looks like</span></div>
+<pre>$ DATABASE_URL=<span class="s">"not-a-postgres-url"</span> pnpm --filter @intentowl/worker dev
+
+Invalid environment configuration:
+  - DATABASE_URL: Invalid URL
+
+See .env.example.
+<span class="c">$ echo $?</span>
+1</pre>
+      </div>
+
+      <h3>Required now, required later</h3>
+
+      <p>
+        Only <code>DATABASE_URL</code> is required today. The Reddit, Anthropic, Resend and Stripe keys
+        are all optional &mdash; because the code that uses them doesn't exist yet, and demanding them
+        would make the skeleton unrunnable for no benefit. Each one gets promoted to required in the
+        milestone that introduces its job. The schema is annotated so you can see which:
+      </p>
+
+      <div class="code-block">
+        <div class="code-title"><span>apps/worker/src/env.ts</span></div>
+<pre><span class="k">const</span> schema = z.object({
+  DATABASE_URL: z.url({ protocol: <span class="s">/^postgres(ql)?$/</span> }),   <span class="c">// required now</span>
+  LOG_LEVEL: z.enum([<span class="s">"info"</span>, <span class="s">"debug"</span>, <span class="c">/* ... */</span>]).default(<span class="s">"info"</span>),
+  PORT: z.coerce.number().int().positive().default(<span class="w">8080</span>),
+
+  <span class="c">// M1</span>
+  REDDIT_CLIENT_ID: z.string().optional(),
+  <span class="c">// M2</span>
+  ANTHROPIC_API_KEY: z.string().optional(),
+  <span class="c">// M3</span>
+  RESEND_API_KEY: z.string().optional(),
+});</pre>
+      </div>
+
+      <div class="note">
+        <span class="note-label">One subtle bug worth knowing</span>
+        <p>
+          A line reading <code>OPS_SLACK_WEBHOOK_URL=</code> in <code>.env</code> sets the variable to
+          an <em>empty string</em>, not to nothing. An empty string is a value, so
+          <code>.optional()</code> doesn't skip it &mdash; it gets handed to the URL validator, which
+          correctly rejects it. So the loader strips empty strings before parsing, which makes
+          <code>FOO=</code> mean exactly what everyone expects it to mean.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================= LOGS -->
+    <section id="logs">
+      <div class="sec-head">
+        <span class="kicker">Observability</span>
+        <h2>Logs you can query</h2>
+      </div>
+
+      <p>
+        The worker logs through <strong>pino</strong>, which writes structured JSON rather than
+        sentences. In development it's piped through a prettifier so it's readable; in production the
+        raw JSON goes to Railway.
+      </p>
+
+      <p>The difference matters once you have customers. Compare:</p>
+
+      <div class="code-block">
+        <div class="code-title"><span>unstructured &mdash; you can only grep it</span></div>
+<pre>Polled r/SaaS for customer 3f2a and got 41 items in 812ms</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-title"><span>structured &mdash; you can query it</span></div>
+<pre>{<span class="s">"level"</span>:30,<span class="s">"app"</span>:<span class="s">"worker"</span>,<span class="s">"customer_id"</span>:<span class="s">"3f2a..."</span>,<span class="s">"watch_id"</span>:<span class="s">"9c1e..."</span>,
+ <span class="s">"source"</span>:<span class="s">"reddit"</span>,<span class="s">"venue"</span>:<span class="s">"r/SaaS"</span>,<span class="s">"items"</span>:41,<span class="s">"duration_ms"</span>:812,<span class="s">"msg"</span>:<span class="s">"poll complete"</span>}</pre>
+      </div>
+
+      <p>
+        With the second, "show me every poll for customer 3f2a that took over two seconds yesterday"
+        is a query. With the first it's an afternoon of regex. That's why the convention is
+        <strong>every log line carries <code>customer_id</code> and <code>watch_id</code> wherever
+        they're known</strong> &mdash; when something goes wrong for one customer, you filter to
+        their rows instead of reading everyone's.
+      </p>
+
+      <p>
+        The logger also has a redaction list, so a connection string or API key that ends up inside a
+        logged object gets replaced with <code>[redacted]</code> rather than written to a log
+        aggregator you don't fully control.
+      </p>
+    </section>
+
+    <!-- ============================================================== RUN -->
+    <section id="run">
+      <div class="sec-head">
+        <span class="kicker">Hands on</span>
+        <h2>Running it yourself</h2>
+      </div>
+
+      <p>What happens, in order, when you start the worker:</p>
+
+      <ol class="steps">
+        <li><strong>Load and validate config.</strong> <code>.env</code> is read from the repo root and parsed against the Zod schema. Anything wrong &mdash; exit 1, with the offending variable named.</li>
+        <li><strong>Open the database pool.</strong> Up to 10 connections, shared by every job.</li>
+        <li><strong>Start pg-boss.</strong> It installs or migrates its own <code>pgboss</code> schema on first run, then starts its maintenance and cron loops.</li>
+        <li><strong>Register jobs.</strong> Create the queue, attach the handler, upsert the cron schedule. All three are idempotent, which is why re-registering on every boot is safe.</li>
+        <li><strong>Start the health server</strong> on port 8080.</li>
+        <li><strong>Wait.</strong> The process now stays up, waking when there's a job, until it gets a shutdown signal.</li>
+      </ol>
+
+      <div class="code-block">
+        <div class="code-title"><span>the commands that matter</span></div>
+<pre><span class="c"># both apps in watch mode</span>
+pnpm dev
+
+<span class="c"># just the worker</span>
+pnpm --filter @intentowl/worker dev
+
+<span class="c"># schema changes</span>
+pnpm db:generate
+pnpm db:migrate
+
+<span class="c"># browse the data in a GUI</span>
+pnpm db:studio
+
+<span class="c"># is the database reachable?</span>
+pnpm cli ping
+
+<span class="c"># is the worker healthy?</span>
+curl http://localhost:8080/healthz</pre>
+      </div>
+
+      <h3>Shutting down without losing work</h3>
+
+      <p>
+        When the worker gets <code>SIGTERM</code> &mdash; which is what a hosting platform sends before
+        replacing a container &mdash; it doesn't just die. It stops accepting new jobs, waits up to
+        thirty seconds for in-flight ones to finish, closes the HTTP server, and drains the connection
+        pool.
+      </p>
+
+      <p>
+        Without that, a deploy in the middle of a classify job leaves it stuck in <code>active</code>
+        state until pg-boss's supervisor times it out and retries. Not fatal, but it's a class of
+        confusing bug you can simply not have.
+      </p>
+
+      <div class="note caution">
+        <span class="note-label">Not yet verified</span>
+        <p>
+          The shutdown handler is written and wired, but Windows can't deliver a real
+          <code>SIGINT</code>/<code>SIGTERM</code> to a detached console process, so it was never
+          exercised locally &mdash; the worker had to be force-killed. It will run properly on Railway,
+          which is Linux. Treat it as <em>written</em> rather than <em>tested</em> until a real deploy
+          proves it.
+        </p>
+      </div>
+    </section>
+
+    <!-- ========================================================= GLOSSARY -->
+    <section id="glossary">
+      <div class="sec-head">
+        <span class="kicker">Reference</span>
+        <h2>Glossary</h2>
+      </div>
+
+      <dl class="glossary">
+        <div class="gloss-row"><dt>monorepo</dt><dd>Several projects in one Git repository that can import each other directly, with no publishing step in between.</dd></div>
+        <div class="gloss-row"><dt>workspace</dt><dd>One package inside a monorepo. <code>workspace:*</code> in a dependency list means "use the local folder, don't download from npm".</dd></div>
+        <div class="gloss-row"><dt>ORM</dt><dd>Object-Relational Mapper. Lets you write database queries in TypeScript and get typed results back. Drizzle is a thin one &mdash; it stays close to SQL rather than hiding it.</dd></div>
+        <div class="gloss-row"><dt>migration</dt><dd>A numbered SQL file describing one change to the schema. Applied in order, tracked so each runs exactly once. This is how the database in your head, in your repo, and in production stay the same.</dd></div>
+        <div class="gloss-row"><dt>idempotent</dt><dd>Running it twice has the same effect as running it once. The property that makes retries safe.</dd></div>
+        <div class="gloss-row"><dt>upsert</dt><dd>Insert, or update instead if a row with that key already exists. In Postgres: <code>INSERT ... ON CONFLICT DO UPDATE</code>.</dd></div>
+        <div class="gloss-row"><dt>cron expression</dt><dd>Five fields &mdash; minute, hour, day-of-month, month, day-of-week. <code>* * * * *</code> is "every minute"; <code>0 7 * * *</code> is "07:00 daily".</dd></div>
+        <div class="gloss-row"><dt>singleton key</dt><dd>A label on a job meaning "only one job with this label may exist at a time". Stops duplicate ticks and overlapping polls.</dd></div>
+        <div class="gloss-row"><dt>dead letter</dt><dd>Where a job goes after exhausting its retries, so failures accumulate somewhere visible instead of vanishing.</dd></div>
+        <div class="gloss-row"><dt>connection pool</dt><dd>A set of reusable database connections. Opening one per query is slow; the pool hands out and recycles a fixed number.</dd></div>
+        <div class="gloss-row"><dt>session pooler</dt><dd>Supabase's connection proxy that keeps one database session per client (port 5432). The <em>transaction</em> pooler on 6543 is faster but drops session state, which breaks migrations and pg-boss.</dd></div>
+        <div class="gloss-row"><dt>cursor</dt><dd>A saved marker of "how far we got last time", so the next poll fetches only what's new instead of everything.</dd></div>
+        <div class="gloss-row"><dt>multi-tenant</dt><dd>One deployment serving many customers, with every row tagged by <code>customer_id</code> rather than a separate database per customer.</dd></div>
+      </dl>
+    </section>
+
+    <!-- ============================================================= NEXT -->
+    <section id="next">
+      <div class="sec-head">
+        <span class="kicker">Roadmap</span>
+        <h2>What comes next</h2>
+      </div>
+
+      <p>
+        Each milestone is only finished when its exit test passes &mdash; a specific, demonstrable
+        thing, not a feeling that the code looks done. That's what stops "mostly working" from
+        accumulating into a system nobody trusts.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Milestone</th><th>Builds</th><th>Exit test</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">M0 <span class="tag now">done</span></td>
+              <td>Monorepo, schema, pg-boss</td>
+              <td>Worker logs a heartbeat every minute</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M1</td>
+              <td>Reddit + HN adapters, cursors, rate limiter</td>
+              <td>Real items land in <code>items</code>; re-running inserts zero duplicates</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M2</td>
+              <td>Pre-filter rules, Haiku classifier, eval harness</td>
+              <td><code>pnpm eval</code> reports ≥80% precision on a hand-labelled golden set</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M3</td>
+              <td>Scoring, React Email template, Resend send</td>
+              <td>A digest lands in your inbox and looks worth $49</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M4</td>
+              <td>Cron registration, timezones, customer seeding</td>
+              <td>Runs 24h unattended and sends on schedule</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M5</td>
+              <td>Landing page, Stripe Payment Links, webhook</td>
+              <td>A $1 test purchase creates an active customer</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M6</td>
+              <td>Bluesky + RSS, feedback links, ops reporting</td>
+              <td>Post-revenue polish</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">M7</td>
+              <td>Auth, dashboard, onboarding wizard, billing portal</td>
+              <td>Self-serve v1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        M5 is the line that matters: everything up to it is the sellable concierge MVP, roughly
+        8&ndash;12 hours of work. Everything after it is funded by revenue rather than hope.
+      </p>
+
+      <h3>If you read one thing again</h3>
+
+      <p>
+        Read the <a href="#idempotent">idempotency</a> section. Nearly every design decision in this
+        codebase &mdash; the unique indexes, the singleton keys, the upserts, the "check
+        <code>digests</code> before sending" rule &mdash; is the same idea applied in a different
+        place. Once you see it, the rest of the architecture stops looking like a pile of choices
+        and starts looking like one choice, made consistently.
+      </p>
+
+      <p class="closer">
+        IntentOwl &mdash; milestone M0, commit <span class="mono">d933620</span>. Schema and migration
+        applied to Supabase; heartbeat verified against <code>pgboss.job</code> across three
+        consecutive ticks. The authoritative spec is <span class="mono">docs/ARCHITECTURE.md</span>;
+        where this walkthrough and that document disagree, the spec wins.
+      </p>
+    </section>
+
+  </main>
+</div>
