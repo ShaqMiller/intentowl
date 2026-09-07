@@ -29,6 +29,9 @@ importers:
       '@intentowl/db':
         specifier: workspace:*
         version: link:../../packages/db
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@types/pg@8.23.1)(pg@8.23.0)
       next:
         specifier: 15.5.25
         version: 15.5.25(@types/node@22.20.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -38,6 +41,9 @@ importers:
       react-dom:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
+      stripe:
+        specifier: 22.6.1
+        version: 22.6.1(@types/node@22.20.1)
       zod:
         specifier: 4.5.4
         version: 4.5.4
@@ -1946,6 +1952,15 @@ packages:
     resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
     engines: {node: '>=14.16'}
 
+  stripe@22.6.1:
+    resolution: {integrity: sha512-hAKSkGeVt2u46TRYhmnvwmVHxBNtOCJnPjc+SH5sP2B2ypElYzAAY3Ljx0Ar8C2w8nfpFQiZ95qoDCDsFkXMTA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': '>=18'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   styled-jsx@5.1.6:
     resolution: {integrity: sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==}
     engines: {node: '>= 12.0.0'}
@@ -3488,6 +3503,10 @@ snapshots:
       ansi-regex: 5.0.1
 
   strip-json-comments@5.0.3: {}
+
+  stripe@22.6.1(@types/node@22.20.1):
+    optionalDependencies:
+      '@types/node': 22.20.1
 
   styled-jsx@5.1.6(react@19.2.8):
     dependencies:

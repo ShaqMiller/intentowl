@@ -7,7 +7,7 @@
  * 10: a misconfigured worker must die at startup, not silently skip a 7am send.
  */
 import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 import type { z } from "zod";
 
@@ -21,8 +21,31 @@ let loaded = false;
 export function loadRootEnv(): void {
   if (loaded) return;
   loaded = true;
-  const rootEnv = fileURLToPath(new URL("../../.env", import.meta.url));
-  if (existsSync(rootEnv)) process.loadEnvFile(rootEnv);
+
+  // Walk up from the working directory rather than resolving from
+  // `import.meta.url`. Next.js bundles this module for its server build, and
+  // the bundler does not preserve `import.meta.url` — a URL object then
+  // reaches `process.loadEnvFile`, which accepts only a string, and the build
+  // fails with a type error a long way from its cause.
+  let dir = process.cwd();
+  for (let depth = 0; depth < 6; depth += 1) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) {
+      const envFile = join(dir, ".env");
+      // Never fatal: a deployed environment supplies real env vars and has no
+      // .env file at all, which must not stop the process booting.
+      if (existsSync(envFile)) {
+        try {
+          process.loadEnvFile(envFile);
+        } catch {
+          /* malformed or unreadable — the Zod parse below reports what is missing */
+        }
+      }
+      return;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return;
+    dir = parent;
+  }
 }
 
 /**
