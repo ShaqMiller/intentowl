@@ -17,9 +17,21 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M2** (M0, M1 complete).
+- Current milestone: **M2** (M0, M1 complete). M3 was built ahead of it because
+  M2's exit test is blocked on API credits — see Open items before assuming
+  either is done.
 
 ## Open items carried forward
+
+- **M2 is unmeasured.** `pnpm eval` has never completed a run: the Anthropic
+  account has no credits. The rubric, cascade and Batch API path are written
+  and typechecked but have made zero successful live calls. M2 is NOT complete.
+- **M3 is built but unsent.** Scoring, the React Email template, Resend and
+  Slack delivery all exist, and `pnpm cli send-digest --dry-run` renders a real
+  preview to `docs/digest-preview.html`. The exit test — a digest landing in a
+  real inbox — has not been run, and the preview's reason and reply-angle text
+  comes from golden-set labels rather than model output. Layout, ranking and
+  grouping are real; the words are placeholder.
 
 - **Reddit API access is unverified.** The adapter is built and covered by
   tests against recorded fixtures, but it has never touched the live API:

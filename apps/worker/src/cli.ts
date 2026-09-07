@@ -9,6 +9,9 @@
  *   M3  send-digest --customer=<id> [--dry-run]
  *   M4  seed --file=<customer.json>
  */
+import { writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { sourceName, type SourceName } from "@intentowl/core";
 import { createDb, schema } from "@intentowl/db";
 import { eq, sql } from "drizzle-orm";
@@ -17,6 +20,7 @@ import { createAdapters } from "./adapters.ts";
 import { createBoss } from "./boss.ts";
 import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
+import { runDigest } from "./jobs/digest.ts";
 import { runPoll } from "./jobs/poll.ts";
 import { logger } from "./logger.ts";
 
@@ -33,7 +37,11 @@ const USAGE = `intentowl cli
       Submit the pending backlog through the Batch API at 50% off. Returns
       immediately; the worker polls and collects. Requires a running worker.
 
-  send-digest --customer=<id> [--dry-run]      (M3)
+  send-digest --customer=<id> [--dry-run] [--force]
+      Build today's digest. --dry-run renders it to docs/digest-preview.html
+      and sends nothing. Without it, the digest is recorded and emailed, once
+      per customer per local day unless --force.
+
   seed --file=<customer.json>                  (M4)
 `;
 
@@ -52,6 +60,8 @@ async function main(): Promise<number> {
       return await classifyBatchCommand();
 
     case "send-digest":
+      return await sendDigestCommand(flags);
+
     case "seed":
       process.stderr.write(
         `"${command}" is not implemented yet — see the milestone map in ${import.meta.filename}.\n`,
@@ -92,6 +102,58 @@ async function classifyBatchCommand(): Promise<number> {
     return 0;
   } finally {
     await boss.stop({ graceful: true, close: true, timeout: 10_000 });
+  }
+}
+
+async function sendDigestCommand(flags: Flags): Promise<number> {
+  const customerId = flags.string("customer");
+  if (customerId === undefined) {
+    process.stderr.write("send-digest requires --customer=<id>\n");
+    return 1;
+  }
+
+  const dryRun = flags.boolean("dry-run");
+  const { pool, db } = createDb(env.DATABASE_URL);
+  try {
+    const outcome = await runDigest({
+      db,
+      customerId,
+      dryRun,
+      ...(flags.boolean("force") ? { force: true } : {}),
+    });
+
+    if (outcome.skipped) {
+      process.stdout.write(
+        "already sent today for this customer's local day; use --force to override\n",
+      );
+      return 0;
+    }
+
+    process.stdout.write(
+      `leads ${outcome.leadCount}` +
+        `${outcome.degraded ? "  [degraded]" : ""}` +
+        `  subject: ${outcome.subject ?? "(none)"}\n`,
+    );
+
+    if (dryRun && outcome.html !== undefined) {
+      // Written to disk rather than opened, so it can be diffed between runs
+      // and looked at in a real browser — email HTML lies in a terminal.
+      const target = fileURLToPath(
+        new URL("../../../docs/digest-preview.html", import.meta.url),
+      );
+      writeFileSync(target, outcome.html);
+      process.stdout.write(`preview written to ${target}\n`);
+      return 0;
+    }
+
+    if (outcome.error !== undefined) {
+      process.stderr.write(`${outcome.error}\n`);
+      return 1;
+    }
+    process.stdout.write(outcome.sent ? "sent\n" : "recorded but not sent\n");
+    return outcome.sent ? 0 : 1;
+  } finally {
+    await pool.end();
   }
 }
 

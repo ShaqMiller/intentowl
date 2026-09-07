@@ -8,7 +8,8 @@
     "./env": "./env.ts",
     "./adapters": "./adapters/index.ts",
     "./filter": "./filter/rules.ts",
-    "./classify": "./classify/index.ts"
+    "./classify": "./classify/index.ts",
+    "./digest": "./digest/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -18,13 +19,18 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.124.0",
+    "@react-email/components": "1.0.12",
+    "@react-email/render": "2.1.0",
+    "react": "19.2.8",
+    "resend": "6.26.0",
     "zod": "4.5.4"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
-    "vitest": "5.0.0",
-    "msw": "2.15.0",
     "@types/node": "22.20.1",
-    "tsx": "4.23.13"
+    "@types/react": "19.2.18",
+    "msw": "2.15.0",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
   }
 }

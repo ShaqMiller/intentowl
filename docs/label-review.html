@@ -1,0 +1,384 @@
+<title>Golden Set Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#F4F6F7; --surface:#FFFFFF; --surface-2:#EDF1F3;
+    --ink:#131A20; --ink-soft:#3D4A55; --muted:#5F6E7A; --faint:#8695A1;
+    --line:#D9E0E5; --line-strong:#BFCAD2;
+    --accent:#0E6E78; --accent-soft:#DCEEF0; --accent-ink:#0A545C;
+    --ok:#2E7D53; --ok-soft:#E3F2E9; --warn:#9A6510; --crit:#B3352F; --crit-soft:#FBE9E8;
+    --shadow:0 1px 2px rgba(19,26,32,.05), 0 8px 24px -12px rgba(19,26,32,.18);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --ground:#0E1418; --surface:#151D23; --surface-2:#1B252C;
+    --ink:#E4ECF1; --ink-soft:#C0CED8; --muted:#93A5B1; --faint:#71838F;
+    --line:#26323A; --line-strong:#38474F;
+    --accent:#45B5C0; --accent-soft:#13343A; --accent-ink:#7FD3DB;
+    --ok:#5CBF88; --ok-soft:#12291D; --warn:#D9A441; --crit:#E8776F; --crit-soft:#2A1614;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  } }
+  :root[data-theme="dark"] {
+    --ground:#0E1418; --surface:#151D23; --surface-2:#1B252C;
+    --ink:#E4ECF1; --ink-soft:#C0CED8; --muted:#93A5B1; --faint:#71838F;
+    --line:#26323A; --line-strong:#38474F;
+    --accent:#45B5C0; --accent-soft:#13343A; --accent-ink:#7FD3DB;
+    --ok:#5CBF88; --ok-soft:#12291D; --warn:#D9A441; --crit:#E8776F; --crit-soft:#2A1614;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+  * { box-sizing:border-box; }
+  body {
+    background:var(--ground); color:var(--ink); line-height:1.55;
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size:15px; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3 { font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif; font-weight:600; margin:0; text-wrap:balance; line-height:1.15; }
+  code,.mono { font-family:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; }
+  a { color:var(--accent); text-underline-offset:3px; }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
+
+  /* --- sticky command bar ------------------------------------------- */
+  .bar { position:sticky; top:0; z-index:10; background:var(--surface); border-bottom:1px solid var(--line); }
+  .bar-in { max-width:940px; margin:0 auto; padding:14px 20px 12px; }
+  .bar-top { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .bar h1 { font-size:19px; }
+  .kicker { font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+  .spacer { flex:1; }
+  .counts { font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .counts b { color:var(--ink); font-weight:600; }
+  .track { height:4px; background:var(--surface-2); border-radius:2px; margin-top:10px; overflow:hidden; }
+  .fill { height:100%; background:var(--accent); width:0%; transition:width .2s ease; }
+  .tabs { display:flex; gap:6px; margin-top:11px; flex-wrap:wrap; }
+  .tab {
+    font-size:12.5px; padding:4px 11px; border-radius:20px; cursor:pointer;
+    border:1px solid var(--line-strong); background:transparent; color:var(--muted);
+    font-family:inherit;
+  }
+  .tab[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .save-state { font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--faint); }
+
+  /* --- list ---------------------------------------------------------- */
+  main { max-width:940px; margin:0 auto; padding:22px 20px 120px; }
+  .intro { color:var(--ink-soft); max-width:66ch; margin:0 0 22px; font-size:15px; }
+  .intro b { color:var(--ink); }
+
+  .card {
+    background:var(--surface); border:1px solid var(--line); border-radius:8px;
+    padding:16px 18px; margin-bottom:12px; scroll-margin-top:150px;
+  }
+  .card.cur { border-color:var(--accent); box-shadow:var(--shadow); }
+  .card.done-agree { border-left:3px solid var(--ok); }
+  .card.done-disagree { border-left:3px solid var(--crit); }
+
+  .c-head { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+  .c-n { font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--faint); font-variant-numeric:tabular-nums; }
+  .c-title { font-size:15.5px; font-weight:600; flex:1; min-width:220px; }
+  .c-body { color:var(--ink-soft); font-size:14px; margin:6px 0 12px; max-width:72ch; }
+  .c-body.empty { color:var(--faint); font-style:italic; }
+
+  .verdict { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:9px; }
+  .chip {
+    font-family:"IBM Plex Mono",monospace; font-size:11px; padding:2px 8px;
+    border-radius:4px; border:1px solid; white-space:nowrap;
+  }
+  .chip.lead { color:var(--ok); border-color:color-mix(in srgb,var(--ok) 45%,transparent); background:var(--ok-soft); }
+  .chip.notlead { color:var(--muted); border-color:var(--line-strong); background:var(--surface-2); }
+  .chip.plain { color:var(--accent-ink); border-color:color-mix(in srgb,var(--accent) 35%,transparent); background:var(--accent-soft); }
+
+  .note { font-size:13.5px; color:var(--muted); border-left:2px solid var(--line-strong); padding-left:11px; margin-bottom:12px; max-width:70ch; }
+  .note-label { font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); display:block; margin-bottom:2px; }
+
+  .actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .btn {
+    font-family:inherit; font-size:13.5px; font-weight:500; padding:6px 15px;
+    border-radius:6px; border:1px solid var(--line-strong); background:var(--surface);
+    color:var(--ink); cursor:pointer;
+  }
+  .btn:hover { border-color:var(--accent); color:var(--accent); }
+  .btn.agree[aria-pressed="true"] { background:var(--ok); border-color:var(--ok); color:#fff; }
+  .btn.disagree[aria-pressed="true"] { background:var(--crit); border-color:var(--crit); color:#fff; }
+  .btn .k { font-family:"IBM Plex Mono",monospace; font-size:10.5px; opacity:.65; margin-left:6px; }
+
+  .fix { margin-top:12px; padding:12px 14px; border-radius:6px; background:var(--crit-soft); border:1px solid color-mix(in srgb,var(--crit) 25%,transparent); }
+  .fix-row { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:9px; }
+  .fix label { font-size:13px; color:var(--ink-soft); display:flex; gap:6px; align-items:center; }
+  .fix select, .fix input[type=text] {
+    font-family:inherit; font-size:13px; padding:4px 8px; border-radius:5px;
+    border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  }
+  .fix input[type=text] { width:100%; }
+  .fix .hint { font-size:12px; color:var(--muted); margin:0 0 8px; }
+
+  .empty-state { text-align:center; color:var(--muted); padding:60px 20px; }
+
+  /* --- footer summary ------------------------------------------------ */
+  .done-panel { margin-top:28px; padding:20px 22px; border:1px solid var(--line); border-radius:8px; background:var(--surface); }
+  .done-panel h2 { font-size:18px; margin-bottom:8px; }
+  .done-panel p { color:var(--ink-soft); font-size:14.5px; max-width:66ch; }
+  pre.summary {
+    background:var(--surface-2); border:1px solid var(--line); border-radius:6px;
+    padding:12px 14px; overflow-x:auto; font-size:12.5px; margin-top:12px; color:var(--ink-soft);
+  }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="bar-top">
+      <span class="kicker">IntentOwl</span>
+      <h1>Golden Set Review</h1>
+      <span class="spacer"></span>
+      <span class="counts" id="counts">—</span>
+      <span class="save-state" id="save">local only</span>
+    </div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="tabs" id="tabs">
+      <button class="tab" data-f="todo" aria-pressed="true">Unreviewed</button>
+      <button class="tab" data-f="all" aria-pressed="false">All</button>
+      <button class="tab" data-f="lead" aria-pressed="false">Marked lead</button>
+      <button class="tab" data-f="notlead" aria-pressed="false">Marked not</button>
+      <button class="tab" data-f="disagree" aria-pressed="false">Your corrections</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <p class="intro">
+    I labelled these 72 real posts against the IntentOwl profile. <b>The labels are
+    the product, and they are currently one opinion.</b> The classifier gets tuned
+    until it agrees with them, so if a label is wrong we will tune toward a wrong
+    target and the eval number will mean nothing.
+    <br><br>
+    Go fast. Most will be obvious. Press <code>a</code> to agree, <code>d</code> to
+    disagree, <code>j</code>/<code>k</code> to move. Only the disagreements matter —
+    everything is saved as you go.
+  </p>
+  <div id="list"></div>
+  <div class="done-panel" id="donePanel" hidden>
+    <h2>Review complete</h2>
+    <p id="doneText"></p>
+    <pre class="summary" id="doneSummary"></pre>
+  </div>
+</main>
+
+<script>
+const DATA = {"cases":[{"n":1,"id":"1934644","url":"https://news.ycombinator.com/item?id=1934644","title":"Ask HN Successful Startups: How did you find your first customer?","body":"It was inspiring to read the post from a couple of days ago 'Who is living off their startup fulltime?' http://news.ycombinator.com/item?id=1924909 I would like to learn the art of finding your FIRST customer, arranging meeting/phone call with them, getting them to talk to you and eventually signing them up as your beta customer. How did you go about this? Thanks","relevant":true,"intent":"pain_point","min":40,"max":75,"note":"Founder asking how others found their first customers - the acquisition problem IntentOwl serves."},{"n":2,"id":"11247715","url":"https://news.ycombinator.com/item?id=11247715","title":"Ask HN: How did you find your first 10 customers for your startup?","body":"Wondering?","relevant":true,"intent":"question","min":35,"max":70,"note":"Same question, near-empty body: genuinely ambiguous, belongs in the escalation band."},{"n":3,"id":"36776391","url":"https://news.ycombinator.com/item?id=36776391","title":"Ask HN: How to find first Customers as a freelancer?","body":"I have FAANG, Unicorn Startup, Solopreneur experience and worked with a lot of stuff already. Still, I'm not able to find any clients. I looked at Online guides which has advice like \"Tell ur friends and family\" and such. The problem is that I live in India, and I'll earn much more in a corporate than freelancing for Rupees. How do I get attention of Western clients then?","relevant":false,"intent":"pain_point","min":15,"max":40,"note":"Freelancer chasing clients, not a SaaS founder. ICP miss."},{"n":4,"id":"36457108","url":"https://news.ycombinator.com/item?id=36457108","title":"Ask HN: How did you find your first B2B customer(s) and/or product idea(s)?","body":"Based on the recent: https://news.ycombinator.com/item?id=36431268 I agree with the thread that B2B solutions can be a good area to start a company, but how do you break in? As an outsider, it's hard to identify what businesses need. Where did you get your B2B product idea and/or first customer(s)?","relevant":true,"intent":"pain_point","min":40,"max":75,"note":"B2B founder asking how to find first customers."},{"n":5,"id":"22239125","url":"https://news.ycombinator.com/item?id=22239125","title":"Ask HN: How did you find your first customers?","body":"Hi, there are thousands of possible ways how someone could find their first customers. I’m curious about how you actually found your first paying customer/s?","relevant":true,"intent":"pain_point","min":40,"max":75,"note":"Founder asking how others found first paying customers."},{"n":6,"id":"3616059","url":"https://news.ycombinator.com/item?id=3616059","title":"How to find first customers for mobile development company?","body":"Still working fulltime at my regular job, I've just started my own company and my aim is to develop mobile applications. I'm wondering what are the best ways to find my first customers? I believe after a couple of first customers all will be much easier, will it not?","relevant":false,"intent":"pain_point","min":10,"max":40,"note":"Mobile dev agency seeking clients - agencies are a stated disqualifier."},{"n":7,"id":"44144473","url":"https://news.ycombinator.com/item?id=44144473","title":"Ask HN: Anyone making a living from a paid API?","body":"Are there any solo devs or small teams out there genuinely paying their rent from selling API access? What's your API? How much MRR? What's your pricing model? How did you find your first paying customers? And most importantly - what problem are you solving that people will actually pay for monthly? Bonus points if you can share: - Your biggest challenge (rate limiting? customer support? competition?) - Whether you'd","relevant":false,"intent":"question","min":5,"max":30,"note":"API monetisation and pricing, not audience discovery."},{"n":8,"id":"2643189","url":"https://news.ycombinator.com/item?id=2643189","title":"Ask HN: How can I find a \"mission critical\" company/consumer problem?","body":"Steven Blank describes in The Four Steps to the Epiphany that successful startups supply a \"must-have\" consumer product or solve a mission critical company problem. My problem has been with idea creation. I've been developing 'cool' ideas, but nothing that people absolutely need. I really like Blank's book and I agree with his theory about developing a product hypothesis then talking to potential customers to test if","relevant":false,"intent":"question","min":5,"max":30,"note":"Looking for a problem to solve, not for customers."},{"n":9,"id":"46901498","url":"https://news.ycombinator.com/item?id=46901498","title":"Ask HN: How Did You Validate?","body":"Dear founders, I'm trying to understand common startup wisdom and it doesn't make sense to me. For example, if you give me the source code of Dropbox, I don't think I'll cross the 100K ARR in the first year. Maybe, even 1K goal would be a stretch. What would you do to get an abstract Dropbox to 1M ARR? Start with cold emails? Define ICP and spam them through Linkedin Sales Navigator, aka B2B sales playbook? I find co","relevant":false,"intent":"question","min":10,"max":35,"note":"Validation methodology question."},{"n":10,"id":"48300260","url":"https://news.ycombinator.com/item?id=48300260","title":"Ask HN: Advice on transitioning from employed dev to independent consultant","body":"Hi everyone, I’m currently a software engineer and I’d like to transition from being an employee to working independently as a consultant or advisor. My main concerns are, unsurprisingly, how to build a network and how to find the first customers. I’d love to hear from experienced independent developers: if you had to start from scratch today, what would you do to find clients? What worked for you, what didn’t, and w","relevant":false,"intent":"pain_point","min":10,"max":35,"note":"Employee to consultant transition. ICP miss."},{"n":11,"id":"2243939","url":"https://news.ycombinator.com/item?id=2243939","title":"Ask HN: How to get more users for a startup website.","body":"For the last 6 months I've been working on building my first startup. It was finally ready and launched last month. I'm trying to build a community to help people classified ads via video. I believe if everyone can watch videos of what people are selling they can save so much time traveling from place to place to check out the product. They can enjoy watching classified ads videos without leaving the comfort of their","relevant":true,"intent":"pain_point","min":50,"max":85,"note":"Launched, now trying to build a community and get users. Direct fit."},{"n":12,"id":"37683637","url":"https://news.ycombinator.com/item?id=37683637","title":"Ask HN: How to find potentials users for my startup","body":"I am currently working on a startup idea, and I would like to get some user feedback by people who have the problem I am trying to solve. How do I find people with a specific problem? (Apart from friends of friends or acquaintances). For example: If I was working on a solution for learning a language, how do I find people who are trying to learn a language?","relevant":true,"intent":"buying_intent","min":55,"max":90,"note":"Wants to find people who already have the problem - literally what IntentOwl does."},{"n":13,"id":"18813679","url":"https://news.ycombinator.com/item?id=18813679","title":"Ask HN: How to attract beta users for my SaaS startup","body":"I have launched beta version of my agile retrospective tool. And now looking to attract beta users. What are the best practices others have used to get initial users and feedback. here is link: www.reetro.io","relevant":true,"intent":"buying_intent","min":55,"max":90,"note":"SaaS beta, asking for practices to attract users. Strong buying intent."},{"n":14,"id":"26959986","url":"https://news.ycombinator.com/item?id=26959986","title":"Help me get users for my finished MVP and change the world","body":"I know this is a long shot, but I was inspired by Brian Armstrong soliciting HN and getting a chilly reception back in 2012. But I believe that there are some killers here on HN who want to enable Visigoth like sacking of competition! We have a completed MVP of something new and exciting in the social space. Think Tiktok but with a subreddit/hashtag hybrid style organizational structure with short audio, video, pics,","relevant":false,"intent":"pain_point","min":10,"max":35,"note":"Soliciting HN directly to promote an MVP."},{"n":15,"id":"2334048","url":"https://news.ycombinator.com/item?id=2334048","title":"Ask HN: The redesign of my startup, please review it.","body":"A couple weeks ago I asked HN to give me feedbacks on my website. I received great feedbacks and did a revision of my website, changing the user interface and build a community forum around it. Well the idea of my startup is very simple but I believe very meaningful. I'm trying to connect local buyers and sellers together via videos instead of photos. Giving users and sellers a better way to showcase their second han","relevant":false,"intent":"question","min":5,"max":25,"note":"Website redesign feedback request."},{"n":16,"id":"1949809","url":"https://news.ycombinator.com/item?id=1949809","title":"Building my web startup in Drupal vs. Rails?","body":"I'm the non-technical side of our startup and while I trust my partner, I just wanted to get some perspective on how we're currently building our website. We're just building a prototype at the moment, and to do this as quickly as possible my partner is using Drupal. He's new to Drupal so is learning how to use it along the way. My first feeling when he said he wanted to use Drupal was \"hmmm, a CMS - that doesn't fee","relevant":false,"intent":"none","min":0,"max":15,"note":"Drupal vs Rails stack choice."},{"n":17,"id":"31456463","url":"https://news.ycombinator.com/item?id=31456463","title":"Ask HN: Is there a web app to collect emails?","body":"I made a landing page for my startup, and I've so many things to do, so I'd prefer to save up energy and not setup Mailgun, a separate db table for emails, form validation and all that. Maybe there is a service that provides an iframe for email submission so that I could slap it on my landing page, and get my future users' emails in Airtable or something?","relevant":false,"intent":"buying_intent","min":10,"max":35,"note":"Shopping for an email-collection tool - buying intent, wrong category."},{"n":18,"id":"2164593","url":"https://news.ycombinator.com/item?id=2164593","title":"Ask HN: Review my startup, PeerLeaf","body":"http://PeerLeaf.com/ It's in private beta now - let me know if you or anyone you know would like to participate. Any advice from established guys on how to get more private beta users for a service like mine?","relevant":false,"intent":"none","min":0,"max":20,"note":"Review-my-startup promotion."},{"n":19,"id":"48390168","url":"https://news.ycombinator.com/item?id=48390168","title":"Laid off. Broke. Depressed. & idk how to market my SaaS","body":"I live in a third-world country with a family who's dependent on me. I used to work as a Software Engineer specializing in MERN Stack. I was laid off a month ago, didn't have any saving cos I was already hand-to-mouth, supporting a family of 5 with funding my brother's University fee. I am really depressed and have done nearly everything I knew to market my SaaS products but nothing's working. Tried: 1. Submitting my","relevant":true,"intent":"pain_point","min":55,"max":90,"note":"Solo founder, laid off, explicitly cannot market their SaaS. Strong fit."},{"n":20,"id":"32323260","url":"https://news.ycombinator.com/item?id=32323260","title":"Ask HN: How to market my API SaaS?","body":"Hello HN! I’m a developer and I’ve spent the last 5 years building an open source library for WebAuthn (the tech behind Passkeys) called fido2-net-lib [0]. To make adoption even easier (and the workload sustainable) we built an API [1] that really makes the technology easy to adopt and accessible within minutes. I’ve managed to get both some free and paid customers but I’m struggling with finding an efficient marketi","relevant":true,"intent":"pain_point","min":50,"max":85,"note":"Developer asking how to market an API SaaS."},{"n":21,"id":"14079048","url":"https://news.ycombinator.com/item?id=14079048","title":"Ask HN: Landing page improvement suggestions and ideas how to market my SaaS?","body":"Hello HN, I am soon launching my first paid SaaS product and I would love to improve my landing page to be more informative and relevant. The SaaS product is targeting a very specific audience so my current version of the landing page[1] assumes that the user knows what a (web)hook is. I am an author of an open-source self hosted tool named webhook[2] and it has validated that the problem I had, others have as well a","relevant":true,"intent":"pain_point","min":45,"max":80,"note":"Launching a SaaS, asking how to market it."},{"n":22,"id":"8807343","url":"https://news.ycombinator.com/item?id=8807343","title":"Ask HN: Is my SaaS a cost saver or a value provider?","body":"I have a SaaS that let's people extract data from PDF and Video files. The reason I'm asking is I want to know on what side of the fence I am on in order to know how to price and market my SaaS better. Common theme about all of my customers is that. They are already have the pdf and video files that they wish to target. They have tried other methods such as manual or paying someone. They have successfully been able t","relevant":false,"intent":"question","min":10,"max":35,"note":"Positioning question, not acquisition."},{"n":23,"id":"26197854","url":"https://news.ycombinator.com/item?id=26197854","title":"Ask HN: How to market and sale SaaS product?","body":"The classic problem: we have a product, 4-5 people validated it and two bought it. But, how do I market my SaaS product? Without spending thousands of dollars on user acquisition, are there any ways new founders with little network can employ? I have tried posting to Reddit, but mods removed post aggressively. I haven’t tried PH and HN. Any other suggestions for solo founders?","relevant":true,"intent":"pain_point","min":55,"max":90,"note":"How to market a SaaS without spending thousands. Bullseye."},{"n":24,"id":"20734274","url":"https://news.ycombinator.com/item?id=20734274","title":"How can I market my SaaS product to founders?","body":"I have an online equity calculator tool for the founders of early-stage, bootstrapped companies. What are some good ways to target this audience?","relevant":true,"intent":"pain_point","min":50,"max":85,"note":"Asking how to reach a specific founder audience."},{"n":25,"id":"12393607","url":"https://news.ycombinator.com/item?id=12393607","title":"Ask HN: Handle my two SaaS platforms as one single brand or 2 independent ones?","body":"Here’s the brief background story: I am running a Digital Business Card platform called Pixelhub (http://pixelhub.me) since 2009. The platform allows users to build a personal page that works as their contact card and personal hub. While the service has evolved over the years, we have noticed that there’s many people (mostly freelancers) that don’t have the need for an independent personal page (as Pixelhub.me offers","relevant":false,"intent":"question","min":5,"max":30,"note":"Brand architecture question across two products."},{"n":26,"id":"42975014","url":"https://news.ycombinator.com/item?id=42975014","title":"Learned to code, built a SaaS, now have paid customers from 40 countries","body":"6 months ago I first had the idea for my latest project. I wanted to create a platform where founders get everything they need to build their products. The core of it would be an AI that learns about their project as they build. Now I’m proud to say that we have 4000+ founders on our platform. But let’s back up a bit so you can see how I got here. Here’s a high level overview of my story: - Ran a successful SaaS with","relevant":false,"intent":"none","min":0,"max":20,"note":"Revenue success story, promotional."},{"n":27,"id":"47667504","url":"https://news.ycombinator.com/item?id=47667504","title":"Ask HN: How do you handle marketing as a solo technical founder?","body":"I've shipped multiple products over the past few years. Every single one followed the same pattern: build, post, get 12 likes from friends, a bit of organic traction, then nothing. Back to coding a new thing. I know I need marketing help but giving equity to someone I met online feels like a huge risk. At the same time hiring a paid marketer when you have zero revenue feels just as scary. And I'm not dancing on TikTo","relevant":true,"intent":"pain_point","min":65,"max":95,"note":"Marketing as a solo technical founder - the exact ICP and the exact pain."},{"n":28,"id":"47309684","url":"https://news.ycombinator.com/item?id=47309684","title":"How do you balance building vs. marketing as a solo founder?","body":"I'm curious how other technical founders handle this. I can code for 12 hours straight, but 30 minutes of writing social media posts feels like torture. Yet every successful founder says marketing is essential from day one. I've been building an AI tool to automate marketing across developer communities (Reddit, HN, Twitter, etc.) because I got tired of choosing between shipping features and getting users. But I'm wo","relevant":true,"intent":"pain_point","min":60,"max":95,"note":"Building vs marketing as a solo founder. Bullseye ICP."},{"n":29,"id":"28055444","url":"https://news.ycombinator.com/item?id=28055444","title":"Solo-founder question regarding marketing","body":"Super early stage start up focusing on blockchain tech and being a solo founder, there are so many things to focus on: tech, talking to potential users, posting to build following, etc. My challenge/question is regarding consistent posting and building the tribe… being a solo-founder (not married to it but here we are) is paying for assistance in building the brand and talking about the product a good idea or stay aw","relevant":true,"intent":"pain_point","min":50,"max":85,"note":"Solo founder asking how to approach marketing."},{"n":30,"id":"36040006","url":"https://news.ycombinator.com/item?id=36040006","title":"Technical Solo Founder Seeking Sales/Marketing Co-Founder","body":"Hi y'all, I'm a technical Founder building https://singlebase.cloud . It's an alternative to Firebase and Supabase. I'm seeking a Sales/Marketing/Product Co-Founder. About the product: It's Backend as a service, similar to Firebase and Supabase. The core products (Datastore, Auth, Storage, Images, Search) are completed including the console/admin panel. The documentation site ( https://docs.singlebasecloud.com ) is i","relevant":false,"intent":"none","min":0,"max":20,"note":"Seeking a co-founder - recruitment."},{"n":31,"id":"44673286","url":"https://news.ycombinator.com/item?id=44673286","title":"Ask HN: Built a new aggregated search engine for shopping","body":"I'll give you the main details. Personally, I don't like unnecessary distributedness. With shopping, that exists - cos every day there is a great new shopping app coming out for different things. They all have wishlists, a cart, order lists. For me, this was not good. For brands I realised, it's even worse. They keep spending on this marketing and that marketing, including but not limited to hiring, SEO, ads, influen","relevant":false,"intent":"none","min":0,"max":20,"note":"Promoting their own shopping search engine."},{"n":32,"id":"21117408","url":"https://news.ycombinator.com/item?id=21117408","title":"Ask HN: Marketing graphic design templates or apps for solo founder?","body":"I'm pretty hopeless at graphic design, but I can manipulate stuff OK in photoshop or sketch. I want to create basic cover photos, heros, etc for use in Twitter, blog posts, Intercom announcements, landing pages, and the like. Not reinventing the wheel, SaaS companies do this all time and usually include a title, half sentence, screenshot/image, and background gradient/color. Any suggestions? I've tried Envato, but th","relevant":false,"intent":"buying_intent","min":15,"max":40,"note":"Shopping for graphic design tools. Wrong category."},{"n":33,"id":"39816766","url":"https://news.ycombinator.com/item?id=39816766","title":"I parsed 968 launches from /r/SideProject and analyzed them with Claude 3 Opus","body":"The data: I searched for all posts from /r/SideProjects that contained these strings: \"I built\", \"I made an alternative to\", \"I created a clone of\". Most posts are <=1 year old. Reddit API does not allow parsing older posts hence the amount \"968\" I wish I could parse more. The list of clones of popular apps: Loom (screen recording app) (6‼) Typeform (form builders) (7‼) Resume/CV apps (3) Pastebin (5) Habit trackers ","relevant":true,"intent":"question","min":35,"max":70,"note":"Analysed r/SideProject launches - interested in exactly this data. Ambiguous: user or competitor."},{"n":34,"id":"44575733","url":"https://news.ycombinator.com/item?id=44575733","title":"Ask HN: Why Marketing Software Hasn't Had Its 'Cursor Moment' Yet","body":"After building AI marketing tools for 2 years, I've become convinced most AI applications are, in the words of Pete Koomen, \"horseless carriages\" - they bolt AI onto existing interfaces instead of building AI-native experiences. The marketing problem: Marketers context-switch between 5-8 tools for a single campaign. Hootsuite for scheduling, Canva for design, ChatGPT for copy, Analytics for insights. The cognitive ov","relevant":false,"intent":"none","min":5,"max":30,"note":"Building AI marketing tools - a vendor, not a buyer."},{"n":35,"id":"41611934","url":"https://news.ycombinator.com/item?id=41611934","title":"Ask HN: 1000+ visitors but 1 customer, how to get more conversions on your SaaS?","body":"I have a saas, and I seem to gotten the hang of getting traffic to my site. However, the conversions remain low. Over 1000 people have viewed the website, ~400 users, 1 paying customer. How do I make this rate better? Any generalized tip that could apply here? For reference, my saas is a AI tool that assists in video production. I have been not paying for marketing yet. I wanted to exhaust my options with free market","relevant":true,"intent":"pain_point","min":55,"max":90,"note":"Traffic but no conversions - SaaS founder with a marketing problem."},{"n":36,"id":"43174100","url":"https://news.ycombinator.com/item?id=43174100","title":"My app makes me $2,700/month after 6 months","body":"So developing the basic version of this app took about 30 days. I did it together with my brother and we also did marketing for it together. We constantly work to improve it and the growth has been crazy for us the last few months. The idea started as just giving AI memory to make it easier for ourselves to build our products (didn't exist in LLMs when we started). Then we continued to improve upon it and add new fea","relevant":false,"intent":"none","min":0,"max":20,"note":"Revenue success story, promotional."},{"n":37,"id":"44171881","url":"https://news.ycombinator.com/item?id=44171881","title":"I couldn't find a co-founder, so I built one","body":"I’m a solo founder who couldn’t land someone to share both coding and strategy, so I built AI Co-Founder (https://aicofounder.dev). It can: Write code, and push commits to GitHub Handle marketing: draft emails, post on X/Reddit/LinkedIn, make marketing content like posters (OpenAI Image gen api) Look for investors and automate outreach Send daily summaries and dashboard reports …and much more to be a true partner It’","relevant":false,"intent":"none","min":0,"max":20,"note":"Promoting their AI Co-Founder product."},{"n":38,"id":"37777816","url":"https://news.ycombinator.com/item?id=37777816","title":"SaaS Products Can Benefit from Reputation Management Platforms","body":"How SaaS Products Can Achieve Brand Credibility and User Loyalty with Reputation Management Platforms. In today's hyper-connected world, where a vast majority of businesses operate online, it has become increasingly challenging to manage their reputation effectively. One bad review or negative remark can severely damage the reputation of a business, which can result in the loss of potential customers and revenue. Thi","relevant":false,"intent":"none","min":0,"max":15,"note":"SEO content about reputation management."},{"n":39,"id":"19024784","url":"https://news.ycombinator.com/item?id=19024784","title":"LOOQME","body":"LOOQME is a service for PR managers which helps to monitor all brand mentions in media and get full PR campaign analytics. Using our service PR managers can design, optimize and control the goals of their communication strategies in a few clicks, measure campaigns efficiency, and get useful insights. LOOQME system gathers needed data from media and codes it. Based on this it creates full analytics about the impact of","relevant":false,"intent":"none","min":0,"max":15,"note":"LOOQME is a competing brand-monitoring product. Seller, not buyer."},{"n":40,"id":"444877","url":"https://news.ycombinator.com/item?id=444877","title":"Ask HN: Review our startup - MightyBrand.com","body":"After months of hard work and wistfully watching many other HN members debut their startups to this community, I'm proud to announce that MightyBrand.com is up and live. Please take a look and let us know how you like the idea, and more importantly, how you like the execution. Elevator pitch: MightyBrand monitors social channels for mentions of your brand, analyzes those conversations, and gives you tools to easily e","relevant":false,"intent":"none","min":0,"max":20,"note":"Review-our-startup promotion."},{"n":41,"id":"557121","url":"https://news.ycombinator.com/item?id=557121","title":"Ask HN: Review new MightyBrand project, micro-monitoring your brand via Twitter","body":"MightyTweets is a new side project we're experimenting with at MightyBrand. We're collecting all this data and we're looking for useful things we can do with it, so now you can use Twitter to monitor blogs, Twitter, Digg, news, etc. You don't have to sign up for anything, just follow these instructions: 1. Follow @mightytweets on Twitter. 2. Wait for your welcome message from us (usually delivered in a couple of minu","relevant":false,"intent":"none","min":0,"max":20,"note":"MightyBrand brand monitoring - a direct competitor promoting itself."},{"n":42,"id":"43933727","url":"https://news.ycombinator.com/item?id=43933727","title":"We Built Mentionedby.ai to Track How AI Models Answer Questions","body":"Hey HN, I'm Nikin, one of the creators of MentionedBy.ai — a platform we built to track how your brand is being mentioned inside AI-generated answers across ChatGPT, Claude, Perplexity, Gemini, and other LLMs. We didn’t start this as a marketing tool. It began as a frustration. We noticed our startup wasn’t showing up in ChatGPT responses, even for queries where we clearly should have. Meanwhile, bigger or SEO-heavy ","relevant":false,"intent":"none","min":0,"max":20,"note":"Mentionedby.ai - a competing monitoring product."},{"n":43,"id":"16261136","url":"https://news.ycombinator.com/item?id=16261136","title":"Ask HN: 5 months and counting waiting for Coinbase customer support. Advice?","body":"So Coinbase's disastrous customer service has come up on HN before [1]. But my issue is rather more extreme than a wire transfer that takes a few weeks to go through - I've been waiting for over five months for Coinbase to unlock my account and allow me to access my funds. Since August 20 of 2017 to be exact. I've never experienced or even heard of such a long wait time for action to be taken on an open customer supp","relevant":false,"intent":"none","min":0,"max":15,"note":"Coinbase customer support complaint. Support is not acquisition."},{"n":44,"id":"10644539","url":"https://news.ycombinator.com/item?id=10644539","title":"Ask HN: How do you handle customer support on your site?","body":"Hi, Customer support can make or break a site but for those with small businesses, handling customer support can be a real nightmare (esp. technical and billing questions). You can of course hire full time employee(s) but that is not an option until your site is making a sizable income, or you are funded. So for the rest of us: - what are the ways to handle customer support? - Do you do it yourself, outsource it to s","relevant":false,"intent":"question","min":5,"max":25,"note":"How to handle customer support. Different problem entirely."},{"n":45,"id":"38073881","url":"https://news.ycombinator.com/item?id=38073881","title":"Ask HN: What companies have blown you away with their customer support?","body":"I'm curious about stories of excellent customer support because it seems so rare these days, especially with corporates.","relevant":false,"intent":"question","min":0,"max":20,"note":"Customer support anecdotes."},{"n":46,"id":"32317230","url":"https://news.ycombinator.com/item?id=32317230","title":"Ask HN: How do you deal with the emotions of customer support?","body":"I’m a sole developer building software integrations, and automations. I find customer support very difficult: everything feels like a personal attack, and I can’t help but get defensive. How do you, or your team, deal with the emotions of customer support?","relevant":false,"intent":"pain_point","min":5,"max":25,"note":"Emotional toll of customer support. Real pain, wrong pain."},{"n":47,"id":"36010270","url":"https://news.ycombinator.com/item?id=36010270","title":"Tell HN: OpenAI's billing features and customer support are barely functional","body":"Thought I'd give a small warning to people thinking of paying for ChatGPT Plus. You're forced to use an intercom chat widget to open up customer support tickets, but the response times are abysmal. Currently I have this[1] issue, where an account doesn't get upgraded after going through the payment flow. It's been over a week with no reply. I paid money for a service that I'm not receiving. When/if they do respond, I","relevant":false,"intent":"none","min":0,"max":15,"note":"OpenAI billing complaint."},{"n":48,"id":"48087925","url":"https://news.ycombinator.com/item?id=48087925","title":"Ask HN: Will low quality AI customer support be the new normal?","body":"Now whenever I reach for customer's support chat or phone I get an AI agent replying to me and I get into a useless loop for a couple of minutes before I start begging it to link me to a real person. Will companies start losing customers because of that or people will eventually get used to this?","relevant":false,"intent":"question","min":0,"max":20,"note":"Speculation about AI customer support."},{"n":49,"id":"8582470","url":"https://news.ycombinator.com/item?id=8582470","title":"Browserstack hack","body":"https://twitter.com/browserstack Dear BrowserStack User, We are unfortunately displeased to announce that BrowserStack will be shutting down. After much consideration on our part, we have realized we were negligent in the services we claimed to offer. In our terms of service, we state the following: [...] after the restoration process is complete, the virtual machines are guaranteed to be tamper-proof. [...] The mach","relevant":false,"intent":"none","min":0,"max":10,"note":"BrowserStack incident notice."},{"n":50,"id":"15862494","url":"https://news.ycombinator.com/item?id=15862494","title":"Ask HN: Huge enterprise customer wants to see our source code","body":"We are a small 5-person enterprise software startup, operating in the data analytics/ML space. We are working on starting a proof-of-concept with a huge potential customer ($50+bn in revenue). We recently identified our first use case, and are ready to get into contract negotiations. But then they got back to us with an odd request: they want to see our source code (likely upon completion of the PoC). Given that our ","relevant":false,"intent":"question","min":5,"max":25,"note":"Enterprise source-code escrow question."},{"n":51,"id":"9075768","url":"https://news.ycombinator.com/item?id=9075768","title":"Ask HN: How do your enterprise customers pay you?","body":"If you are a SaaS company, how do your customers pay you? Credit, ACH, etc, monthly vs. annual contract. Any good resources on the subject?","relevant":false,"intent":"question","min":5,"max":25,"note":"How enterprise customers pay. Billing, not acquisition."},{"n":52,"id":"36736795","url":"https://news.ycombinator.com/item?id=36736795","title":"Ask HN: How to price your first enterprise customer?","body":"We are a small SaaS company with a recently launched product. Currently we have mostly smaller customers (50+ users is \"large\" for us at the moment). We now have, somewhat unexpectedly this early, the interest of a large enterprise that wants a deal to onboard 5000+ users. The problem is that we have no idea how to price this, as we have not yet had time to scale up our pricing enough to gain the necessary experience","relevant":false,"intent":"question","min":5,"max":30,"note":"Enterprise pricing question."},{"n":53,"id":"9071583","url":"https://news.ycombinator.com/item?id=9071583","title":"Ask HN: How do your enterprise customers pay you?","body":"If you are a SaaS company, how do your customers pay you? Credit, ACH, etc, monthly vs. annual contract. Any good resources on the subject?","relevant":false,"intent":"question","min":5,"max":25,"note":"Duplicate of the enterprise payment question."},{"n":54,"id":"8304382","url":"https://news.ycombinator.com/item?id=8304382","title":"ActionIQ is hiring its first engineers – come build the next Salesforce in NYC","body":"ActionIQ was recently started in NYC by Tasso Argyros, the founder of Aster Data (one of the very first software MPP databases out of Stanford and a $300M exit) and Nitay Joffe, a key open source Big Data developer at Facebook & Powerset (and committer at Apache HBase & Apache Giraph). Our vision is to marry powerful distributed systems technology with beautiful web-based interfaces and change the way enterprises use","relevant":false,"intent":"none","min":0,"max":10,"note":"Hiring post."},{"n":55,"id":"8938727","url":"https://news.ycombinator.com/item?id=8938727","title":"Ask HN: Why is getting more than 1% equity rare, even for the first employee?","body":"It seems odd that I hear people talking about getting 0.5% equity joining as the first engineer of a startup. Chances are you are getting paid at least 25% less than you could elsewhere, and let's assume you're making $100k/y. Trading $25,000 of salary for 0.5% suggests the company is worth $5 million. That seems incredibly unlikely for startups hiring their first engineer, and also doesn't account for the tremendous","relevant":false,"intent":"question","min":0,"max":15,"note":"Equity for a first employee."},{"n":56,"id":"11291223","url":"https://news.ycombinator.com/item?id=11291223","title":"Ask HN: Best/worst way to onboard new employees?","body":"We’re hiring our first engineering employee and wondering if anyone has any advice on how best to onboard them? Any great tips? Anything to not do? What’s the best first week experience you’ve had?","relevant":false,"intent":"question","min":0,"max":15,"note":"Employee onboarding."},{"n":57,"id":"39830777","url":"https://news.ycombinator.com/item?id=39830777","title":"Aks HN: How do you excel in ambiguous environments?","body":"The higher the pay, the more it is required from the engineer to \"just figure out problems and their solutions\". For example: A StartUp is hiring the first 5 engineers. Some of the first ones come in, and see: \"Oh, the structure of the code is not quite as good\" or \"we should really implement x instead of y here for these reasons.\" What if you struggle in these environments and want to learn how to excel there? Is it","relevant":false,"intent":"question","min":0,"max":15,"note":"Career advice."},{"n":58,"id":"29012230","url":"https://news.ycombinator.com/item?id=29012230","title":"Ask HN: Are you thinking what I am thinking?","body":"Today(27th Oct 2021), on HN front page there is a job post from one of the YC companies. The title of the post is: \"GiveCampus (YC S15) Is Hiring Our First Senior QA Engineer\" Hmmm...after reading that title, are you thinking what I am thinking?","relevant":false,"intent":"none","min":0,"max":15,"note":"Meta commentary about job posts."},{"n":59,"id":"12250926","url":"https://news.ycombinator.com/item?id=12250926","title":"Show HN: Feedback that anyone can launch gather, share, and use","body":null,"relevant":false,"intent":"none","min":0,"max":15,"note":"Show HN launch - the author is selling."},{"n":60,"id":"7833427","url":"https://news.ycombinator.com/item?id=7833427","title":"Show HN: Feedback on our new multiplayer game API?","body":"This is a two man team and we're in full-on development of a new platform to assist in multiplayer games. We're looking to launch in about a month or two with an OpenID server accessible to customers (or they can use provider like Facebook/Twitter) and a couple cool multiplayer features. After we launch development will continue until we have a well-rounded API.<p>We're primarily targeting HTML5+JS developers but the","relevant":false,"intent":"none","min":0,"max":15,"note":"Show HN multiplayer game API - selling."},{"n":61,"id":"3013144","url":"https://news.ycombinator.com/item?id=3013144","title":"Show HN: Feedback on our app to help Freelancers manage project/client leads?","body":"http://www.jobbrew.com Would love some feedback on the idea, landing page for an app we hope to launch early next month. \" Jobbrew is an app that makes lead management for freelancers as easy as bookmarking on delicious. Most freelancers scour the web for new clients, they respond to some, bookmark others. Quite often converting a lead to a client takes multiple rounds of discussion or a timely reminder. Still even f","relevant":false,"intent":"none","min":0,"max":15,"note":"Show HN freelancer lead tool - selling, and an adjacent competitor."},{"n":62,"id":"35265810","url":"https://news.ycombinator.com/item?id=35265810","title":"Show HN: Analyze Feedback with AI – Essense.io","body":"Hey everyone! Excited to show off something i've been working on recently. Essense.io Short pitch: Analyze user feedback with AI to generate actionable insights. Longer Pitch: Have you ever wanted to analyze your own product or that of a competitors' to figure out what the product is doing right? (and more importantly, what it's doing wrong?). With a few clicks you can figure out what users love and hate most about a","relevant":false,"intent":"none","min":0,"max":15,"note":"Show HN feedback analysis - selling."},{"n":63,"id":"33273651","url":"https://news.ycombinator.com/item?id=33273651","title":"Show HN: FeedbackForms.io – Convert Positive Experiences to Public Reviews","body":"I built FeedbackForms.io because I wanted a way to filter customers who had a positive experience before asking them for a public review -- and I wanted negative feedback to go directly to me. The concept is simple: find out in as few questions as possible if the customer had a positive experience, then give them a branched exit: positive outcomes are asked for a public review. Negative outcomes get a text form askin","relevant":false,"intent":"none","min":0,"max":15,"note":"Show HN review collection - selling."},{"n":64,"id":"43075395","url":"https://news.ycombinator.com/item?id=43075395","title":"Show HN: Feedback to Me, 360° feedback powered by AI","body":"Hey HN, Feedback to Me is a personal project I've been working on for the last few weeks which I've started to \"soft launch\" with a few people. A few years back, my employer paid for all middle-management to get a full \"360 feedback\" process done - an external consultancy came in with a bespoke platform to let us send feedback questionnaires to lots of people we worked with, and after they'd made sure nothing identif","relevant":false,"intent":"none","min":0,"max":15,"note":"Show HN 360 feedback - selling."},{"n":65,"id":"14514591","url":"https://news.ycombinator.com/item?id=14514591","title":"Rust Performance Pitfalls","body":null,"relevant":false,"intent":"none","min":0,"max":10,"note":"Rust performance article."},{"n":66,"id":"44234080","url":"https://news.ycombinator.com/item?id=44234080","title":"Rust compiler performance","body":null,"relevant":false,"intent":"none","min":0,"max":10,"note":"Rust compiler performance."},{"n":67,"id":"45977386","url":"https://news.ycombinator.com/item?id=45977386","title":"The Rust Performance Book (2020)","body":null,"relevant":false,"intent":"none","min":0,"max":10,"note":"Rust performance book."},{"n":68,"id":"18115359","url":"https://news.ycombinator.com/item?id=18115359","title":"Lolbench: automagically and empirically discovering Rust performance regressions","body":null,"relevant":false,"intent":"none","min":0,"max":10,"note":"Rust benchmarking tool."},{"n":69,"id":"31580763","url":"https://news.ycombinator.com/item?id=31580763","title":"Ask HN: If Kubernetes is the solution, why are there so many DevOps jobs?","body":"Arguable the goals of DevOps align partly with the goals of system administrators in former days: Provide reliable compute infrastructure for 1) internal users: mainly developers by providing CI/CD 2) external users: end users Nowadays we call people that do 1) DevOps and people that do 2) SREs (so one could argue that the role of sys admins just got more specialized). The platform of choice is mostly Kubernetes thes","relevant":false,"intent":"none","min":0,"max":10,"note":"Kubernetes and the DevOps job market."},{"n":70,"id":"32304834","url":"https://news.ycombinator.com/item?id=32304834","title":"Ask HN: Have You Left Kubernetes?","body":"If so, what did you replace it with?","relevant":false,"intent":"none","min":0,"max":10,"note":"Leaving Kubernetes."},{"n":71,"id":"31892384","url":"https://news.ycombinator.com/item?id=31892384","title":"Ask HN: What is your Kubernetes nightmare?","body":"Everything self-hosted has its maintenance tax but why Kubernetes (especially self hosted) is so hard? What aspect is that makes Kubernetes operationally so hard? - Is it the networking model that is simple from the consumption standpoint but has too many moving parts for it to be implemented? - Is it the storage model, CSI and friends? - Is it the bunch of controller loops doing their own things with nothing that gi","relevant":false,"intent":"none","min":0,"max":10,"note":"Kubernetes operational pain. Wrong domain."},{"n":72,"id":"27155526","url":"https://news.ycombinator.com/item?id=27155526","title":"Ask HN: What do you think will come after Kubernetes?","body":"I mean, Kubernetes became a thing after Docker became a thing before(and so on, all the way down to VMs), so it's reasonable to assume that something new will eventually emerge and become the industry-standard.","relevant":false,"intent":"none","min":0,"max":10,"note":"Speculation about what follows Kubernetes."}],"profile":{"name":"IntentOwl","productDesc":"IntentOwl is a daily intent-lead digest for SaaS founders. It monitors Reddit, Hacker News and Bluesky for posts showing buying intent or describing a problem the customer's product solves, classifies each one with Claude against the customer's ICP, and emails a ranked digest with a suggested reply angle for every lead. It never posts replies - a human always sends them.","icpDesc":"Solo founders and small SaaS teams (1-10 people) doing community marketing by hand: manually scrolling subreddits, wiring up keyword alerts, or simply missing the threads where someone is asking for exactly what they build. Usually technical, short on time, and uncomfortable with marketing. They have a live product and are trying to reach early customers.","competitors":["GummySearch","Syften","F5Bot","Brand24","Mention","BuzzSumo","Google Alerts"],"disqualifiers":["Job postings, recruitment, and people advertising their own availability","Agencies and freelancers looking for clients - we sell to product companies, not services businesses","Anyone building or promoting their own social listening, brand monitoring or lead-monitoring tool: they are a competitor, not a buyer","Customer support, billing and enterprise contract questions - a different problem from finding customers"]},"intents":["buying_intent","competitor_complaint","pain_point","question","none"]};
+const CASES = DATA.cases;
+const INTENTS = DATA.intents;
+
+let store = null;            // db namespace, once it resolves
+let filter = "todo";
+let cursor = 0;
+const state = new Map();     // id -> {decision, relevant, intent, comment}
+
+const $ = (s) => document.querySelector(s);
+const listEl = $("#list");
+
+// --- persistence -----------------------------------------------------------
+// localStorage is the always-available floor; the artifact store is what lets
+// the corrections be read back and folded into the golden set.
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem("golden-review");
+    if (raw) for (const [k, v] of Object.entries(JSON.parse(raw))) state.set(k, v);
+  } catch { /* private window, cleared data — render empty */ }
+}
+function saveLocal() {
+  try {
+    localStorage.setItem("golden-review", JSON.stringify(Object.fromEntries(state)));
+  } catch { /* not fatal; the store below is the real record */ }
+}
+
+async function saveRemote(id, value) {
+  if (store === null) return;
+  try {
+    $("#save").textContent = "saving…";
+    await store.doc("reviews/" + id).set({ ...value, caseId: id, at: new Date().toISOString() });
+    $("#save").textContent = "saved";
+  } catch {
+    $("#save").textContent = "save failed — kept locally";
+  }
+}
+
+// --- rendering -------------------------------------------------------------
+function visible() {
+  return CASES.filter((c) => {
+    const s = state.get(c.id);
+    if (filter === "todo") return s === undefined;
+    if (filter === "lead") return c.relevant;
+    if (filter === "notlead") return !c.relevant;
+    if (filter === "disagree") return s?.decision === "disagree";
+    return true;
+  });
+}
+
+function render() {
+  const rows = visible();
+  const reviewed = state.size;
+  const disagreed = [...state.values()].filter((v) => v.decision === "disagree").length;
+
+  $("#counts").innerHTML =
+    "<b>" + reviewed + "</b>/" + CASES.length + " reviewed · <b>" + disagreed + "</b> corrections";
+  $("#fill").style.width = (reviewed / CASES.length) * 100 + "%";
+
+  $("#donePanel").hidden = reviewed < CASES.length;
+  if (reviewed >= CASES.length) {
+    const list = CASES.filter((c) => state.get(c.id)?.decision === "disagree");
+    $("#doneText").textContent = list.length === 0
+      ? "You agreed with every label. The golden set stands as it is."
+      : "You corrected " + list.length + " of " + CASES.length + " labels. Tell Claude you are done and it will read them back and rebuild the golden set.";
+    $("#doneSummary").textContent = list.length === 0 ? "(no corrections)" :
+      list.map((c) => {
+        const s = state.get(c.id);
+        return "#" + c.n + "  " + (s.relevant ? "LEAD " : "not  ") + (s.intent || c.intent).padEnd(21) +
+          "  " + c.title.slice(0, 48) + (s.comment ? "\n     " + s.comment : "");
+      }).join("\n");
+  }
+
+  if (rows.length === 0) {
+    listEl.innerHTML = '<div class="empty-state">Nothing here. Try another filter.</div>';
+    return;
+  }
+  if (cursor >= rows.length) cursor = rows.length - 1;
+  if (cursor < 0) cursor = 0;
+
+  listEl.innerHTML = rows.map((c, i) => card(c, i === cursor)).join("");
+  bind();
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+}
+
+function card(c, isCur) {
+  const s = state.get(c.id);
+  const cls = ["card"];
+  if (isCur) cls.push("cur");
+  if (s?.decision === "agree") cls.push("done-agree");
+  if (s?.decision === "disagree") cls.push("done-disagree");
+
+  return '<article class="' + cls.join(" ") + '" id="c-' + c.id + '" data-id="' + c.id + '">' +
+    '<div class="c-head">' +
+      '<span class="c-n">#' + c.n + '</span>' +
+      '<span class="c-title">' + esc(c.title) + '</span>' +
+      '<a class="c-n" href="' + esc(c.url) + '" target="_blank" rel="noopener">open ↗</a>' +
+    '</div>' +
+    '<p class="c-body' + (c.body ? "" : " empty") + '">' + (c.body ? esc(c.body) : "(no body text)") + '</p>' +
+    '<div class="verdict">' +
+      '<span class="chip ' + (c.relevant ? "lead" : "notlead") + '">' + (c.relevant ? "LEAD" : "not a lead") + '</span>' +
+      '<span class="chip plain">' + c.intent + '</span>' +
+      '<span class="chip plain">score ' + c.min + "–" + c.max + '</span>' +
+    '</div>' +
+    '<div class="note"><span class="note-label">My reasoning</span>' + esc(c.note) + '</div>' +
+    '<div class="actions">' +
+      '<button class="btn agree" data-act="agree" aria-pressed="' + (s?.decision === "agree") + '">Agree<span class="k">a</span></button>' +
+      '<button class="btn disagree" data-act="disagree" aria-pressed="' + (s?.decision === "disagree") + '">Disagree<span class="k">d</span></button>' +
+    '</div>' +
+    (s?.decision === "disagree" ? fixPanel(c, s) : "") +
+  '</article>';
+}
+
+function fixPanel(c, s) {
+  return '<div class="fix">' +
+    '<p class="hint">What should it be? Leave anything you are unsure about as-is.</p>' +
+    '<div class="fix-row">' +
+      '<label><input type="checkbox" data-fix="relevant"' + (s.relevant ? " checked" : "") + '> Is a lead</label>' +
+      '<label>Intent <select data-fix="intent">' +
+        INTENTS.map((i) => '<option value="' + i + '"' + (i === (s.intent || c.intent) ? " selected" : "") + '>' + i + '</option>').join("") +
+      '</select></label>' +
+    '</div>' +
+    '<input type="text" data-fix="comment" placeholder="Why? (optional, but the most useful part)" value="' + esc(s.comment || "") + '">' +
+  '</div>';
+}
+
+// --- interaction -----------------------------------------------------------
+function decide(id, decision) {
+  const c = CASES.find((x) => x.id === id);
+  const prev = state.get(id) || {};
+  const value = {
+    decision,
+    // Seed the correction form with my label, so the reviewer only changes
+    // what they actually disagree with.
+    relevant: decision === "disagree" ? (prev.relevant ?? !c.relevant) : c.relevant,
+    intent: prev.intent ?? c.intent,
+    comment: prev.comment ?? "",
+  };
+  state.set(id, value);
+  saveLocal();
+  void saveRemote(id, value);
+  if (decision === "agree" && filter !== "todo") cursor += 1;
+  render();
+}
+
+function bind() {
+  for (const btn of listEl.querySelectorAll("[data-act]")) {
+    btn.addEventListener("click", (e) => {
+      const id = e.target.closest("[data-id]").dataset.id;
+      decide(id, e.target.closest("[data-act]").dataset.act);
+    });
+  }
+  for (const el of listEl.querySelectorAll("[data-fix]")) {
+    el.addEventListener("change", (e) => {
+      const card = e.target.closest("[data-id]");
+      const id = card.dataset.id;
+      const value = { ...state.get(id) };
+      const field = e.target.dataset.fix;
+      value[field] = field === "relevant" ? e.target.checked : e.target.value;
+      state.set(id, value);
+      saveLocal();
+      void saveRemote(id, value);
+      $("#counts").dispatchEvent(new Event("x"));
+    });
+  }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.matches("input,select,textarea")) return;
+  const rows = visible();
+  const c = rows[cursor];
+  if (e.key === "j") { cursor += 1; render(); scrollToCur(); }
+  else if (e.key === "k") { cursor -= 1; render(); scrollToCur(); }
+  else if (e.key === "a" && c) { decide(c.id, "agree"); scrollToCur(); }
+  else if (e.key === "d" && c) { decide(c.id, "disagree"); scrollToCur(); }
+});
+
+function scrollToCur() {
+  const el = listEl.querySelector(".cur");
+  if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+for (const tab of $("#tabs").querySelectorAll(".tab")) {
+  tab.addEventListener("click", () => {
+    filter = tab.dataset.f;
+    cursor = 0;
+    for (const t of $("#tabs").querySelectorAll(".tab")) {
+      t.setAttribute("aria-pressed", String(t === tab));
+    }
+    render();
+  });
+}
+
+// --- boot ------------------------------------------------------------------
+loadLocal();
+render();
+
+// The store arrives later, never during this first run. Render without it and
+// light it up when it resolves.
+claude.use("db").then(async (db) => {
+  if (!db) return;
+  store = db;
+  $("#save").textContent = "synced";
+  try {
+    const snap = await db.collection("reviews").get();
+    let merged = false;
+    for (const doc of snap.docs) {
+      const d = doc.data();
+      if (d && !state.has(doc.id)) { state.set(doc.id, d); merged = true; }
+    }
+    if (merged) { saveLocal(); render(); }
+  } catch {
+    $("#save").textContent = "read failed — working locally";
+  }
+});
+</script>

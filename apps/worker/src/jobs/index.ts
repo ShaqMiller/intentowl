@@ -8,6 +8,7 @@ import {
   createWorkerClassifier,
   registerClassify,
 } from "./classify.ts";
+import { registerDigest } from "./digest.ts";
 import { registerHeartbeat } from "./heartbeat.ts";
 import { registerPoll, type AdapterRegistry } from "./poll.ts";
 
@@ -30,9 +31,17 @@ export async function registerJobs(
   await registerPoll(boss, db, adapters);
   await registerClassify(boss, db, createWorkerClassifier());
   await registerClassifyBatch(boss, db, createAnthropicClient());
+  await registerDigest(boss, db);
 }
 
 export { HEARTBEAT_QUEUE } from "./heartbeat.ts";
+export {
+  DIGEST_QUEUE,
+  runDigest,
+  localDayFor,
+  dateLabelFor,
+  type DigestOutcome,
+} from "./digest.ts";
 export {
   CLASSIFY_BATCH_QUEUE,
   startBatchRun,

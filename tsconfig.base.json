@@ -24,6 +24,10 @@
     // Internal packages are consumed as TypeScript source (no build step), so
     // every intra-repo import carries an explicit `.ts` specifier. That
     // resolves literally under tsx, Next, and drizzle-kit alike.
+    // packages/core ships a React Email template as source, so every consumer
+    // typechecks .tsx through the import. apps/web overrides with "preserve".
+    "jsx": "react-jsx",
+
     "allowImportingTsExtensions": true,
     "noEmit": true
   }

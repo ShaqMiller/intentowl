@@ -29,6 +29,8 @@ const schema = z.object({
   ANTHROPIC_WORKSPACE_ID: z.string().optional(),
   // M3
   RESEND_API_KEY: z.string().optional(),
+  /** Verified sender. Resend rejects a From on an unverified domain. */
+  DIGEST_FROM: z.string().default("IntentOwl <onboarding@resend.dev>"),
   APP_URL: z.url().default("http://localhost:3000"),
   // M6
   BLUESKY_IDENTIFIER: z.string().optional(),
