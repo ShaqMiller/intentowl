@@ -30,9 +30,6 @@ const schema = z.object({
   SUPABASE_URL: z.url().optional(),
   /** Publishable key. Safe to expose; row-level security is what protects data. */
   SUPABASE_ANON_KEY: z.string().optional(),
-  /** Server-only. Never send this to the browser. */
-  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
-
   /** Must match the worker's, which signs the links this app verifies. */
   FEEDBACK_SECRET: z.string().min(16).optional(),
 });

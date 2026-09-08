@@ -300,29 +300,3 @@ export async function updateDelivery(form: FormData): Promise<ActionResult> {
     message: "Saved. The new send time takes effect from the next schedule sync.",
   };
 }
-
-/**
- * Change password.
- *
- * Refuses until Supabase Auth is configured. A form that appears to change a
- * password and does not is worse than one that says it cannot.
- */
-export async function changePassword(form: FormData): Promise<ActionResult> {
-  await requireCustomer();
-
-  const next = form.get("password");
-  const confirm = form.get("confirm");
-  if (typeof next !== "string" || next.length < 12) {
-    return { ok: false, message: "Use at least 12 characters." };
-  }
-  if (next !== confirm) {
-    return { ok: false, message: "Those two passwords do not match." };
-  }
-
-  return {
-    ok: false,
-    message:
-      "Password changes need Supabase Auth, which is not connected yet. " +
-      "Nothing was changed.",
-  };
-}

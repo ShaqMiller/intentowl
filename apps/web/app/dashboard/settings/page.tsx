@@ -8,9 +8,10 @@
  */
 import type { Metadata } from "next";
 
-import { changePassword, updateDelivery } from "../../../src/actions.ts";
+import { updateDelivery } from "../../../src/actions.ts";
+import { changePassword, signOutEverywhere } from "../../../src/auth-actions.ts";
 import { authConfigured, requireCustomer } from "../../../src/session.ts";
-import { ActionForm } from "../form.tsx";
+import { ActionButton, ActionForm } from "../form.tsx";
 
 export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
@@ -112,8 +113,8 @@ export default async function SettingsPage() {
         <h2>Password</h2>
         {!authConfigured() && (
           <div className="notice">
-            <b>Sign-in is not connected yet.</b> This form is wired to the real
-            action and will start working the moment Supabase Auth is
+            <b>Sign-in is not connected on this deployment.</b> This form is
+            wired to the real action and starts working as soon as Supabase is
             configured — until then it refuses rather than pretending.
           </div>
         )}
@@ -149,12 +150,19 @@ export default async function SettingsPage() {
       <section className="settings-block">
         <h2>Sessions</h2>
         <div className="note-card">
-          <h3>Signed in on this device only</h3>
+          <h3>Lost a device?</h3>
           <p>
-            Once sign-in is connected, this is where you sign out everywhere at
-            once — the thing you want after losing a laptop. It is left out
-            rather than mocked up, because a &ldquo;sign out everywhere&rdquo;
-            button that does nothing is worse than none at all.
+            This signs out every other browser and device, and leaves this one
+            signed in — so you do not have to prove yourself again from the one
+            machine you still trust. Anyone holding an old session is dropped
+            immediately.
+          </p>
+          <p style={{ marginTop: 14 }}>
+            <ActionButton
+              action={signOutEverywhere}
+              fields={{}}
+              label="Sign out everywhere else"
+            />
           </p>
         </div>
       </section>

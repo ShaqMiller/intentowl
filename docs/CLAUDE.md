@@ -17,11 +17,24 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M6 complete** (M0-M6 done); M7 started out of order at
-  the founder's request — the dashboard exists, auth does not. M3 and M4 exit
+- Current milestone: **M7 in progress** (M0-M6 done). Dashboard and Supabase
+  auth are both built; auth is unproven because no Supabase project keys have
+  been configured yet. M3 and M4 exit
   tests were demonstrated but not run to their full duration; see Open items.
 
 ## Open items carried forward
+
+- **Supabase auth is built but unconfigured.** Needs only `SUPABASE_URL` and
+  `SUPABASE_ANON_KEY` (no service-role key — "sign out everywhere" uses
+  `scope: "others"` on the user's own session). Until they are set, the
+  dashboard falls back to the dev session, which throws in production.
+  **Email confirmations must be ON in the Supabase project**: claiming a
+  customer row is authorised by proving control of its email address, so with
+  confirmations off anyone knowing a customer's email could take their account.
+
+- **Verification builds must set `NEXT_DIST_DIR`.** `next build` and `next dev`
+  share `.next`, so building while a dev server runs breaks it with a
+  misleading "Cannot find module ./NNN.js". This has now happened twice.
 
 - **Bluesky is built but unproven.** Same position as Reddit: fixture tests
   only, never a live poll. `public.api.bsky.app` returned 403 from the build
