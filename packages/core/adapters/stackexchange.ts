@@ -29,6 +29,8 @@ import { TokenBucket } from "./rate-limit.ts";
 import {
   cursorFor,
   type Cursor,
+  type EngagementRequest,
+  type EngagementResult,
   type FetchResult,
   type RawItem,
   type SourceAdapter,
@@ -37,6 +39,10 @@ import {
 
 const SOURCE = "stackexchange" as const;
 const API = "https://api.stackexchange.com/2.3/search/advanced";
+const QUESTIONS_API = "https://api.stackexchange.com/2.3/questions";
+
+/** Question ids per engagement request; the API caps id lists at 100. */
+const ENGAGEMENT_BATCH = 100;
 
 /**
  * Sites to search when a watch does not name any. Chosen for a
@@ -111,6 +117,64 @@ export function createStackExchangeAdapter(
 
   return {
     source: SOURCE,
+
+    /**
+     * Re-read score, answers and views for questions already stored.
+     *
+     * `/questions/{ids}` takes up to 100 semicolon-joined ids per call, so a
+     * refresh costs one request per site rather than one per question — which
+     * matters on a 10,000/day quota shared across every customer.
+     *
+     * Questions are grouped by site because a question id is only unique
+     * within its site; the site key is recovered from the stored venue
+     * hostname, which is where the poller put it.
+     */
+    async fetchEngagement(items: EngagementRequest[]): Promise<EngagementResult> {
+      const engagement = new Map<string, Record<string, unknown>>();
+      let calls = 0;
+
+      const bySite = new Map<string, string[]>();
+      for (const item of items) {
+        const site = siteKeyFromVenue(item.venue);
+        if (site === null) continue;
+        const list = bySite.get(site) ?? [];
+        list.push(item.externalId);
+        bySite.set(site, list);
+      }
+
+      for (const [site, ids] of bySite) {
+        for (let i = 0; i < ids.length; i += ENGAGEMENT_BATCH) {
+          const batch = ids.slice(i, i + ENGAGEMENT_BATCH);
+          await bucket.take();
+          calls += 1;
+
+          const params = new URLSearchParams({
+            site,
+            filter: "default",
+            pagesize: String(batch.length),
+          });
+          if (options.apiKey !== undefined) params.set("key", options.apiKey);
+
+          const url = `${QUESTIONS_API}/${batch.join(";")}?${params.toString()}`;
+          const response = await fetchJson(
+            { source: SOURCE, url, headers: { accept: "application/json" } },
+            searchResponse,
+          );
+
+          for (const q of response.items) {
+            engagement.set(String(q.question_id), {
+              score: q.score ?? null,
+              comments: q.answer_count ?? null,
+              views: q.view_count ?? null,
+              answered: q.is_answered ?? null,
+              tags: q.tags ?? [],
+            });
+          }
+        }
+      }
+
+      return { engagement, cost: { calls } };
+    },
 
     async fetchNew(
       watch: WatchConfig,
@@ -321,4 +385,22 @@ function hostnameOf(link: string): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Recover the API's site key from a stored venue hostname.
+ *
+ * The poller writes the hostname off the question's own link, because the
+ * network's older sites do not carry the `.stackexchange.com` suffix. This is
+ * the inverse: `softwareengineering.stackexchange.com` -> `softwareengineering`,
+ * `stackoverflow.com` -> `stackoverflow`.
+ */
+function siteKeyFromVenue(venue: string | null): string | null {
+  if (venue === null) return null;
+  const host = venue.toLowerCase().replace(/^www\./, "");
+  if (host.endsWith(".stackexchange.com")) {
+    return host.slice(0, -".stackexchange.com".length);
+  }
+  const match = /^([a-z0-9-]+)\.com$/.exec(host);
+  return match?.[1] ?? null;
 }

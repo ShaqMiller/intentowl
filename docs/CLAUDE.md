@@ -17,10 +17,22 @@ with it, flag the conflict instead of silently diverging.
   Demonstrate the passing exit test (command + output) before calling it done.
 - One commit per passing milestone minimum. Conventional commits (`feat:`,
   `fix:`, `chore:`).
-- Current milestone: **M5 complete** (M0-M5 done). M3 and M4 exit tests were
-  demonstrated but not run to their full duration; see Open items.
+- Current milestone: **M6 complete** (M0-M6 done); M7 started out of order at
+  the founder's request — the dashboard exists, auth does not. M3 and M4 exit
+  tests were demonstrated but not run to their full duration; see Open items.
 
 ## Open items carried forward
+
+- **Bluesky is built but unproven.** Same position as Reddit: fixture tests
+  only, never a live poll. `public.api.bsky.app` returned 403 from the build
+  environment and no credentials were configured, so every field mapping in
+  `adapters/bluesky.ts` is read from the lexicon rather than from a real
+  response. Do not offer it to a customer before a real poll succeeds.
+
+- **Engagement refresh skips Lobsters and Reddit.** Only HN (Algolia OR-tags,
+  probed live) and Stack Exchange (`/questions/{ids}`, 100 per call) implement
+  `fetchEngagement`. Lobsters serves one story per request, which is not worth
+  the budget.
 
 - **M5 exit test passed** on 2026-09-07 in Stripe test mode. Two purchases:
   $49 monthly created `m5-test@example.com` as `active`; $199 annual created

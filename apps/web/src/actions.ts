@@ -37,6 +37,19 @@ const SOURCE = z.enum([
 ]);
 
 /**
+ * One entry per line only. Used for values that may legitimately contain a
+ * comma — a URL query string, for instance — which `parseList` would split.
+ */
+function parseLines(raw: FormDataEntryValue | null): string[] {
+  if (typeof raw !== "string") return [];
+  const parts = raw
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return [...new Set(parts)];
+}
+
+/**
  * Turns a textarea into a clean string array: one entry per line or comma,
  * trimmed, blanks dropped, duplicates removed, order preserved.
  */
@@ -49,12 +62,29 @@ function parseList(raw: FormDataEntryValue | null): string[] {
   return [...new Set(parts)];
 }
 
+/**
+ * Feed URLs are fetched by our own server, so the scheme is checked here as
+ * well as in the adapter. Belt and braces on purpose: this is the boundary
+ * where a customer's text becomes a URL we will later request.
+ */
+const feedUrl = z
+  .string()
+  .refine((value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "Feed URLs must start with http:// or https://");
+
 const watchSchema = z.object({
   name: z.string().trim().min(1, "Give the search a name").max(80),
   sources: z.array(SOURCE).min(1, "Pick at least one source"),
   includeTerms: z.array(z.string().min(1)).max(60),
   excludeTerms: z.array(z.string().min(1)).max(60),
   subreddits: z.array(z.string().min(1)).max(40),
+  feeds: z.array(feedUrl).max(20),
   active: z.boolean(),
 });
 
@@ -68,8 +98,25 @@ function readWatchForm(form: FormData) {
       // Accept "r/SaaS", "/r/SaaS" or "SaaS" and store one shape.
       s.replace(/^\/?r\//i, ""),
     ),
+    // Commas are legal inside a URL, so feeds split on newlines only —
+    // parseList would cut a query string in half.
+    feeds: parseLines(form.get("feeds")),
     active: form.get("active") === "on",
   });
+}
+
+/**
+ * Split the validated form into the watch columns and the per-source jsonb.
+ *
+ * `feeds` is not a column: `sourceConfig` is where settings that do not
+ * deserve one live, and the RSS adapter reads them from `rss.feeds`.
+ */
+function toWatchRow(data: z.infer<typeof watchSchema>) {
+  const { feeds, ...columns } = data;
+  return {
+    ...columns,
+    sourceConfig: feeds.length > 0 ? { rss: { feeds } } : null,
+  };
 }
 
 export async function createWatch(form: FormData): Promise<ActionResult> {
@@ -83,7 +130,7 @@ export async function createWatch(form: FormData): Promise<ActionResult> {
   try {
     await db.insert(schema.watches).values({
       customerId: customer.id,
-      ...parsed.data,
+      ...toWatchRow(parsed.data),
     });
   } catch (error) {
     // The unique index on (customer_id, name) is the likely cause, and a
@@ -117,7 +164,7 @@ export async function updateWatch(form: FormData): Promise<ActionResult> {
   // belonging to someone else matches zero rows and updates nothing.
   const updated = await db
     .update(schema.watches)
-    .set(parsed.data)
+    .set(toWatchRow(parsed.data))
     .where(
       and(
         eq(schema.watches.id, id),

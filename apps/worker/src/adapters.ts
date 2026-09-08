@@ -7,9 +7,11 @@
  * with a clear message at the point of use.
  */
 import {
+  createBlueskyAdapter,
   createHnAdapter,
   createLobstersAdapter,
   createRedditAdapter,
+  createRssAdapter,
   createStackExchangeAdapter,
 } from "@intentowl/core";
 
@@ -27,6 +29,10 @@ export function createAdapters(): AdapterRegistry {
     stackexchange: createStackExchangeAdapter(
       env.STACKEXCHANGE_KEY === undefined ? {} : { apiKey: env.STACKEXCHANGE_KEY },
     ),
+    // Feeds are per-watch configuration, not credentials, so RSS is always
+    // available; a watch with no feeds fails at the point of use with a clear
+    // message rather than being silently absent here.
+    rss: createRssAdapter(),
   };
 
   if (
@@ -44,6 +50,27 @@ export function createAdapters(): AdapterRegistry {
   } else {
     logger.warn(
       "reddit credentials absent; the reddit adapter is not registered",
+    );
+  }
+
+  if (
+    env.BLUESKY_IDENTIFIER !== undefined &&
+    env.BLUESKY_APP_PASSWORD !== undefined
+  ) {
+    // Registered but unproven: this adapter has never completed a live poll.
+    // See the header of adapters/bluesky.ts before trusting its output.
+    registry.bluesky = createBlueskyAdapter({
+      credentials: {
+        identifier: env.BLUESKY_IDENTIFIER,
+        appPassword: env.BLUESKY_APP_PASSWORD,
+      },
+    });
+    logger.warn(
+      "bluesky adapter registered but has never run against the live API",
+    );
+  } else {
+    logger.warn(
+      "bluesky credentials absent; the bluesky adapter is not registered",
     );
   }
 

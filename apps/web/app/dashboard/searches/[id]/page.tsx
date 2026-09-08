@@ -50,6 +50,7 @@ export default async function EditSearchPage({
             includeTerms: watch.includeTerms,
             excludeTerms: watch.excludeTerms,
             subreddits: watch.subreddits,
+            feeds: feedsOf(watch.sourceConfig),
             active: watch.active,
           }}
         />
@@ -61,4 +62,20 @@ export default async function EditSearchPage({
       </p>
     </main>
   );
+}
+
+/**
+ * Read RSS feed URLs out of the per-source jsonb.
+ *
+ * Defensive because `sourceConfig` is untyped storage: a row written by an
+ * older shape, or by hand, must render an empty field rather than crash the
+ * editor.
+ */
+function feedsOf(config: unknown): string[] {
+  if (typeof config !== "object" || config === null) return [];
+  const rss = (config as { rss?: unknown }).rss;
+  if (typeof rss !== "object" || rss === null) return [];
+  const feeds = (rss as { feeds?: unknown }).feeds;
+  if (!Array.isArray(feeds)) return [];
+  return feeds.filter((f): f is string => typeof f === "string");
 }

@@ -32,6 +32,9 @@ const schema = z.object({
   SUPABASE_ANON_KEY: z.string().optional(),
   /** Server-only. Never send this to the browser. */
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+
+  /** Must match the worker's, which signs the links this app verifies. */
+  FEEDBACK_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof schema>;

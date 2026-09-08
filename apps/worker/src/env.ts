@@ -38,6 +38,12 @@ const schema = z.object({
   BLUESKY_IDENTIFIER: z.string().optional(),
   BLUESKY_APP_PASSWORD: z.string().optional(),
   OPS_SLACK_WEBHOOK_URL: z.url().optional(),
+  /**
+   * HMAC key for the feedback links in the digest. Optional: without it the
+   * digest simply renders no thumbs, rather than rendering links that cannot
+   * be verified. Must match the web app, which receives the clicks.
+   */
+  FEEDBACK_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof schema>;

@@ -29,6 +29,9 @@ import type { PgBoss } from "pg-boss";
 import { logger } from "../logger.ts";
 import { CLASSIFY_QUEUE, CLASSIFY_QUEUE_OPTIONS } from "./classify.ts";
 import { DIGEST_QUEUE, DIGEST_QUEUE_OPTIONS } from "./digest.ts";
+import { HARVEST_QUEUE, HARVEST_QUEUE_OPTIONS } from "./harvest-fewshots.ts";
+import { OPS_REPORT_QUEUE, OPS_REPORT_QUEUE_OPTIONS } from "./ops-report.ts";
+import { REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS } from "./refresh-engagement.ts";
 import {
   POLL_QUEUE,
   POLL_QUEUE_OPTIONS,
@@ -55,6 +58,28 @@ const POLL_INTERVAL_MINUTES: Record<SourceName, number> = {
 
 /** Drains whatever the polls have queued up. */
 const CLASSIFY_CRON = "*/5 * * * *";
+
+/**
+ * Daily ops report, 06:30 UTC — before the earliest customer digest goes out,
+ * so a broken pipeline is visible while there is still time to fix it rather
+ * than after the empty email has landed.
+ */
+const OPS_REPORT_CRON = "30 6 * * *";
+
+/**
+ * Rebuild few-shot examples hourly. Pure database work, no API calls, so the
+ * only cost of running it often is that a customer's thumbs-up starts shaping
+ * their results within the hour rather than the next day.
+ */
+const HARVEST_CRON = "40 * * * *";
+
+/**
+ * Engagement refresh every two hours, offset from the polls so it is not
+ * competing with them for the same rate budget. Hourly would spend requests
+ * re-reading counters that barely move; daily would miss the window where a
+ * thread actually takes off.
+ */
+const REFRESH_CRON = "25 */2 * * *";
 
 export interface SyncResult {
   added: number;
@@ -129,13 +154,23 @@ export async function syncSchedules(
   return result;
 }
 
-const OWNED_QUEUES = new Set<string>([POLL_QUEUE, DIGEST_QUEUE, CLASSIFY_QUEUE]);
+const OWNED_QUEUES = new Set<string>([
+  POLL_QUEUE,
+  DIGEST_QUEUE,
+  CLASSIFY_QUEUE,
+  OPS_REPORT_QUEUE,
+  HARVEST_QUEUE,
+  REFRESH_QUEUE,
+]);
 
 /** Create every queue the scheduler targets. Idempotent; safe to repeat. */
 export async function ensureQueues(boss: PgBoss): Promise<void> {
   await boss.createQueue(POLL_QUEUE, POLL_QUEUE_OPTIONS);
   await boss.createQueue(CLASSIFY_QUEUE, CLASSIFY_QUEUE_OPTIONS);
   await boss.createQueue(DIGEST_QUEUE, DIGEST_QUEUE_OPTIONS);
+  await boss.createQueue(OPS_REPORT_QUEUE, OPS_REPORT_QUEUE_OPTIONS);
+  await boss.createQueue(HARVEST_QUEUE, HARVEST_QUEUE_OPTIONS);
+  await boss.createQueue(REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS);
 }
 
 interface DesiredSchedule {
@@ -152,6 +187,27 @@ async function desiredSchedules(db: Db): Promise<DesiredSchedule[]> {
     // One classify schedule for the whole deployment: the job drains across
     // every watch, so a schedule per customer would just contend for the lock.
     { queue: CLASSIFY_QUEUE, key: "classify", cron: CLASSIFY_CRON, tz: "UTC", data: null },
+    {
+      queue: OPS_REPORT_QUEUE,
+      key: "ops-report",
+      cron: OPS_REPORT_CRON,
+      tz: "UTC",
+      data: null,
+    },
+    {
+      queue: HARVEST_QUEUE,
+      key: "harvest-fewshots",
+      cron: HARVEST_CRON,
+      tz: "UTC",
+      data: null,
+    },
+    {
+      queue: REFRESH_QUEUE,
+      key: "refresh-engagement",
+      cron: REFRESH_CRON,
+      tz: "UTC",
+      data: null,
+    },
   ];
 
   const watches = await db

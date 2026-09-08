@@ -72,6 +72,20 @@ export const cursor = z.union([
     /** `creation_date`, unix seconds. */
     newestCreatedAt: z.number().int().nonnegative(),
   }),
+  z.object({
+    kind: z.literal("bluesky"),
+    /** `indexedAt` of the newest post seen, epoch milliseconds. */
+    newestIndexedAt: z.number().int().nonnegative(),
+  }),
+  z.object({
+    kind: z.literal("rss"),
+    /**
+     * Epoch milliseconds of the newest entry seen across every feed on the
+     * watch. One cursor for all of them: feeds are added and removed freely,
+     * and a per-feed cursor would strand state for feeds that go away.
+     */
+    newestPublishedAt: z.number().int().nonnegative(),
+  }),
 ]);
 export type Cursor = z.infer<typeof cursor>;
 
@@ -111,9 +125,38 @@ export interface FetchResult {
   warnings?: string[];
 }
 
+/**
+ * One stored item to re-read. Carries `venue` because some sources need more
+ * than the id to address a post: a Stack Exchange question id is only unique
+ * within its site, and the site is recoverable from the venue hostname.
+ */
+export interface EngagementRequest {
+  externalId: string;
+  venue: string | null;
+}
+
+/** Engagement re-read for items already stored, keyed by `externalId`. */
+export interface EngagementResult {
+  engagement: Map<string, Record<string, unknown>>;
+  cost: FetchCost;
+}
+
 export interface SourceAdapter {
   readonly source: SourceName;
   fetchNew(watch: WatchConfig, cursor: Cursor | null): Promise<FetchResult>;
+  /**
+   * Re-read engagement for items already in the database.
+   *
+   * Optional because it needs a batch lookup-by-id endpoint, and not every
+   * source has one — Lobsters only serves a story at a time, which is not
+   * worth the request budget.
+   *
+   * Why it exists: scoring weights engagement, but `fetchNew` is
+   * cursor-driven and never revisits a post. Without this, a thread that takes
+   * off three hours after it was fetched keeps the score it had when nobody
+   * had read it yet.
+   */
+  fetchEngagement?(items: EngagementRequest[]): Promise<EngagementResult>;
 }
 
 /**

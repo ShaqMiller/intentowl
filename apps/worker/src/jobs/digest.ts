@@ -20,6 +20,7 @@ import {
   renderSlackBlocks,
   postSlackDigest,
   sendDigestEmail,
+  signFeedbackToken,
   type DigestGroup,
   type RankedLead,
   type ScorableLead,
@@ -113,6 +114,10 @@ export async function runDigest(
   outcome.leadCount = groups.reduce((n, g) => n + g.leads.length, 0);
   outcome.degraded = health.degraded;
 
+  // Feedback links are omitted rather than rendered unverifiable when no
+  // secret is configured: a thumbs-up that 404s teaches the customer the
+  // feature is broken, which is worse than not offering it.
+  const secret = env.FEEDBACK_SECRET;
   const rendered = await renderDigest({
     customerName: customer.name ?? "you",
     groups,
@@ -120,6 +125,12 @@ export async function runDigest(
     appUrl: env.APP_URL,
     degradedNote: health.note,
     totalScanned: health.scanned,
+    ...(secret === undefined
+      ? {}
+      : {
+          feedbackToken: (itemId: string) =>
+            signFeedbackToken(secret, customerId, itemId),
+        }),
   });
   outcome.subject = rendered.subject;
   outcome.html = rendered.html;

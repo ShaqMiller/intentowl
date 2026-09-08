@@ -21,6 +21,9 @@ import { createBoss } from "./boss.ts";
 import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
 import { runDigest } from "./jobs/digest.ts";
+import { runHarvest } from "./jobs/harvest-fewshots.ts";
+import { runOpsReport } from "./jobs/ops-report.ts";
+import { runRefreshEngagement } from "./jobs/refresh-engagement.ts";
 import { syncSchedules } from "./jobs/schedules.ts";
 import { applySeed, parseSeedFile } from "./seed.ts";
 import { runPoll } from "./jobs/poll.ts";
@@ -50,6 +53,18 @@ const USAGE = `intentowl cli
 
   schedules
       Print the cron schedules currently registered.
+
+  ops-report
+      Build the daily pipeline report and send it to the ops Slack webhook.
+      Runs on cron at 06:30 UTC; this is the on-demand version.
+
+  harvest-fewshots
+      Rebuild every customer's calibration examples from their feedback.
+      Runs hourly on cron; this is the on-demand version.
+
+  refresh-engagement
+      Re-read points and comment counts for recent items, so a thread that
+      took off after we found it is ranked on what it became.
 `;
 
 async function main(): Promise<number> {
@@ -75,9 +90,56 @@ async function main(): Promise<number> {
     case "schedules":
       return await schedulesCommand();
 
+    case "ops-report":
+      return await opsReportCommand();
+
+    case "harvest-fewshots":
+      return await harvestCommand();
+
+    case "refresh-engagement":
+      return await refreshEngagementCommand();
+
     default:
       process.stdout.write(USAGE);
       return command === undefined || command === "help" ? 0 : 1;
+  }
+}
+
+async function refreshEngagementCommand(): Promise<number> {
+  const { pool, db } = createDb(env.DATABASE_URL);
+  try {
+    const outcomes = await runRefreshEngagement(db, createAdapters());
+    process.stdout.write(`${JSON.stringify(outcomes, null, 2)}
+`);
+    return 0;
+  } finally {
+    await pool.end();
+  }
+}
+
+async function harvestCommand(): Promise<number> {
+  const { pool, db } = createDb(env.DATABASE_URL);
+  try {
+    const outcomes = await runHarvest(db);
+    process.stdout.write(`${JSON.stringify(outcomes, null, 2)}
+`);
+    return 0;
+  } finally {
+    await pool.end();
+  }
+}
+
+async function opsReportCommand(): Promise<number> {
+  const { pool, db } = createDb(env.DATABASE_URL);
+  try {
+    const report = await runOpsReport(db);
+    // Print the raw numbers too: Slack formatting hides precision, and this is
+    // the command you run when you already suspect something is wrong.
+    process.stdout.write(`${JSON.stringify(report, null, 2)}
+`);
+    return 0;
+  } finally {
+    await pool.end();
   }
 }
 

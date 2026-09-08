@@ -21,6 +21,7 @@
     "@anthropic-ai/sdk": "0.124.0",
     "@react-email/components": "1.0.12",
     "@react-email/render": "2.1.0",
+    "fast-xml-parser": "5.4.1",
     "react": "19.2.8",
     "resend": "6.26.0",
     "zod": "4.5.4"

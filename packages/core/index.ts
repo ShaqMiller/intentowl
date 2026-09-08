@@ -9,3 +9,4 @@ export * from "./filter/rules.ts";
 export * from "./classify/index.ts";
 export * from "./scoring.ts";
 export * from "./digest/index.ts";
+export * from "./feedback.ts";

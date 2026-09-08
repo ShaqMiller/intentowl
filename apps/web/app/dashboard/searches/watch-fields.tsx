@@ -13,6 +13,7 @@ export interface WatchDefaults {
   includeTerms?: string[];
   excludeTerms?: string[];
   subreddits?: string[];
+  feeds?: string[];
   active?: boolean;
 }
 
@@ -24,12 +25,12 @@ const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> = [
     label: "Stack Exchange",
     note: "problems described in detail",
   },
+  { key: "rss", label: "RSS feeds", note: "any blog or forum with a feed" },
 ];
 
 const PENDING_SOURCES: Array<{ key: string; label: string; note: string }> = [
   { key: "reddit", label: "Reddit", note: "awaiting API approval" },
-  { key: "bluesky", label: "Bluesky", note: "not built yet" },
-  { key: "rss", label: "RSS", note: "not built yet" },
+  { key: "bluesky", label: "Bluesky", note: "needs account credentials" },
 ];
 
 export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
@@ -119,6 +120,24 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
         <p className="hint">
           One per line. Anything matching these is dropped before it costs
           anything to classify.
+        </p>
+      </div>
+
+      <div className="field">
+        <label htmlFor="feeds">RSS feed URLs</label>
+        <textarea
+          id="feeds"
+          name="feeds"
+          rows={3}
+          defaultValue={(defaults.feeds ?? []).join("\n")}
+          placeholder={
+            "https://example.com/blog/feed.xml\nhttps://forum.example.com/latest.rss"
+          }
+        />
+        <p className="hint">
+          One per line, http or https. Used when RSS is selected above. Entries
+          are matched against your include terms the same way every other
+          source is.
         </p>
       </div>
 

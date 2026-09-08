@@ -164,6 +164,20 @@ export async function postSlackDigest(
   webhookUrl: string,
   payload: { text: string; blocks: unknown[] },
 ): Promise<SendResult> {
+  return postSlack(webhookUrl, payload);
+}
+
+/**
+ * Post any message to a Slack incoming webhook.
+ *
+ * The digest is one caller; the ops report is another. Failure is returned
+ * rather than thrown — a Slack outage must never take down the job that was
+ * trying to report through it.
+ */
+export async function postSlack(
+  webhookUrl: string,
+  payload: { text: string; blocks?: unknown[] },
+): Promise<SendResult> {
   try {
     const response = await fetch(webhookUrl, {
       method: "POST",

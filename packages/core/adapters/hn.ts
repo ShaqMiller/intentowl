@@ -16,6 +16,8 @@ import { hnBucket } from "./rate-limit.ts";
 import {
   cursorFor,
   type Cursor,
+  type EngagementRequest,
+  type EngagementResult,
   type FetchResult,
   type RawItem,
   type SourceAdapter,
@@ -41,6 +43,13 @@ const MAX_TERMS_PER_POLL = 10;
 
 /** Pages to walk per term before accepting a gap and warning about it. */
 const MAX_PAGES_PER_TERM = 3;
+
+/**
+ * Stories per engagement request. Algolia ORs the tags, so this is the number
+ * of ids in one `tags=(story_a,story_b,...)` filter — kept well under the
+ * hitsPerPage ceiling of 1000 so a batch always fits in a single page.
+ */
+const ENGAGEMENT_BATCH = 50;
 
 const hit = z.object({
   objectID: z.string().min(1),
@@ -69,6 +78,50 @@ export function createHnAdapter(options: HnAdapterOptions = {}): SourceAdapter {
 
   return {
     source: SOURCE,
+
+    /**
+     * Re-read points and comment counts for stories we already have.
+     *
+     * Algolia accepts an OR of tags — `tags=(story_1,story_2)` — so a batch
+     * costs one request rather than one per item. Probed against the live API
+     * before relying on it; the syntax returns the hits with their current
+     * points and num_comments.
+     *
+     * Comment items are skipped: their ids are not story tags, and comment
+     * engagement is not what scoring uses.
+     */
+    async fetchEngagement(items: EngagementRequest[]): Promise<EngagementResult> {
+      // HN ids are globally unique, so venue is not needed here.
+      const externalIds = items.map((i) => i.externalId);
+      const engagement = new Map<string, Record<string, unknown>>();
+      let calls = 0;
+
+      for (const batch of chunked(externalIds, ENGAGEMENT_BATCH)) {
+        if (batch.length === 0) continue;
+        await bucket.take();
+        calls += 1;
+
+        const tags = `(${batch.map((id) => `story_${id}`).join(",")})`;
+        const url = `${SEARCH_URL}?${new URLSearchParams({
+          tags,
+          hitsPerPage: String(batch.length),
+        }).toString()}`;
+
+        const response = await fetchJson(
+          { source: SOURCE, url, headers: { "user-agent": "intentowl/0.1" } },
+          searchResponse,
+        );
+
+        for (const hit of response.hits) {
+          engagement.set(hit.objectID, {
+            points: hit.points ?? 0,
+            comments: hit.num_comments ?? 0,
+          });
+        }
+      }
+
+      return { engagement, cost: { calls } };
+    },
 
     async fetchNew(
       watch: WatchConfig,
@@ -171,4 +224,11 @@ function saturatedWarning(terms: readonly string[]): string {
     `HN terms returned a full page on every request and may have skipped ` +
     `older matches this window: ${terms.join(", ")}. Narrow them or poll more often.`
   );
+}
+
+/** Split a list into fixed-size batches. */
+function chunked<T>(values: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < values.length; i += size) out.push(values.slice(i, i + size));
+  return out;
 }
