@@ -64,6 +64,15 @@ export const customers = pgTable(
     status: customerStatus("status").notNull().default("lead"),
     stripeCustomerId: text("stripe_customer_id"),
     plan: text("plan"),
+    /**
+     * Supabase Auth user id, set when the customer first claims their login.
+     * Null for anyone onboarded by hand who has never signed in.
+     *
+     * Deliberately not the primary key and deliberately not email: payment
+     * creates the customer row before any auth user exists, and an auth email
+     * change must not orphan the row it points at.
+     */
+    authUserId: uuid("auth_user_id"),
     /** IANA timezone, e.g. "Europe/London". Digest send hour is local to this. */
     tz: text("tz").notNull().default("UTC"),
     /**
@@ -79,6 +88,8 @@ export const customers = pgTable(
   (t) => [
     uniqueIndex("customers_email_key").on(t.email),
     uniqueIndex("customers_stripe_customer_id_key").on(t.stripeCustomerId),
+    // One auth user maps to at most one customer.
+    uniqueIndex("customers_auth_user_id_key").on(t.authUserId),
   ],
 );
 

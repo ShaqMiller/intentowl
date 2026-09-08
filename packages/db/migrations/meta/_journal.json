@@ -36,6 +36,13 @@
       "when": 1788815290258,
       "tag": "0004_lumpy_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788884822813,
+      "tag": "0005_stormy_taskmaster",
+      "breakpoints": true
     }
   ]
 }

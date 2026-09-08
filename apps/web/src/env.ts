@@ -23,6 +23,15 @@ const schema = z.object({
   STRIPE_LINK_ANNUAL: z.url().optional(),
   /** Tally/Google form the thank-you page sends people to. */
   ONBOARDING_FORM_URL: z.url().optional(),
+
+  // M7 — auth. Optional so the marketing site still builds without them, but
+  // `requireCustomer` refuses to serve the dashboard in production unless the
+  // first two are present. See src/session.ts.
+  SUPABASE_URL: z.url().optional(),
+  /** Publishable key. Safe to expose; row-level security is what protects data. */
+  SUPABASE_ANON_KEY: z.string().optional(),
+  /** Server-only. Never send this to the browser. */
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof schema>;
