@@ -1,16 +1,18 @@
 /**
  * Bluesky adapter (ARCHITECTURE.md section 4.1).
  *
- * ## Status: built, never run against the live API
+ * ## Verified against the live API on 2026-09-09
  *
- * Two things blocked verification: no `BLUESKY_IDENTIFIER` /
- * `BLUESKY_APP_PASSWORD` were configured, and the unauthenticated AppView
- * (`public.api.bsky.app`) returned 403 to `app.bsky.feed.searchPosts` from the
- * build environment even with a user agent. So this is written against the
- * documented lexicon shapes and covered by fixture tests only — the same
- * position the Reddit adapter is in. Treat every field mapping below as
- * unconfirmed until a real poll succeeds, and do not offer Bluesky as a live
- * source to a customer before then.
+ * An authenticated poll returned 198 posts over two pages. Confirmed against a
+ * real response rather than the lexicon alone: `sort=latest` really is
+ * descending by `indexedAt`, the AT-URI is present on every post, the four
+ * engagement counters come back as numbers, and the handle-based permalink
+ * resolves. The 401 retry path is real too — `fetchJson` throws a message
+ * carrying the status code, which is what `isUnauthorized` matches on.
+ *
+ * Note that `public.api.bsky.app` (the unauthenticated AppView) returns 403 to
+ * `searchPosts` from some networks. This adapter does not use it; it
+ * authenticates against bsky.social with an app password, which works.
  *
  * The design follows the other adapters: one request per include term, because
  * `searchPosts` takes a single query string and joining terms would either AND

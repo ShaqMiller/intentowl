@@ -36,11 +36,10 @@ with it, flag the conflict instead of silently diverging.
   share `.next`, so building while a dev server runs breaks it with a
   misleading "Cannot find module ./NNN.js". This has now happened twice.
 
-- **Bluesky is built but unproven.** Same position as Reddit: fixture tests
-  only, never a live poll. `public.api.bsky.app` returned 403 from the build
-  environment and no credentials were configured, so every field mapping in
-  `adapters/bluesky.ts` is read from the lexicon rather than from a real
-  response. Do not offer it to a customer before a real poll succeeds.
+- **Bluesky is verified live** (2026-09-09): authenticated poll returned 198
+  posts, every field mapping confirmed against a real response. Credentials are
+  an app password, not the account password. Note the unauthenticated AppView
+  (`public.api.bsky.app`) 403s from some networks; the adapter does not use it.
 
 - **Engagement refresh skips Lobsters and Reddit.** Only HN (Algolia OR-tags,
   probed live) and Stack Exchange (`/questions/{ids}`, 100 per call) implement

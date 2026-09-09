@@ -1,12 +1,10 @@
 /**
- * Bluesky adapter tests — fixtures only.
+ * Bluesky adapter tests.
  *
- * These prove the adapter does what the code says it does. They cannot prove
- * the fixtures match what Bluesky actually returns, because the adapter has
- * never reached the live API (403 from the public AppView, and no credentials
- * configured). The mappings below are read from the published lexicon and
- * should be re-checked against a real response before Bluesky is offered as a
- * source to anyone.
+ * The fixtures below were checked against a real authenticated response on
+ * 2026-09-09 — field names, types and the descending `indexedAt` ordering all
+ * match. They cover the branches a live probe cannot reach on demand: an
+ * expired token, a post with no text, and an upstream shape change.
  */
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";

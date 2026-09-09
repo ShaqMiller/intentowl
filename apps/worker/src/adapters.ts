@@ -57,17 +57,12 @@ export function createAdapters(): AdapterRegistry {
     env.BLUESKY_IDENTIFIER !== undefined &&
     env.BLUESKY_APP_PASSWORD !== undefined
   ) {
-    // Registered but unproven: this adapter has never completed a live poll.
-    // See the header of adapters/bluesky.ts before trusting its output.
     registry.bluesky = createBlueskyAdapter({
       credentials: {
         identifier: env.BLUESKY_IDENTIFIER,
         appPassword: env.BLUESKY_APP_PASSWORD,
       },
     });
-    logger.warn(
-      "bluesky adapter registered but has never run against the live API",
-    );
   } else {
     logger.warn(
       "bluesky credentials absent; the bluesky adapter is not registered",

@@ -2,9 +2,10 @@
  * The search editor's fields, shared by create and edit.
  *
  * Sources are split into what actually polls today and what does not. Offering
- * a customer a checkbox for Reddit that silently returns nothing would be the
- * dashboard version of listing it on the landing page — the adapter exists, but
- * it has never run against the live API.
+ * a customer a checkbox that silently returns nothing would be the dashboard
+ * version of overstating the sources on the landing page. Reddit is the one
+ * still on the wrong side of that line: the adapter exists and is tested
+ * against fixtures, but has never completed a live poll.
  */
 export interface WatchDefaults {
   id?: string;
@@ -26,11 +27,11 @@ const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> = [
     note: "problems described in detail",
   },
   { key: "rss", label: "RSS feeds", note: "any blog or forum with a feed" },
+  { key: "bluesky", label: "Bluesky", note: "short posts, fast moving" },
 ];
 
 const PENDING_SOURCES: Array<{ key: string; label: string; note: string }> = [
   { key: "reddit", label: "Reddit", note: "awaiting API approval" },
-  { key: "bluesky", label: "Bluesky", note: "needs account credentials" },
 ];
 
 export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
