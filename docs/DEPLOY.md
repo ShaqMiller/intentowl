@@ -17,7 +17,7 @@ Postgres is Supabase and is already live — neither platform hosts data.
 DNS and mail should be done first; the URLs below depend on them.
 
 - [x] Domain on Cloudflare
-- [x] Cloudflare Email Routing (inbound `hello@intentowl.com` → Gmail)
+- [x] Cloudflare Email Routing (inbound `tools@intentowl.com` → Gmail)
 - [x] Resend verified on `send.intentowl.com`
 - [ ] **DMARC record** — still missing, see the bottom of this file
 - [x] Code on GitHub
@@ -72,7 +72,7 @@ DNS and mail should be done first; the URLs below depend on them.
    ANTHROPIC_API_KEY
    RESEND_API_KEY
    DIGEST_FROM            IntentOwl <digests@send.intentowl.com>
-   DIGEST_REPLY_TO        hello@intentowl.com
+   DIGEST_REPLY_TO        tools@intentowl.com
    APP_URL                https://intentowl.com
    FEEDBACK_SECRET        must match Vercel's exactly
    STACKEXCHANGE_KEY
@@ -102,7 +102,7 @@ the whole request budget and together blow through it.
 ## Still outstanding
 
 - **DMARC.** No `_dmarc.intentowl.com` record exists. Add
-  `v=DMARC1; p=none; rua=mailto:hello@intentowl.com` and tighten `p` to
+  `v=DMARC1; p=none; rua=mailto:tools@intentowl.com` and tighten `p` to
   `quarantine` once Resend has been sending cleanly for a week. Gmail and
   Yahoo treat its absence as a negative signal for bulk senders.
 - **Supabase SMTP.** Auth emails still send through Supabase's shared sandbox
