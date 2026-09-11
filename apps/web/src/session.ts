@@ -68,10 +68,15 @@ export const getAuthUser = cache(async function getAuthUser(): Promise<{
 export const getCustomer = cache(async function getCustomer(): Promise<SessionCustomer | null> {
   if (!authConfigured()) {
     if (env.NODE_ENV === "production") {
-      throw new Error(
-        "Supabase auth is not configured. The dashboard refuses to serve in " +
-          "production without it — set SUPABASE_URL and SUPABASE_ANON_KEY.",
+      // Loud in the logs, quiet on the page. Throwing here 500s /login too —
+      // and a login page that errors is a worse answer than one that says it
+      // is not connected yet. Returning null denies access just as firmly:
+      // requireCustomer still throws, so the dashboard stays shut.
+      console.error(
+        "[session] SUPABASE_URL / SUPABASE_ANON_KEY are not set. Nobody can " +
+          "sign in. The dashboard is closed until they are configured.",
       );
+      return null;
     }
     return devFallbackCustomer();
   }
