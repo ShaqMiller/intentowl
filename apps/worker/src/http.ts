@@ -25,7 +25,14 @@ export function startHttpServer(db: Db): { close: () => Promise<void> } {
     }
   });
 
-  const server = serve({ fetch: app.fetch, port: env.PORT });
+  // Bind every interface explicitly. A container platform reaches the health
+  // check from outside the container, and a server bound to loopback answers
+  // locally while the platform sees a dead service and restarts it forever.
+  const server = serve({
+    fetch: app.fetch,
+    port: env.PORT,
+    hostname: "0.0.0.0",
+  });
   logger.info({ port: env.PORT }, "health endpoint listening");
 
   return {

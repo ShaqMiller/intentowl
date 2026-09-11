@@ -1,0 +1,35 @@
+# Railway configuration for the always-on worker.
+#
+# Only the worker belongs here. The Next.js app is on Vercel, because the two
+# have opposite shapes: the web app is bursty and stateless, the worker must
+# stay running and holds state between jobs — rate-limiter token buckets, the
+# Bluesky access token, the pg-boss queue connection.
+#
+# Nixpacks reads pnpm-lock.yaml and installs the whole workspace, which is what
+# we want: the worker runs TypeScript through tsx at runtime rather than
+# building to JavaScript, so tsx (a devDependency) has to survive install.
+# Do not add a --prod flag here without also adding a build step.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "pnpm --filter @intentowl/worker start"
+
+# Railway polls this until it answers before routing traffic or marking the
+# deploy healthy. The endpoint checks the database too, so a worker that boots
+# without Postgres reports degraded instead of pretending to be fine.
+healthcheckPath = "/healthz"
+healthcheckTimeout = 120
+
+# The worker is meant to run forever; a crash is a bug, not a lifecycle event.
+# Restart on failure so a transient fault self-heals, but cap the retries so a
+# genuinely broken deploy stops and shows up rather than looping quietly.
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# One instance, deliberately. pg-boss would coordinate several safely, but the
+# per-source rate limiters are in-process: two instances would each think they
+# own the full request budget and together exceed it. Revisit only with a
+# shared limiter.
+numReplicas = 1
