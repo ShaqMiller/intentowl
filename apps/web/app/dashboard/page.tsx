@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 
 import { listLeads, listWatches, getStats } from "../../src/queries.ts";
 import { requireCustomer } from "../../src/session.ts";
+import { IconExternal, IconInbox } from "./icons.tsx";
 
 export const metadata: Metadata = { title: "Leads" };
 
@@ -95,6 +96,7 @@ export default async function LeadsPage({
 
       {leads.length === 0 ? (
         <div className="empty">
+          <IconInbox size={28} />
           <h3>Nothing here yet.</h3>
           <p>
             {watches.length === 0
@@ -142,6 +144,7 @@ export default async function LeadsPage({
                     target="_blank"
                     rel="noreferrer noopener"
                   >
+                    <IconExternal size={13} />
                     Open thread
                   </a>
                 </p>

@@ -224,6 +224,11 @@ const profileSchema = z.object({
  * The product description the classifier judges every post against.
  * This is the single biggest lever on result quality, which is why it lives on
  * its own page rather than buried in settings.
+ *
+ * Updates only the fields the form actually submitted. Each setting is its own
+ * card with its own save, so a form carrying one field must not blank the
+ * three it did not include — which is exactly what a full-object write would
+ * do, silently, on every save.
  */
 export async function updateProfile(form: FormData): Promise<ActionResult> {
   const customer = await requireCustomer();
@@ -235,20 +240,37 @@ export async function updateProfile(form: FormData): Promise<ActionResult> {
     return trimmed.length === 0 ? null : trimmed;
   };
 
-  const parsed = profileSchema.safeParse({
-    productDesc: text("productDesc"),
-    icpDesc: text("icpDesc"),
-    competitors: parseList(form.get("competitors")),
-    disqualifiers: parseList(form.get("disqualifiers")),
+  const parsed = profileSchema.partial().safeParse({
+    ...(form.has("productDesc") ? { productDesc: text("productDesc") } : {}),
+    ...(form.has("icpDesc") ? { icpDesc: text("icpDesc") } : {}),
+    ...(form.has("competitors")
+      ? { competitors: parseList(form.get("competitors")) }
+      : {}),
+    ...(form.has("disqualifiers")
+      ? { disqualifiers: parseList(form.get("disqualifiers")) }
+      : {}),
   });
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  if (Object.keys(parsed.data).length === 0) {
+    return { ok: false, message: "Nothing to save." };
   }
 
   const db = getDb();
   await db
     .insert(schema.profiles)
-    .values({ customerId: customer.id, ...parsed.data, updatedAt: new Date() })
+    .values({
+      customerId: customer.id,
+      // The insert branch needs every column; the update branch below only
+      // touches what was submitted.
+      productDesc: null,
+      icpDesc: null,
+      competitors: [],
+      disqualifiers: [],
+      ...parsed.data,
+      updatedAt: new Date(),
+    })
     .onConflictDoUpdate({
       target: schema.profiles.customerId,
       set: { ...parsed.data, updatedAt: new Date() },
@@ -277,13 +299,25 @@ export async function updateDelivery(form: FormData): Promise<ActionResult> {
   const customer = await requireCustomer();
 
   const name = form.get("name");
-  const parsed = deliverySchema.safeParse({
-    name: typeof name === "string" && name.trim().length > 0 ? name.trim() : null,
-    tz: form.get("tz"),
-    digestHour: Number(form.get("digestHour")),
+  const parsed = deliverySchema.partial().safeParse({
+    ...(form.has("name")
+      ? {
+          name:
+            typeof name === "string" && name.trim().length > 0
+              ? name.trim()
+              : null,
+        }
+      : {}),
+    ...(form.has("tz") ? { tz: form.get("tz") } : {}),
+    ...(form.has("digestHour")
+      ? { digestHour: Number(form.get("digestHour")) }
+      : {}),
   });
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  if (Object.keys(parsed.data).length === 0) {
+    return { ok: false, message: "Nothing to save." };
   }
 
   const db = getDb();

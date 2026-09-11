@@ -12,6 +12,7 @@ import { setWatchActive } from "../../../src/actions.ts";
 import { listWatches } from "../../../src/queries.ts";
 import { requireCustomer } from "../../../src/session.ts";
 import { ActionButton } from "../form.tsx";
+import { IconPause, IconPlay, IconPlus, IconSearch } from "../icons.tsx";
 
 export const metadata: Metadata = { title: "Searches" };
 export const dynamic = "force-dynamic";
@@ -32,18 +33,21 @@ export default async function SearchesPage() {
           </p>
         </div>
         <a className="btn btn-primary" href="/dashboard/searches/new">
+          <IconPlus size={14} />
           New search
         </a>
       </header>
 
       {watches.length === 0 ? (
         <div className="empty">
+          <IconSearch size={28} />
           <h3>No searches yet.</h3>
           <p>
             A search is a set of terms plus the places to look. Nothing is polled
             until at least one exists.
           </p>
           <a className="btn btn-primary" href="/dashboard/searches/new">
+            <IconPlus size={14} />
             Create your first search
           </a>
         </div>
@@ -92,6 +96,7 @@ export default async function SearchesPage() {
                   <ActionButton
                     action={setWatchActive}
                     fields={{ id: w.id, active: String(!w.active) }}
+                    icon={w.active ? <IconPause size={13} /> : <IconPlay size={13} />}
                     label={w.active ? "Pause" : "Resume"}
                   />
                 </div>

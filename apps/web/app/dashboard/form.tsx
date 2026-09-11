@@ -11,6 +11,8 @@
  */
 import { useActionState, type ReactNode } from "react";
 
+import { IconCheck } from "./icons.tsx";
+
 export interface ActionResult {
   ok: boolean;
   message: string;
@@ -21,16 +23,56 @@ export function ActionForm({
   children,
   submitLabel = "Save",
   className,
+  variant = "plain",
+  footer,
 }: {
   action: (form: FormData) => Promise<ActionResult>;
   children: ReactNode;
   submitLabel?: string;
   className?: string;
+  /**
+   * `card` puts the button in a setting-card footer bar alongside a line
+   * stating what the change does; `plain` keeps the older inline layout.
+   */
+  variant?: "plain" | "card";
+  /** Shown on the left of the footer bar, replaced by the result once saved. */
+  footer?: string;
 }) {
   const [state, formAction, pending] = useActionState<
     ActionResult | null,
     FormData
   >(async (_previous, form) => action(form), null);
+
+  const button = (
+    <button className="btn btn-primary btn-sm" type="submit" disabled={pending}>
+      {pending ? "Saving…" : submitLabel}
+    </button>
+  );
+
+  const result =
+    state === null ? null : (
+      <p
+        className={state.ok ? "flash ok" : "flash bad"}
+        role="status"
+        aria-live="polite"
+      >
+        {state.ok && <IconCheck size={13} />} {state.message}
+      </p>
+    );
+
+  if (variant === "card") {
+    return (
+      <form action={formAction} className={className}>
+        {children}
+        <div className="setcard-foot">
+          {/* The consequence of saving, until there is a result to show
+              instead — so the footer is never just a button on a bar. */}
+          {result ?? <span>{footer}</span>}
+          {button}
+        </div>
+      </form>
+    );
+  }
 
   return (
     <form action={formAction} className={className}>
@@ -39,15 +81,7 @@ export function ActionForm({
         <button className="btn btn-primary" type="submit" disabled={pending}>
           {pending ? "Saving…" : submitLabel}
         </button>
-        {state !== null && (
-          <p
-            className={state.ok ? "flash ok" : "flash bad"}
-            role="status"
-            aria-live="polite"
-          >
-            {state.message}
-          </p>
-        )}
+        {result}
       </div>
     </form>
   );
@@ -61,11 +95,13 @@ export function ActionButton({
   action,
   fields,
   label,
+  icon,
   variant,
 }: {
   action: (form: FormData) => Promise<ActionResult>;
   fields: Record<string, string>;
   label: string;
+  icon?: ReactNode;
   variant?: "primary";
 }) {
   const [state, formAction, pending] = useActionState<
@@ -83,6 +119,7 @@ export function ActionButton({
         type="submit"
         disabled={pending}
       >
+        {icon}
         {pending ? "…" : label}
       </button>
       {state !== null && !state.ok && (

@@ -6,11 +6,18 @@
  */
 import { usePathname } from "next/navigation";
 
+import {
+  IconInbox,
+  IconSearch,
+  IconSliders,
+  IconTarget,
+} from "./icons.tsx";
+
 const LINKS = [
-  { href: "/dashboard", label: "Leads", exact: true },
-  { href: "/dashboard/searches", label: "Searches" },
-  { href: "/dashboard/profile", label: "What you sell" },
-  { href: "/dashboard/settings", label: "Settings" },
+  { href: "/dashboard", label: "Leads", exact: true, icon: IconInbox },
+  { href: "/dashboard/searches", label: "Searches", icon: IconSearch },
+  { href: "/dashboard/profile", label: "What you sell", icon: IconTarget },
+  { href: "/dashboard/settings", label: "Settings", icon: IconSliders },
 ];
 
 export function SideNav() {
@@ -22,6 +29,7 @@ export function SideNav() {
         const active = link.exact
           ? path === link.href
           : path.startsWith(link.href);
+        const Icon = link.icon;
         return (
           <a
             key={link.href}
@@ -29,6 +37,7 @@ export function SideNav() {
             className={active ? "side-link active" : "side-link"}
             aria-current={active ? "page" : undefined}
           >
+            <Icon />
             {link.label}
           </a>
         );

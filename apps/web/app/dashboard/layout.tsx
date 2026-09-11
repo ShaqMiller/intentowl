@@ -13,6 +13,7 @@ import "./dashboard.css";
 import { OwlMark } from "../(marketing)/chrome.tsx";
 import { signOut } from "../../src/auth-actions.ts";
 import { authConfigured, getCustomer } from "../../src/session.ts";
+import { IconSignOut } from "./icons.tsx";
 import { SideNav } from "./nav.tsx";
 
 /**
@@ -55,7 +56,10 @@ export default async function DashboardLayout({
           </p>
           {authConfigured() && (
             <form action={signOut} className="side-signout">
-              <button type="submit">Sign out</button>
+              <button type="submit">
+                <IconSignOut size={13} />
+                Sign out
+              </button>
             </form>
           )}
         </div>
