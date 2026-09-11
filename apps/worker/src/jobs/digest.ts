@@ -162,6 +162,10 @@ export async function runDigest(
   const result = await sendDigestEmail({
     apiKey: env.RESEND_API_KEY,
     from: env.DIGEST_FROM,
+    // The From address is on a send-only subdomain; replies need a real inbox.
+    ...(env.DIGEST_REPLY_TO === undefined
+      ? {}
+      : { replyTo: env.DIGEST_REPLY_TO }),
     to: customer.email,
     digest: rendered,
   });

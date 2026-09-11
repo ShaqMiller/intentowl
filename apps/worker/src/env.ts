@@ -33,6 +33,16 @@ const schema = z.object({
   RESEND_API_KEY: z.string().optional(),
   /** Verified sender. Resend rejects a From on an unverified domain. */
   DIGEST_FROM: z.string().default("IntentOwl <onboarding@resend.dev>"),
+  /**
+   * Where a customer's reply goes.
+   *
+   * Needed because the From address lives on the sending subdomain, which has
+   * no inbox — its only MX record is the provider's bounce handler. Without a
+   * Reply-To, every reply to a digest is silently lost, and "reply to any
+   * digest" is the entire support model on the landing page, the settings page
+   * and the thank-you page.
+   */
+  DIGEST_REPLY_TO: z.string().optional(),
   APP_URL: z.url().default("http://localhost:3000"),
   // M6
   BLUESKY_IDENTIFIER: z.string().optional(),
