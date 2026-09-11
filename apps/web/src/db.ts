@@ -29,7 +29,11 @@ export function getDb(): Db {
   const existing = store[CACHE];
   if (existing !== undefined) return existing.db;
 
-  const { db } = createDb(url);
+  // One connection per instance. Vercel runs each request in its own
+  // serverless instance, so a larger pool reserves connections that instance
+  // can never use concurrently — while every other instance does the same,
+  // until Supabase's pooler starts refusing them.
+  const { db } = createDb(url, { max: 1 });
   store[CACHE] = { db };
   return db;
 }
