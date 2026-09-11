@@ -22,6 +22,7 @@
  */
 import { schema } from "@intentowl/db";
 import { and, eq, isNull } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { getDb } from "./db.ts";
@@ -133,10 +134,19 @@ async function claimByEmail(authUserId: string, email: string) {
   return claimed[0];
 }
 
+/**
+ * The session, or a redirect to the login page.
+ *
+ * Redirects rather than throws. Next renders a layout and its page
+ * concurrently, so the layout's own redirect does not stop the page from
+ * running — a page that threw here produced a 500 on the way to a login screen
+ * that was already on its way. `redirect()` throws a signal Next understands,
+ * which unwinds to the same place without the error.
+ */
 export async function requireCustomer(): Promise<SessionCustomer> {
   const customer = await getCustomer();
   if (customer === null) {
-    throw new Error("not signed in");
+    redirect("/login");
   }
   return customer;
 }

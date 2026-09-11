@@ -36,7 +36,7 @@ DNS and mail should be done first; the URLs below depend on them.
 4. Environment variables:
 
    ```
-   DATABASE_URL           the Supabase session-pooler URL
+   DATABASE_URL           Supabase TRANSACTION pooler, port 6543 — not 5432
    SUPABASE_URL           https://bjrwwgwpmsfvfahficzn.supabase.co
    SUPABASE_ANON_KEY      the anon/publishable key
    FEEDBACK_SECRET        must match the worker's exactly
@@ -87,6 +87,13 @@ DNS and mail should be done first; the URLs below depend on them.
 4. Watch the deploy log for `health endpoint listening` and
    `schedules synced`. Those two lines mean the queue is registered and the
    crons exist.
+
+**Use port 6543 on Vercel, 5432 on Railway.** Supabase's session pooler (5432)
+allows 15 clients total. Every Vercel instance opens its own pool, so the
+dashboard fails with `EMAXCONNSESSION: max clients reached in session mode` as
+soon as a couple of instances are warm. The transaction pooler (6543) is built
+for exactly this: many short-lived serverless connections. The worker stays on
+5432, where a single long-lived process is what session mode expects.
 
 ### Two things that will bite
 
