@@ -13,6 +13,16 @@
 [build]
 builder = "NIXPACKS"
 
+# Override the build step, because Nixpacks otherwise runs the root `build`
+# script — `turbo run build` — which includes `next build` for the web app.
+# That app is deployed on Vercel, and building it here would either waste
+# minutes or fail outright on env vars this service has no reason to hold.
+#
+# A typecheck is the right gate instead: the worker runs TypeScript through tsx
+# at runtime, so there is nothing to compile, but a deploy that would crash on
+# a type error should fail here rather than at 3am in a poll job.
+buildCommand = "pnpm --filter @intentowl/worker typecheck"
+
 [deploy]
 startCommand = "pnpm --filter @intentowl/worker start"
 
