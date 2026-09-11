@@ -21,10 +21,11 @@
   --muted: #8C9AA5;
   --faint: #67757F;
 
-  /* Dawn. Used sparingly: the badge dot, the decoding word, the score chips,
-     the one rule under the section headings. Never for the primary button —
-     white carries that, which is what keeps the accent scarce enough to read
-     as a signal. */
+  /* Used in exactly one place: the decoding word in the headline. It was
+     originally spread across the badge, the eyebrows, the score chips, the
+     step numbers and the pricing panel, and spending it everywhere is what
+     made the page read as generated rather than designed. One use is what
+     makes it read as a choice. Resist adding a second. */
   --accent: #F0C481;
   --accent-dim: #8A6A38;
   --accent-wash: rgba(240, 196, 129, 0.09);
@@ -268,26 +269,21 @@ p {
   z-index: 0;
 }
 
+/* One wash, cool and faint — enough to lift the headline off the ground,
+   not enough to read as an effect. The amber one that sat under it is gone. */
 .hero::before {
-  top: -340px;
-  width: 1100px;
-  height: 700px;
+  top: -380px;
+  width: 1000px;
+  height: 660px;
   background: radial-gradient(
     ellipse at center,
-    rgba(96, 140, 170, 0.16) 0%,
-    rgba(96, 140, 170, 0) 68%
+    rgba(120, 150, 175, 0.07) 0%,
+    rgba(120, 150, 175, 0) 70%
   );
 }
 
 .hero::after {
-  top: -120px;
-  width: 620px;
-  height: 420px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(240, 196, 129, 0.11) 0%,
-    rgba(240, 196, 129, 0) 70%
-  );
+  display: none;
 }
 
 .hero > * {
@@ -303,9 +299,9 @@ p {
   font-size: 11.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  background: var(--accent-wash);
-  border: 1px solid rgba(240, 196, 129, 0.22);
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 6px 14px 6px 10px;
   margin-bottom: 30px;
@@ -316,8 +312,7 @@ p {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 3px rgba(240, 196, 129, 0.16);
+  background: #4FB477;
   flex: none;
 }
 
@@ -455,7 +450,7 @@ p {
   font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--faint);
   margin-bottom: 12px;
 }
 
@@ -478,9 +473,9 @@ p {
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--accent);
-  background: var(--accent-wash);
-  border: 1px solid rgba(240, 196, 129, 0.2);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
   border-radius: 7px;
   height: 34px;
   display: flex;
@@ -516,7 +511,7 @@ p {
   color: var(--ink-soft);
   line-height: 1.5;
   background: rgba(255, 255, 255, 0.022);
-  border-left: 2px solid var(--accent-dim);
+  border-left: 2px solid var(--line-strong);
   border-radius: 0 6px 6px 0;
 }
 
@@ -525,7 +520,7 @@ p {
   font-size: 10.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--faint);
   display: block;
   margin-bottom: 3px;
   font-weight: 500;
@@ -609,7 +604,7 @@ p {
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--faint);
   margin-bottom: 14px;
 }
 
@@ -640,10 +635,10 @@ p {
 }
 
 .card {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  padding: 24px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: none;
+  padding: 22px 0 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -660,13 +655,6 @@ p {
   line-height: 1.6;
 }
 
-.card-mark {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  margin-bottom: 4px;
-}
 
 /* --------------------------------------------------------------- steps --- */
 
@@ -698,7 +686,7 @@ p {
 .steps .n {
   font-family: var(--mono);
   font-size: 12px;
-  color: var(--accent);
+  color: var(--faint);
   font-variant-numeric: tabular-nums;
   display: block;
   margin-bottom: 14px;
@@ -760,8 +748,7 @@ p {
 }
 
 .plan.featured {
-  border-color: rgba(240, 196, 129, 0.32);
-  background: linear-gradient(180deg, rgba(240, 196, 129, 0.05) 0%, var(--surface) 40%);
+  border-color: var(--line-strong);
 }
 
 .plan-top {
@@ -783,8 +770,8 @@ p {
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.06em;
-  color: var(--accent);
-  border: 1px solid rgba(240, 196, 129, 0.28);
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 3px 9px;
 }
@@ -826,7 +813,7 @@ p {
 .plan li svg {
   flex: none;
   margin-top: 3px;
-  color: var(--accent);
+  color: var(--muted);
 }
 
 .plan .btn {
@@ -881,7 +868,7 @@ p {
 
 .faq details[open] summary::after {
   content: "–";
-  color: var(--accent);
+  color: var(--ink-soft);
 }
 
 .faq p {

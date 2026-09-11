@@ -28,8 +28,14 @@ export const metadata: Metadata = {
  * against recorded fixtures but has never touched the live API, and app
  * approval is outstanding. It moves up on the day it actually polls.
  */
-const LIVE_SOURCES = ["Hacker News", "Lobsters", "Stack Exchange"];
-const NEXT_SOURCES = ["Reddit", "Bluesky", "RSS"];
+const LIVE_SOURCES = [
+  "Hacker News",
+  "Lobsters",
+  "Stack Exchange",
+  "Bluesky",
+  "RSS feeds",
+];
+const NEXT_SOURCES = ["Reddit"];
 
 /** The rotating word in the headline — live sources only, same promise. */
 const SCRAMBLE_SOURCES = ["HACKER NEWS", "LOBSTERS", "STACK EXCHANGE"];
@@ -51,17 +57,14 @@ const STEPS = [
 
 const FEATURES = [
   {
-    mark: "01 · JUDGED",
     title: "It reads the situation, not the keyword",
     body: "“How did you all find your first customers?” never mentions your category, so no alert tool will ever show it to you. It is also the single best thread you could reply to this week.",
   },
   {
-    mark: "02 · RANKED",
     title: "Scored, grouped, and capped at fifteen",
     body: "Sorted by how close the person is to buying, then grouped by whether they are shopping, unhappy with a competitor, or just describing the pain. A digest you cannot finish is a digest you stop opening.",
   },
   {
-    mark: "03 · HONEST",
     title: "A quiet day says so",
     body: "If nothing good turned up, the email tells you that in one line. Padding a slow morning with filler is the fastest way to teach you to ignore the thing you paid for.",
   },
@@ -86,7 +89,7 @@ const FAQ = [
   },
   {
     q: "Which communities does it read?",
-    a: "Hacker News, Lobsters and Stack Exchange today. Reddit and Bluesky are next. If there is a forum your customers actually live in, tell me and I will add it — that is usually a same-week job.",
+    a: "Hacker News, Lobsters, Stack Exchange, Bluesky, and any site with an RSS feed. Reddit is pending API approval. If there is a forum your customers live in that has a feed, it works today — and if it does not, adding it is usually a same-week job.",
   },
   {
     q: "Can I cancel?",
@@ -129,7 +132,7 @@ export default function LandingPage() {
         <div className="page">
           <a className="badge" href="#sources">
             <span className="badge-dot" />
-            Three communities live · Reddit next
+            Five sources live · Reddit next
           </a>
 
           <h1>
@@ -246,7 +249,6 @@ export default function LandingPage() {
           <div className="grid-3">
             {FEATURES.map((f) => (
               <div className="card" key={f.title}>
-                <p className="card-mark">{f.mark}</p>
                 <h3>{f.title}</h3>
                 <p>{f.body}</p>
               </div>

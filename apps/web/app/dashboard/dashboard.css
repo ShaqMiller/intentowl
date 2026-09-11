@@ -110,13 +110,24 @@
   color: var(--accent);
 }
 
+/*
+ * The leads feed fills the window.
+ *
+ * It was capped at 1000px, which left a wide screen mostly empty beside a
+ * column of leads. Reading width is already protected where it matters —
+ * .feed-why and .feed-angle cap themselves in `ch` — so the container can
+ * spread without the prose becoming unreadable. Cards and stat tiles use the
+ * extra room, which is what the space is for.
+ */
 .pane {
-  padding: 30px 28px 72px;
-  max-width: 1000px;
+  padding: 30px 32px 72px;
+  max-width: 1600px;
 }
 
+/* Forms are the exception. A text input stretched across a 27-inch monitor is
+   harder to use, not easier. */
 .narrow-pane {
-  max-width: 720px;
+  max-width: 760px;
 }
 
 .pane-head {
