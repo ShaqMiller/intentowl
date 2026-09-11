@@ -10,11 +10,28 @@
 :root {
   color-scheme: dark;
 
-  --ground: #06080A;
-  --surface: #0C1014;
-  --raised: #11171C;
-  --line: #1B242B;
-  --line-strong: #2A353D;
+  /*
+   * Surfaces are layered light, not painted greys.
+   *
+   * The previous set used separate dark hex values a few points apart —
+   * ground 3.1, surface 6.3, border 13.7 on a 0-100 lightness scale. A border
+   * only 7.4 points above the fill it outlines cannot separate a card from the
+   * page, so every panel, input and row melted into one sheet of black. The
+   * references sit at 12-14 points: Vercel's Geist borders are 16-18% over a
+   * 4% card, and Linear's most-used border is rgba(255,255,255,0.08) — used 68
+   * times on one page — over a 3.5% ground.
+   *
+   * White at a given opacity also stays coherent for free: every surface is
+   * the same light at a different strength, so they cannot drift apart the way
+   * hand-picked hexes do. One rule follows from it — these must composite over
+   * the page, so never stack two of them and expect the documented value.
+   */
+  --ground: #08090A;
+  --surface: rgba(255, 255, 255, 0.022);
+  --raised: rgba(255, 255, 255, 0.045);
+  --active: rgba(255, 255, 255, 0.07);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
 
   --ink: #F4F7F9;
   --ink-soft: #C3CED6;
@@ -111,7 +128,7 @@ p {
   display: flex;
   align-items: center;
   border-bottom: 1px solid transparent;
-  background: rgba(6, 8, 10, 0.72);
+  background: rgba(8, 9, 10, 0.72);
   backdrop-filter: saturate(160%) blur(14px);
   -webkit-backdrop-filter: saturate(160%) blur(14px);
 }
@@ -213,7 +230,7 @@ p {
 }
 
 .btn:hover {
-  border-color: #43525C;
+  border-color: var(--line-strong);
   background: var(--raised);
 }
 
@@ -394,7 +411,7 @@ p {
   position: relative;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: linear-gradient(180deg, var(--surface) 0%, #080B0E 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
   box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.9);
   overflow: hidden;
 }
@@ -1006,16 +1023,29 @@ p {
   font-weight: 600;
 }
 
+/*
+ * A field should look like it will accept something, and answer when touched.
+ *
+ * The inset highlight is the one detail that makes a dark input read as a
+ * recessed well rather than a flat rectangle — it is the top edge catching
+ * light. Hover lifts the fill a rung; focus brings the accent in as a ring,
+ * which is the accent finally doing a job rather than decorating.
+ */
 .field input {
   font-family: var(--body);
   font-size: 15px;
   color: var(--ink);
-  background: var(--surface);
+  background: var(--raised);
   border: 1px solid var(--line-strong);
   border-radius: 9px;
   padding: 12px 14px;
   width: 100%;
-  transition: border-color 0.15s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+}
+
+.field input:hover:not(:disabled) {
+  background: var(--active);
 }
 
 .field input::placeholder {
@@ -1023,7 +1053,12 @@ p {
 }
 
 .field input:focus {
-  border-color: var(--accent-dim);
+  outline: none;
+  border-color: rgba(240, 196, 129, 0.5);
+  background: var(--active);
+  box-shadow:
+    0 0 0 3px rgba(240, 196, 129, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .auth .btn {
