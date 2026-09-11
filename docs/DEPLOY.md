@@ -18,7 +18,9 @@ DNS and mail should be done first; the URLs below depend on them.
 
 - [x] Domain on Cloudflare
 - [x] Cloudflare Email Routing (inbound `tools@intentowl.com` → Gmail)
-- [x] Resend verified on `send.intentowl.com`
+- [x] Resend verified on `intentowl.com` (its DKIM signs for the root; the
+      `send.` subdomain Resend adds is the Return-Path, which is what keeps its
+      SPF clear of Cloudflare Email Routing's)
 - [ ] **DMARC record** — still missing, see the bottom of this file
 - [x] Code on GitHub
 
@@ -71,7 +73,7 @@ DNS and mail should be done first; the URLs below depend on them.
    DATABASE_URL           same Supabase URL
    ANTHROPIC_API_KEY
    RESEND_API_KEY
-   DIGEST_FROM            IntentOwl <digests@send.intentowl.com>
+   DIGEST_FROM            IntentOwl <digests@intentowl.com>
    DIGEST_REPLY_TO        tools@intentowl.com
    APP_URL                https://intentowl.com
    FEEDBACK_SECRET        must match Vercel's exactly
