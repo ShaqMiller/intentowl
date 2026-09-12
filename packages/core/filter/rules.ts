@@ -185,6 +185,10 @@ export function applyFilter(
  * must appear, in any order, anywhere in the text. That is what lets
  * `marketing as a solo founder` match "marketing as a solo *technical*
  * founder", and `find first customers` match "find *your* first customer".
+ *
+ * Multi-token terms additionally require their tokens to appear **close
+ * together**, in any order. Matching them anywhere in the document was too
+ * loose on real traffic — see `tokensAppearTogether` below.
  */
 export function termMatches(
   normalisedHaystack: string,
@@ -201,8 +205,84 @@ export function termMatches(
 
   const needles = termTokens(trimmed);
   if (needles.length === 0) return false;
-  return needles.every((needle) => haystackTokens.has(needle));
+
+  // A single token needs no proximity rule — either the word is there or it
+  // is not. Brand names live here: `mixpanel`, `posthog`.
+  if (needles.length === 1) {
+    const only = needles[0];
+    return only !== undefined && haystackTokens.has(only);
+  }
+
+  return tokensAppearTogether(normalisedHaystack, needles);
 }
+
+/**
+ * Do the term's tokens appear close together, in any order?
+ *
+ * Requiring every token *somewhere* in the document was too weak on real
+ * traffic: a long Hacker News thread contains "find", "first" and "customer"
+ * somewhere by coincidence, so `find first customers` matched "Shopify moves
+ * back to Native from React Native". Measured against 2000 stored posts, all
+ * eight of its matches were noise.
+ *
+ * Requiring an exact phrase is too strong in the other direction and breaks
+ * the case the design exists for — `find first customers` has to match "how
+ * did you find *your* first customer".
+ *
+ * Requiring them *in order* is also wrong, which the golden set proved
+ * immediately: `marketing as a solo founder` has to match "Solo-founder
+ * question regarding marketing", where the tokens arrive backwards. Order
+ * carries no meaning here.
+ *
+ * So the rule is proximity alone — every token inside one window, any order.
+ * A quoted term still forces an exact phrase, which remains the escape hatch
+ * when a customer wants one.
+ */
+function tokensAppearTogether(
+  normalisedHaystack: string,
+  needles: readonly string[],
+): boolean {
+  const hay = tokenise(normalisedHaystack);
+  if (hay.length === 0) return false;
+
+  const wanted = new Set(needles);
+  // Two interpolated words per gap: enough for "find [your] first customer"
+  // and "Solo-founder question regarding marketing", not enough to span
+  // paragraphs.
+  const window = needles.length + 2 * (needles.length - 1);
+
+  // Positions of every token we care about, in document order. Sliding a
+  // window over just these is far cheaper than over the whole document.
+  const hits: Array<{ at: number; token: string }> = [];
+  for (let i = 0; i < hay.length; i += 1) {
+    const token = hay[i];
+    if (token !== undefined && wanted.has(token)) hits.push({ at: i, token });
+  }
+  if (hits.length < wanted.size) return false;
+
+  const seen = new Map<string, number>();
+  let left = 0;
+  for (let right = 0; right < hits.length; right += 1) {
+    const entering = hits[right];
+    if (entering === undefined) continue;
+    seen.set(entering.token, (seen.get(entering.token) ?? 0) + 1);
+
+    // Shrink from the left while the window still holds every token, so the
+    // span being tested is always the tightest one ending at `right`.
+    while (seen.size === wanted.size) {
+      const leaving = hits[left];
+      if (leaving === undefined) break;
+      if (entering.at - leaving.at < window) return true;
+      const count = (seen.get(leaving.token) ?? 1) - 1;
+      if (count === 0) seen.delete(leaving.token);
+      else seen.set(leaving.token, count);
+      left += 1;
+    }
+  }
+
+  return false;
+}
+
 
 function matchingTerms(
   haystack: string,

@@ -44,6 +44,18 @@ function watch(overrides: Partial<WatchConfig> = {}): WatchConfig {
   };
 }
 
+/**
+ * Timestamps are relative to now, not fixed dates.
+ *
+ * They were hardcoded to 2026-09-03, which passed the day they were written
+ * and started failing a week later: the adapter's cold start looks back seven
+ * days, so the fixtures aged out of their own window. A test whose result
+ * depends on the calendar is worse than no test, because it fails loudly for a
+ * reason that has nothing to do with the code.
+ */
+const RECENT = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+const RECENT_INDEXED = new Date(Date.now() - 59 * 60 * 1000).toISOString();
+
 function postFixture(overrides: Record<string, unknown> = {}) {
   return {
     uri: "at://did:plc:abc123/app.bsky.feed.post/3kabcdef",
@@ -51,9 +63,9 @@ function postFixture(overrides: Record<string, unknown> = {}) {
     author: { did: "did:plc:abc123", handle: "jane.bsky.social", displayName: "Jane" },
     record: {
       text: "Does anyone have a decent invoicing tool that is not awful?",
-      createdAt: "2026-09-03T10:00:00.000Z",
+      createdAt: RECENT,
     },
-    indexedAt: "2026-09-03T10:00:01.000Z",
+    indexedAt: RECENT_INDEXED,
     likeCount: 4,
     replyCount: 2,
     repostCount: 1,
@@ -111,7 +123,7 @@ describe("bluesky fetchNew", () => {
       http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", () =>
         HttpResponse.json({
           posts: [
-            postFixture({ indexedAt: "2026-09-03T10:00:01.000Z" }),
+            postFixture({ indexedAt: RECENT_INDEXED }),
             postFixture({
               uri: "at://did:plc:abc123/app.bsky.feed.post/older",
               indexedAt: "2020-01-01T00:00:00.000Z",
@@ -123,13 +135,13 @@ describe("bluesky fetchNew", () => {
 
     const result = await adapter().fetchNew(watch(), {
       kind: "bluesky",
-      newestIndexedAt: Date.parse("2026-01-01T00:00:00Z"),
+      newestIndexedAt: Date.now() - 2 * 60 * 60 * 1000,
     });
 
     expect(result.items).toHaveLength(1);
     expect(result.nextCursor).toEqual({
       kind: "bluesky",
-      newestIndexedAt: Date.parse("2026-09-03T10:00:01.000Z"),
+      newestIndexedAt: Date.parse(RECENT_INDEXED),
     });
   });
 
@@ -144,7 +156,7 @@ describe("bluesky fetchNew", () => {
 
     const result = await adapter().fetchNew(watch(), {
       kind: "bluesky",
-      newestIndexedAt: Date.parse("2030-01-01T00:00:00Z"),
+      newestIndexedAt: Date.now() + 60 * 60 * 1000,
     });
     expect(result.items).toEqual([]);
     expect(result.nextCursor).toBeNull();
