@@ -1119,3 +1119,69 @@ p {
 .prose li {
   margin-bottom: 8px;
 }
+
+/* --- live activity strip --------------------------------------------------
+   Counts and timestamps, never content. See ActivityStrip in the landing page
+   for why a feed of the actual posts would be the wrong thing to publish. */
+
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4FB477;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
+.sources-label b {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.source-grid {
+  list-style: none;
+  padding: 0;
+  margin: 22px auto 0;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 800px) {
+  .source-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .source-grid { grid-template-columns: 1fr; }
+}
+
+.source-grid li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  padding: 11px 14px;
+  font-size: 14px;
+}
+
+.source-grid .source-name {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-soft);
+}
+
+/* Pushed right so the timestamps line up down the column and the eye can
+   scan freshness without reading every row. */
+.source-grid .source-when {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.source-grid li.soon .source-name { color: var(--muted); font-weight: 500; }
+.source-grid .pulse.soon { background: var(--line-strong); }

@@ -254,3 +254,82 @@ export async function getStats(customerId: string): Promise<DashboardStats> {
     activeWatches: Number(watches[0]?.n ?? 0),
   };
 }
+
+/**
+ * Aggregate liveness figures for the public landing page.
+ *
+ * Deliberately carries no content and no customer scoping: counts and
+ * timestamps only. A feed of the actual posts would publish a list of real
+ * people being targeted for sales outreach, and would leak the search terms
+ * customers pay to have worked out. Neither is worth the credibility a moving
+ * number already buys.
+ */
+/** Sources that genuinely poll. Reddit is absent until its API is approved. */
+const LIVE_SOURCES = ["hn", "lobsters", "stackexchange", "bluesky", "rss"] as const;
+
+export interface PublicActivity {
+  /** Posts read across every source in the last 24 hours. */
+  postsRead24h: number;
+  /** Posts read since the beginning, for the larger number. */
+  postsReadTotal: number;
+  /**
+   * When each source was last *polled*, not when it last returned something.
+   *
+   * Those are different questions and only the first one is about liveness. A
+   * source can be checked every hour and return nothing for days — Stack
+   * Exchange does exactly that for a watch about finding customers, because
+   * nobody asks that on a technical Q&A site. Showing the last result would
+   * read as an outage when the system is working perfectly.
+   */
+  sources: Array<{ source: string; lastPolledAt: Date | null }>;
+}
+
+export async function getPublicActivity(): Promise<PublicActivity | null> {
+  // The landing page must render whether or not the database answers. A
+  // marketing page that 500s because a stats widget could not reach Postgres
+  // is a far worse outcome than one without the widget.
+  try {
+    const db = getDb();
+    const since = new Date(Date.now() - 86_400_000);
+
+    const [recent, total, polls] = await Promise.all([
+      db
+        .select({ n: count() })
+        .from(schema.items)
+        .where(gte(schema.items.fetchedAt, since)),
+      db.select({ n: count() }).from(schema.items),
+      // Read from the queue rather than from items: this is "did we check",
+      // and a poll that found nothing still completed.
+      db.execute(sql`
+        select data->>'source' as source, max(completed_on) as last
+        from pgboss.job
+        where name = 'poll' and state = 'completed'
+        group by 1
+      `),
+    ]);
+
+    const pollRows = (
+      Array.isArray(polls) ? polls : ((polls as { rows?: unknown[] }).rows ?? [])
+    ) as Array<{ source: string | null; last: string | Date | null }>;
+
+    const seen = new Map<string, Date | null>();
+    for (const row of pollRows) {
+      if (row.source === null) continue;
+      seen.set(row.source, row.last === null ? null : new Date(row.last));
+    }
+
+    return {
+      postsRead24h: Number(recent[0]?.n ?? 0),
+      postsReadTotal: Number(total[0]?.n ?? 0),
+      // Fixed order, and every live source listed whether or not it has ever
+      // returned anything — a source missing from the strip would read as an
+      // outage rather than a quiet hour.
+      sources: LIVE_SOURCES.map((source) => ({
+        source,
+        lastPolledAt: seen.get(source) ?? null,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}

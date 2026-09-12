@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { checkout } from "../../src/checkout.ts";
+import { getPublicActivity, type PublicActivity } from "../../src/queries.ts";
 import { ScrambleWord } from "./scramble-word.tsx";
 
 export const metadata: Metadata = {
@@ -119,7 +120,17 @@ const SAMPLE_LEADS = [
   },
 ];
 
-export default function LandingPage() {
+/**
+ * Re-rendered at most once a minute.
+ *
+ * The activity strip reads the database, and a marketing page must not query
+ * Postgres once per visitor. A minute is fresh enough to answer "is it
+ * running" and turns any amount of traffic into sixty queries an hour.
+ */
+export const revalidate = 60;
+
+export default async function LandingPage() {
+  const activity = await getPublicActivity();
   const monthly = checkout.monthly;
   const annual = checkout.annual;
   // Straight to checkout when Stripe is wired; otherwise the plan page, which
@@ -201,21 +212,7 @@ export default function LandingPage() {
       </section>
 
       <section className="page sources" id="sources">
-        <p className="sources-label">Reading, every ten to twenty minutes</p>
-        <ul className="source-row">
-          {LIVE_SOURCES.map((name) => (
-            <li key={name}>
-              <span className="pulse" />
-              {name}
-            </li>
-          ))}
-          {NEXT_SOURCES.map((name) => (
-            <li className="soon" key={name}>
-              <span className="pulse" />
-              {name}
-            </li>
-          ))}
-        </ul>
+        <ActivityStrip activity={activity} />
       </section>
 
       <section className="section" id="how">
@@ -345,6 +342,92 @@ export default function LandingPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+const SOURCE_LABELS: Record<string, string> = {
+  hn: "Hacker News",
+  lobsters: "Lobsters",
+  stackexchange: "Stack Exchange",
+  bluesky: "Bluesky",
+  rss: "RSS feeds",
+};
+
+/** "4 min ago", or a plain note when a source has never been polled. */
+function ago(date: Date | null): string {
+  if (date === null) return "not polled yet";
+  const minutes = Math.floor((Date.now() - new Date(date).getTime()) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+/**
+ * Live proof the pipeline is running — counts and timestamps, never content.
+ *
+ * A feed of the posts themselves would publish a list of real people being
+ * targeted for sales outreach, and would leak the search terms customers pay
+ * to have worked out. A number that moves buys the same credibility and costs
+ * nobody anything.
+ *
+ * Falls back to the plain source list when the database is unreachable, so a
+ * stats widget can never take the landing page down with it.
+ */
+function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
+  if (activity === null) {
+    return (
+      <>
+        <p className="sources-label">Reading, every ten to twenty minutes</p>
+        <ul className="source-row">
+          {LIVE_SOURCES.map((name) => (
+            <li key={name}>
+              <span className="pulse" />
+              {name}
+            </li>
+          ))}
+          {NEXT_SOURCES.map((name) => (
+            <li className="soon" key={name}>
+              <span className="pulse" />
+              {name}
+            </li>
+          ))}
+        </ul>
+      </>
+    );
+  }
+
+  const live = activity.sources.filter((s) => s.lastPolledAt !== null).length;
+
+  return (
+    <>
+      <p className="sources-label">
+        <span className="live-dot" aria-hidden="true" />
+        {live} sources polling right now ·{" "}
+        <b>{activity.postsRead24h.toLocaleString()}</b> posts read in the last
+        24 hours · {activity.postsReadTotal.toLocaleString()} all time
+      </p>
+
+      <ul className="source-grid">
+        {activity.sources.map((s) => (
+          <li key={s.source}>
+            <span className={s.lastPolledAt === null ? "pulse soon" : "pulse"} />
+            <span className="source-name">
+              {SOURCE_LABELS[s.source] ?? s.source}
+            </span>
+            <span className="source-when">{ago(s.lastPolledAt)}</span>
+          </li>
+        ))}
+        {NEXT_SOURCES.map((name) => (
+          <li className="soon" key={name}>
+            <span className="pulse soon" />
+            <span className="source-name">{name}</span>
+            <span className="source-when">awaiting approval</span>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

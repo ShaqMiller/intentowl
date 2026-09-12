@@ -32,6 +32,7 @@ import { DIGEST_QUEUE, DIGEST_QUEUE_OPTIONS } from "./digest.ts";
 import { HARVEST_QUEUE, HARVEST_QUEUE_OPTIONS } from "./harvest-fewshots.ts";
 import { OPS_REPORT_QUEUE, OPS_REPORT_QUEUE_OPTIONS } from "./ops-report.ts";
 import { REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS } from "./refresh-engagement.ts";
+import { SYNC_QUEUE, SYNC_QUEUE_OPTIONS } from "./sync-schedules.ts";
 import {
   POLL_QUEUE,
   POLL_QUEUE_OPTIONS,
@@ -80,6 +81,15 @@ const HARVEST_CRON = "40 * * * *";
  * thread actually takes off.
  */
 const REFRESH_CRON = "25 */2 * * *";
+
+/**
+ * Re-read the watches every ten minutes and reconcile the crons.
+ *
+ * Ten minutes is the worst case between a customer creating a search in the
+ * dashboard and it starting to poll — short enough that nobody wonders whether
+ * it worked, long enough that the reconcile is background noise.
+ */
+const SYNC_CRON = "*/10 * * * *";
 
 export interface SyncResult {
   added: number;
@@ -161,6 +171,7 @@ const OWNED_QUEUES = new Set<string>([
   OPS_REPORT_QUEUE,
   HARVEST_QUEUE,
   REFRESH_QUEUE,
+  SYNC_QUEUE,
 ]);
 
 /** Create every queue the scheduler targets. Idempotent; safe to repeat. */
@@ -171,6 +182,7 @@ export async function ensureQueues(boss: PgBoss): Promise<void> {
   await boss.createQueue(OPS_REPORT_QUEUE, OPS_REPORT_QUEUE_OPTIONS);
   await boss.createQueue(HARVEST_QUEUE, HARVEST_QUEUE_OPTIONS);
   await boss.createQueue(REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS);
+  await boss.createQueue(SYNC_QUEUE, SYNC_QUEUE_OPTIONS);
 }
 
 interface DesiredSchedule {
@@ -205,6 +217,13 @@ async function desiredSchedules(db: Db): Promise<DesiredSchedule[]> {
       queue: REFRESH_QUEUE,
       key: "refresh-engagement",
       cron: REFRESH_CRON,
+      tz: "UTC",
+      data: null,
+    },
+    {
+      queue: SYNC_QUEUE,
+      key: "sync-schedules",
+      cron: SYNC_CRON,
       tz: "UTC",
       data: null,
     },

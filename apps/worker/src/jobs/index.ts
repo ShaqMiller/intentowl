@@ -15,6 +15,7 @@ import { registerOpsReport } from "./ops-report.ts";
 import { registerPoll, type AdapterRegistry } from "./poll.ts";
 import { registerRefreshEngagement } from "./refresh-engagement.ts";
 import { syncSchedules } from "./schedules.ts";
+import { registerSyncSchedules } from "./sync-schedules.ts";
 
 /**
  * Every job the worker runs is registered here.
@@ -39,6 +40,7 @@ export async function registerJobs(
   await registerOpsReport(boss, db);
   await registerHarvest(boss, db);
   await registerRefreshEngagement(boss, db, adapters);
+  await registerSyncSchedules(boss, db);
 
   // Last: the queues have to exist before anything can be scheduled onto them.
   await syncSchedules(boss, db);
