@@ -18,6 +18,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { getDb } from "./db.ts";
+import { saveFeedback } from "./feedback.ts";
 import { requireCustomer } from "./session.ts";
 
 export interface ActionResult {
@@ -332,5 +333,41 @@ export async function updateDelivery(form: FormData): Promise<ActionResult> {
   return {
     ok: true,
     message: "Saved. The new send time takes effect from the next schedule sync.",
+  };
+}
+
+// --- lead feedback ------------------------------------------------------------
+
+const RATE = z.object({
+  itemId: z.string().uuid(),
+  // "clear" undoes a rating: clicking the button that is already on.
+  verdict: z.enum(["up", "down", "clear"]),
+});
+
+/**
+ * Rate a lead from the dashboard. Same row the digest email links write, so
+ * the hourly few-shot harvest learns from both the same way.
+ */
+export async function rateLead(form: FormData): Promise<ActionResult> {
+  const customer = await requireCustomer();
+
+  const parsed = RATE.safeParse({
+    itemId: form.get("itemId"),
+    verdict: form.get("verdict"),
+  });
+  if (!parsed.success) {
+    return { ok: false, message: "That rating could not be read. Reload and try again." };
+  }
+
+  const { itemId, verdict } = parsed.data;
+  const saved = await saveFeedback(customer.id, itemId, verdict === "clear" ? null : verdict);
+  if (!saved) {
+    return { ok: false, message: "That lead is no longer linked to your searches." };
+  }
+
+  revalidatePath("/dashboard");
+  return {
+    ok: true,
+    message: verdict === "clear" ? "Rating removed." : "Saved. Your classifier learns from it within the hour.",
   };
 }

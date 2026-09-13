@@ -26,6 +26,8 @@ export interface DashboardLead {
   postedAt: Date | null;
   watchId: string;
   watchName: string;
+  /** This customer's own rating of the lead, if they have given one. */
+  feedback: "up" | "down" | null;
 }
 
 export interface LeadFilters {
@@ -75,12 +77,20 @@ export async function listLeads(
       postedAt: schema.items.postedAt,
       watchId: schema.watches.id,
       watchName: schema.watches.name,
+      feedback: schema.feedback.verdict,
     })
     .from(schema.classifications)
     .innerJoin(schema.items, eq(schema.items.id, schema.classifications.itemId))
     .innerJoin(
       schema.watches,
       eq(schema.watches.id, schema.classifications.watchId),
+    )
+    .leftJoin(
+      schema.feedback,
+      and(
+        eq(schema.feedback.itemId, schema.items.id),
+        eq(schema.feedback.customerId, customerId),
+      ),
     )
     .where(and(...conditions))
     .orderBy(desc(schema.classifications.score))

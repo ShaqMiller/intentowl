@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { listLeads, listWatches, getStats } from "../../src/queries.ts";
 import { requireCustomer } from "../../src/session.ts";
 import { IconExternal, IconInbox } from "./icons.tsx";
+import { RateLead } from "./rate.tsx";
 
 export const metadata: Metadata = { title: "Leads" };
 
@@ -138,7 +139,7 @@ export default async function LeadsPage({
                     {lead.replyAngle}
                   </p>
                 )}
-                <p className="feed-actions">
+                <div className="feed-actions">
                   <a
                     className="btn btn-sm"
                     href={lead.url}
@@ -148,7 +149,8 @@ export default async function LeadsPage({
                     <IconExternal size={13} />
                     Open thread
                   </a>
-                </p>
+                  <RateLead itemId={lead.itemId} initial={lead.feedback} />
+                </div>
               </div>
             </li>
           ))}

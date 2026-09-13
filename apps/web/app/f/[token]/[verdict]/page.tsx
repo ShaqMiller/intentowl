@@ -1,60 +1,69 @@
 /**
- * Feedback landing page — the target of the thumbs in a digest email.
+ * Feedback landing page — the target of "Good lead" / "Not for me" in a digest.
  *
- * A GET request that writes. That is normally a mistake, but the alternative
- * is asking someone to log in to say "good lead", which means nobody ever
- * does, which means `profiles.few_shot_examples` stays empty and the
- * classifier never learns this customer's taste.
+ * Opening the link records nothing. It shows the post and one button, and only
+ * the button — a POST — writes. The previous version wrote on GET, and email
+ * security scanners (Outlook Safe Links, Mimecast, Proofpoint) open every link
+ * in a message before the reader does. On a GET-that-writes, a scanner opening
+ * both links recorded a verdict nobody chose, and that verdict went straight
+ * into the examples the classifier learns from. One extra click is the price
+ * of training data a customer actually chose.
  *
- * The signed token is what makes it safe: it carries the customer and item,
- * cannot be forged without the secret, and the write is an idempotent upsert
- * keyed on (customer, item). So the two real hazards of a GET-that-writes —
- * forgery, and mail clients prefetching links — both degrade to a no-op or a
- * repeat of what the customer intended.
- *
- * Prefetch is worth stating plainly: some clients fetch every link in an
- * email. Those fetches land here and record a verdict the reader never chose.
- * The upsert means a later real click overwrites it, and the page shows what
- * was recorded with a way to change it, so a wrong prefetch is visible and
- * reversible rather than silent.
+ * Still no login: the signed token is the authorisation, as before. It carries
+ * the customer and the item and cannot be forged without the secret, so it is
+ * verified on the render and again inside the action.
  */
-import { isFeedbackVerdict, leadHeadline, verifyFeedbackToken } from "@intentowl/core";
-import { schema } from "@intentowl/db";
-import { and, eq } from "drizzle-orm";
-import type { Metadata } from "next";
+import {
+  isFeedbackVerdict,
+  leadHeadline,
+  verifyFeedbackToken,
+  type FeedbackVerdict,
+} from "@intentowl/core";
+import type { Metadata, Route } from "next";
+import { redirect } from "next/navigation";
 
-import { getDb } from "../../../../src/db.ts";
 import { env } from "../../../../src/env.ts";
+import { loadFeedbackTarget, saveFeedback } from "../../../../src/feedback.ts";
 
 export const metadata: Metadata = {
-  title: "Thanks",
+  title: "Rate this lead",
   robots: { index: false },
 };
 
 export const dynamic = "force-dynamic";
 
-type Outcome =
-  | { kind: "recorded"; verdict: "up" | "down"; title: string | null }
+type State =
+  | {
+      kind: "ready";
+      token: string;
+      verdict: FeedbackVerdict;
+      headline: string;
+      current: FeedbackVerdict | null;
+    }
   | { kind: "invalid" }
   | { kind: "unconfigured" }
   | { kind: "unknown-item" };
 
 export default async function FeedbackPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string; verdict: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { token, verdict } = await params;
-  const outcome = await record(token, verdict);
+  const { recorded } = await searchParams;
+  const state = await resolve(token, verdict);
 
   return (
     <main className="auth">
-      <div className="auth-card">{render(outcome)}</div>
+      <div className="auth-card">{render(state, recorded === "1")}</div>
     </main>
   );
 }
 
-async function record(token: string, verdict: string): Promise<Outcome> {
+/** Verify and look up. Reads only — this runs for every scanner that opens the link. */
+async function resolve(token: string, verdict: string): Promise<State> {
   const secret = env.FEEDBACK_SECRET;
   if (secret === undefined) return { kind: "unconfigured" };
   if (!isFeedbackVerdict(verdict)) return { kind: "invalid" };
@@ -62,65 +71,96 @@ async function record(token: string, verdict: string): Promise<Outcome> {
   const claim = verifyFeedbackToken(secret, token);
   if (claim === null) return { kind: "invalid" };
 
-  const db = getDb();
+  const target = await loadFeedbackTarget(claim.customerId, claim.itemId);
+  if (target === null) return { kind: "unknown-item" };
 
-  // Confirm the item is genuinely linked to one of this customer's watches.
-  // The signature already proves the pair came from us, but this also catches
-  // a stale token for a watch that has since been deleted, and keeps the
-  // foreign keys honest rather than relying on the signature alone.
-  const linked = await db
-    .select({ title: schema.items.title, body: schema.items.body })
-    .from(schema.itemWatches)
-    .innerJoin(schema.items, eq(schema.items.id, schema.itemWatches.itemId))
-    .innerJoin(schema.watches, eq(schema.watches.id, schema.itemWatches.watchId))
-    .where(
-      and(
-        eq(schema.itemWatches.itemId, claim.itemId),
-        eq(schema.watches.customerId, claim.customerId),
-      ),
-    )
-    .limit(1);
-
-  const row = linked[0];
-  if (row === undefined) return { kind: "unknown-item" };
-
-  await db
-    .insert(schema.feedback)
-    .values({
-      customerId: claim.customerId,
-      itemId: claim.itemId,
-      verdict,
-    })
-    // Latest verdict wins. Someone who clicks down then up meant up.
-    .onConflictDoUpdate({
-      target: [schema.feedback.customerId, schema.feedback.itemId],
-      set: { verdict, createdAt: new Date() },
-    });
-
-  return { kind: "recorded", verdict, title: leadHeadline(row) };
+  return {
+    kind: "ready",
+    token,
+    verdict,
+    headline: leadHeadline(target),
+    current: target.verdict,
+  };
 }
 
-function render(outcome: Outcome) {
-  if (outcome.kind === "recorded") {
-    const good = outcome.verdict === "up";
+/** The only write on this page. */
+async function confirmFeedback(form: FormData) {
+  "use server";
+
+  const token = String(form.get("token") ?? "");
+  const verdict = form.get("verdict");
+  const back = `/f/${encodeURIComponent(token)}/${encodeURIComponent(String(verdict ?? ""))}`;
+
+  const secret = env.FEEDBACK_SECRET;
+  // Anything wrong sends the reader back to the GET, which explains the problem.
+  if (secret === undefined || !isFeedbackVerdict(verdict)) redirect(back as Route);
+  const claim = verifyFeedbackToken(secret, token);
+  if (claim === null) redirect(back as Route);
+
+  await saveFeedback(claim.customerId, claim.itemId, verdict);
+  redirect(`${back}?recorded=1` as Route);
+}
+
+const LABEL: Record<FeedbackVerdict, string> = {
+  up: "a good lead",
+  down: "not for you",
+};
+
+function render(state: State, recorded: boolean) {
+  if (state.kind === "ready") {
+    const good = state.verdict === "up";
+    const other: FeedbackVerdict = good ? "down" : "up";
+    const switchHref = `/f/${state.token}/${other}`;
+
+    // The redirect after a confirm lands here; trust the stored row, not the flag.
+    if (recorded && state.current === state.verdict) {
+      return (
+        <>
+          <h1>{good ? "Noted — more like that." : "Noted — fewer like that."}</h1>
+          <p className="auth-lede">“{state.headline}”</p>
+          <div className="notice">
+            {good
+              ? "This one goes into the examples your classifier learns from, so leads like it score higher."
+              : "This one goes into the examples your classifier learns from as a miss, so posts like it score lower."}{" "}
+            It takes effect within the hour.
+          </div>
+          <p className="auth-alt">
+            Changed your mind? <a href={switchHref}>Mark it {LABEL[other]}</a> ·{" "}
+            <a href="/dashboard">Open your dashboard</a>
+          </p>
+        </>
+      );
+    }
+
     return (
       <>
-        <h1>{good ? "Noted — more like that." : "Noted — fewer like that."}</h1>
-        {outcome.title !== null && <p className="auth-lede">“{outcome.title}”</p>}
-        <div className="notice">
-          {good
-            ? "This one goes into the examples your classifier learns from, so leads like it score higher."
-            : "This one goes into the examples your classifier learns from as a miss, so posts like it score lower."}
-        </div>
+        <h1>{good ? "Mark this as a good lead?" : "Mark this as not for you?"}</h1>
+        <p className="auth-lede">“{state.headline}”</p>
+        {state.current !== null && state.current !== state.verdict && (
+          <div className="notice">
+            You marked this <b>{LABEL[state.current]}</b> before. Confirming replaces that.
+          </div>
+        )}
+        {state.current === state.verdict && (
+          <div className="notice">
+            You already marked this <b>{LABEL[state.current]}</b>. Nothing to change.
+          </div>
+        )}
+        <form action={confirmFeedback}>
+          <input type="hidden" name="token" value={state.token} />
+          <input type="hidden" name="verdict" value={state.verdict} />
+          <button className="btn btn-primary" type="submit">
+            {good ? "Yes, good lead" : "Yes, not for me"}
+          </button>
+        </form>
         <p className="auth-alt">
-          Changed your mind? Click the other link in the digest — the last click
-          wins. <a href="/dashboard">Open your dashboard</a>.
+          Meant the other one? <a href={switchHref}>Mark it {LABEL[other]}</a>
         </p>
       </>
     );
   }
 
-  if (outcome.kind === "unknown-item") {
+  if (state.kind === "unknown-item") {
     return (
       <>
         <h1>That lead is gone</h1>
@@ -135,7 +175,7 @@ function render(outcome: Outcome) {
     );
   }
 
-  if (outcome.kind === "unconfigured") {
+  if (state.kind === "unconfigured") {
     return (
       <>
         <h1>Feedback is not switched on</h1>

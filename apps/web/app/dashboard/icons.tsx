@@ -200,3 +200,12 @@ export function IconAlert(p: IconProps) {
     </Base>
   );
 }
+
+/** Not for me — a cross, the pair to IconCheck. */
+export function IconX(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="m4.5 4.5 7 7M11.5 4.5l-7 7" />
+    </Base>
+  );
+}
