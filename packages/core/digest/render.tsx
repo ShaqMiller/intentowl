@@ -24,7 +24,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-import type { DigestGroup, RankedLead } from "../scoring.ts";
+import { leadHeadline, type DigestGroup, type RankedLead } from "../scoring.ts";
 
 export interface DigestEmailProps {
   customerName: string;
@@ -206,7 +206,7 @@ function LeadBlock({
 
       <Text style={{ margin: "0 0 6px", fontSize: "16px", lineHeight: 1.35, fontWeight: 600 }}>
         <Link href={lead.url} style={{ color: INK, textDecoration: "none" }}>
-          {lead.title ?? "(untitled post)"}
+          {leadHeadline(lead)}
         </Link>
       </Text>
 
@@ -275,8 +275,9 @@ function scoreColour(score: number): string {
 
 function topTitle(groups: readonly DigestGroup[]): string {
   const first = groups[0]?.leads[0];
-  const title = first?.title ?? "";
-  return title.length > 68 ? `${title.slice(0, 68)}…` : title;
+  // Not `first.title`: a Bluesky post has none, so the inbox preview read
+  // "7 leads — " followed by nothing. leadHeadline truncates on its own.
+  return first === undefined ? "" : leadHeadline(first, 68);
 }
 
 /** Subject line. Concrete beats clever — it competes in a crowded inbox. */

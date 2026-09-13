@@ -220,3 +220,65 @@ describe("bluesky fetchNew", () => {
     await expect(adapter().fetchNew(watch(), null)).rejects.toThrow();
   });
 });
+
+describe("bluesky rejected requests", () => {
+  it("does not let one rejected term silence the others", async () => {
+    const calls = { n: 0 };
+    server.use(
+      sessionHandler(calls),
+      http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", ({ request }) => {
+        const q = new URL(request.url).searchParams.get("q");
+        if (q === "bad term") {
+          return HttpResponse.json({ error: "BadQueryString" }, { status: 400 });
+        }
+        return HttpResponse.json({ posts: [postFixture()] });
+      }),
+    );
+
+    const result = await adapter().fetchNew(
+      watch({ includeTerms: ["bad term", "good term"] }),
+      null,
+    );
+
+    // Before the fix, the 400 on the first term threw and the second term was
+    // never asked — the whole source went quiet over one request.
+    expect(result.items).toHaveLength(1);
+    expect(result.warnings?.some((w) => w.includes("bad term"))).toBe(true);
+  });
+
+  it("keeps the first page when a later page is rejected", async () => {
+    const calls = { n: 0 };
+    const fullPage = Array.from({ length: 100 }, (_, i) =>
+      postFixture({ uri: `at://did:plc:abc123/app.bsky.feed.post/p${i}` }),
+    );
+    server.use(
+      sessionHandler(calls),
+      http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", ({ request }) => {
+        if (new URL(request.url).searchParams.has("cursor")) {
+          return HttpResponse.json({ error: "InvalidRequest" }, { status: 400 });
+        }
+        return HttpResponse.json({ posts: fullPage, cursor: "page-two" });
+      }),
+    );
+
+    const result = await adapter().fetchNew(watch(), null);
+
+    expect(result.items).toHaveLength(100);
+    expect(result.warnings?.some((w) => w.includes("page 2"))).toBe(true);
+  });
+
+  it("still fails loudly when the credentials are wrong", async () => {
+    server.use(
+      http.post("https://bsky.social/xrpc/com.atproto.server.createSession", () =>
+        HttpResponse.json({ accessJwt: "jwt", did: "did:plc:me" }),
+      ),
+      http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", () =>
+        HttpResponse.json({ error: "AuthRequired" }, { status: 401 }),
+      ),
+    );
+
+    // A 401 that survives a fresh session is a configuration problem. It must
+    // reach the operator as a failed job, not hide inside a warning.
+    await expect(adapter().fetchNew(watch(), null)).rejects.toThrow(/401/);
+  });
+});

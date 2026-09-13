@@ -9,7 +9,7 @@ import { render } from "@react-email/render";
 import * as React from "react";
 import { Resend } from "resend";
 
-import type { DigestGroup } from "../scoring.ts";
+import { leadHeadline, type DigestGroup } from "../scoring.ts";
 import { DigestEmail, digestSubject, type DigestEmailProps } from "./render.tsx";
 
 export { DigestEmail, digestSubject } from "./render.tsx";
@@ -129,7 +129,7 @@ export function renderSlackBlocks(
       elements: [{ type: "mrkdwn", text: `*${group.label}* · ${group.leads.length}` }],
     });
     for (const lead of group.leads) {
-      const parts = [`*<${lead.url}|${escapeSlack(lead.title ?? "(untitled)")}>*`];
+      const parts = [`*<${lead.url}|${escapeSlack(leadHeadline(lead))}>*`];
       if (lead.reason != null) parts.push(escapeSlack(lead.reason));
       if (lead.replyAngle != null && lead.replyAngle !== "") {
         parts.push(`_Angle:_ ${escapeSlack(lead.replyAngle)}`);

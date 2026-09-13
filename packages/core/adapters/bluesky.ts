@@ -20,7 +20,13 @@
  */
 import { z } from "zod";
 
-import { AdapterError, fetchJson, RateLimitedError } from "./http.ts";
+import {
+  AdapterError,
+  fetchJson,
+  RateLimitedError,
+  SchemaError,
+  TransientError,
+} from "./http.ts";
 import { TokenBucket } from "./rate-limit.ts";
 import {
   cursorFor,
@@ -153,6 +159,12 @@ export function createBlueskyAdapter(
       const warnings: string[] = [];
       let newest = since;
       let calls = 0;
+      // Bounds the 401 branch below to one re-mint per poll. It claimed to
+      // "re-mint once" but had no guard: credentials that are simply wrong
+      // return 401 on every attempt, so the loop re-authenticated against
+      // Bluesky forever. Per poll rather than global, because a later poll may
+      // legitimately need a fresh token after this one's expires.
+      let reauthenticated = false;
 
       let token = accessJwt ?? (await authenticate());
       calls += accessJwt === null ? 1 : 0;
@@ -183,14 +195,41 @@ export function createBlueskyAdapter(
               searchResponse,
             );
           } catch (error) {
-            // An expired token looks like a 401. Re-mint once and retry the
-            // page; anything else is the caller's problem.
-            if (isUnauthorized(error) && accessJwt !== null) {
+            // An expired token looks like a 401. Re-mint once per poll and
+            // retry the page; a second 401 falls through and fails the job.
+            if (isUnauthorized(error) && accessJwt !== null && !reauthenticated) {
+              reauthenticated = true;
               accessJwt = null;
               token = await authenticate();
               calls += 1;
               page -= 1;
               continue;
+            }
+
+            // A plain rejection — a 400 — is about this request, not the
+            // source. Throwing it aborted the whole poll, so one bad page
+            // silenced every term: 92 of 101 Bluesky polls failed between 12
+            // and 13 September while every term, queried on its own, returned
+            // 200. Keep what this term already found, say so, move on.
+            //
+            // Everything else still propagates on purpose. A SchemaError means
+            // the payload contract changed and must fail loudly; a rate limit
+            // has to reach the job so it reschedules; a transient failure is
+            // what pg-boss retries are for; and a 401 that survives a fresh
+            // session means the credentials are wrong, which nobody should
+            // find out about from a warning.
+            if (
+              error instanceof AdapterError &&
+              !(error instanceof SchemaError) &&
+              !(error instanceof RateLimitedError) &&
+              !(error instanceof TransientError) &&
+              !isUnauthorized(error)
+            ) {
+              warnings.push(
+                `term "${term}" page ${page + 1} was rejected (${error.message}); ` +
+                  `kept ${page === 0 ? "nothing" : "the earlier pages"} for this term`,
+              );
+              break;
             }
             throw error;
           }

@@ -230,3 +230,37 @@ export function groupForDigest(
   }
   return groups;
 }
+
+/**
+ * The line a lead is shown under, in the email, the Slack message and the
+ * inbox preview.
+ *
+ * Bluesky posts have no title — the adapter deliberately stores `title: null`
+ * rather than duplicating the text — so every renderer that reached for
+ * `lead.title` fell back to a placeholder. On 13 September six of seven leads
+ * in the digest were Bluesky posts, and the email showed "(untitled post)" six
+ * times with an inbox preview reading "7 leads — " followed by nothing. That
+ * looks like spam, and plausibly got treated as spam.
+ *
+ * Falls back to the opening of the post itself, cut at a sentence or word
+ * boundary so it reads as a line rather than a truncated blob.
+ */
+export function leadHeadline(
+  lead: Pick<ScorableLead, "title" | "body">,
+  max = 110,
+): string {
+  const title = lead.title?.trim();
+  if (title !== undefined && title !== "") return title;
+
+  const body = (lead.body ?? "").replace(/\s+/g, " ").trim();
+  if (body === "") return "Untitled post";
+
+  // Prefer the first sentence when it fits — it is usually the actual ask.
+  const sentence = /^(.+?[.?!])(\s|$)/.exec(body)?.[1];
+  if (sentence !== undefined && sentence.length <= max) return sentence;
+
+  if (body.length <= max) return body;
+  const cut = body.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
