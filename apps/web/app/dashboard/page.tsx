@@ -4,6 +4,7 @@
  * Deliberately the same information the digest email carries, in the same
  * order. Two views of one thing that disagree is how you lose trust in both.
  */
+import { leadHeadline } from "@intentowl/core";
 import type { Metadata } from "next";
 
 import { listLeads, listWatches, getStats } from "../../src/queries.ts";
@@ -127,7 +128,7 @@ export default async function LeadsPage({
                 </p>
                 <h3 className="feed-title">
                   <a href={lead.url} target="_blank" rel="noreferrer noopener">
-                    {lead.title ?? "(untitled post)"}
+                    {leadHeadline(lead)}
                   </a>
                 </h3>
                 {lead.reason !== null && <p className="feed-why">{lead.reason}</p>}

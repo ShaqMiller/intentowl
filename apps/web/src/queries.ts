@@ -18,6 +18,7 @@ export interface DashboardLead {
   reason: string | null;
   replyAngle: string | null;
   title: string | null;
+  body: string | null;
   url: string;
   source: string;
   venue: string | null;
@@ -65,6 +66,8 @@ export async function listLeads(
       reason: schema.classifications.reason,
       replyAngle: schema.classifications.replyAngle,
       title: schema.items.title,
+      // Bluesky posts have no title; the headline falls back to the body.
+      body: schema.items.body,
       url: schema.items.url,
       source: schema.items.source,
       venue: schema.items.venue,
