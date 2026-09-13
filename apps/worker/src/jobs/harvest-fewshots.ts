@@ -15,7 +15,7 @@
  * The rubric asks for 3-5 examples; more dilutes the instruction and costs
  * tokens on every single classification call.
  */
-import type { FewShot } from "@intentowl/core";
+import { leadHeadline, type FewShot } from "@intentowl/core";
 import { schema, type Db } from "@intentowl/db";
 import { and, desc, eq } from "drizzle-orm";
 import type { PgBoss } from "pg-boss";
@@ -57,6 +57,7 @@ export async function harvestForCustomer(
 ): Promise<HarvestOutcome> {
   const rows = await db
     .select({
+      itemId: schema.feedback.itemId,
       verdict: schema.feedback.verdict,
       createdAt: schema.feedback.createdAt,
       title: schema.items.title,
@@ -85,16 +86,19 @@ export async function harvestForCustomer(
 
   // One row per item: an item can carry both a Haiku and a Sonnet verdict, and
   // the escalated one is the score the customer was reacting to.
-  const byTitle = new Map<string, (typeof rows)[number]>();
+  //
+  // Keyed by item, not title. Keying by title skipped every untitled post, and
+  // Bluesky posts never have one — so a customer's clicks on Bluesky leads were
+  // recorded and then silently never taught the classifier anything.
+  const byItem = new Map<string, (typeof rows)[number]>();
   for (const row of rows) {
-    if (row.title === null) continue;
-    const existing = byTitle.get(row.title);
+    const existing = byItem.get(row.itemId);
     if (existing === undefined || row.score > existing.score) {
-      byTitle.set(row.title, row);
+      byItem.set(row.itemId, row);
     }
   }
 
-  const candidates = [...byTitle.values()].map((row) => {
+  const candidates = [...byItem.values()].map((row) => {
     const wanted = row.verdict === "up";
     // How badly the model missed. A thumbs-up on a 20 is a surprise worth
     // teaching; a thumbs-up on a 95 is agreement and teaches nothing.
@@ -105,7 +109,8 @@ export async function harvestForCustomer(
   candidates.sort((a, b) => b.surprise - a.surprise);
 
   const shots: FewShot[] = candidates.slice(0, MAX_SHOTS).map(({ row, wanted }) => ({
-    title: row.title ?? "",
+    // renderFewShots prints this as "Post:", with the body underneath.
+    title: leadHeadline(row),
     body: row.body,
     // The customer's verdict overrides the model's — that is the entire point.
     relevant: wanted,

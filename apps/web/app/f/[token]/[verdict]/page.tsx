@@ -18,7 +18,7 @@
  * was recorded with a way to change it, so a wrong prefetch is visible and
  * reversible rather than silent.
  */
-import { isFeedbackVerdict, verifyFeedbackToken } from "@intentowl/core";
+import { isFeedbackVerdict, leadHeadline, verifyFeedbackToken } from "@intentowl/core";
 import { schema } from "@intentowl/db";
 import { and, eq } from "drizzle-orm";
 import type { Metadata } from "next";
@@ -69,7 +69,7 @@ async function record(token: string, verdict: string): Promise<Outcome> {
   // a stale token for a watch that has since been deleted, and keeps the
   // foreign keys honest rather than relying on the signature alone.
   const linked = await db
-    .select({ title: schema.items.title })
+    .select({ title: schema.items.title, body: schema.items.body })
     .from(schema.itemWatches)
     .innerJoin(schema.items, eq(schema.items.id, schema.itemWatches.itemId))
     .innerJoin(schema.watches, eq(schema.watches.id, schema.itemWatches.watchId))
@@ -97,7 +97,7 @@ async function record(token: string, verdict: string): Promise<Outcome> {
       set: { verdict, createdAt: new Date() },
     });
 
-  return { kind: "recorded", verdict, title: row.title };
+  return { kind: "recorded", verdict, title: leadHeadline(row) };
 }
 
 function render(outcome: Outcome) {
@@ -110,7 +110,7 @@ function render(outcome: Outcome) {
         <div className="notice">
           {good
             ? "This one goes into the examples your classifier learns from, so leads like it score higher."
-            : "This one is recorded as a miss. Enough of them and the search terms behind it are worth revisiting."}
+            : "This one goes into the examples your classifier learns from as a miss, so posts like it score lower."}
         </div>
         <p className="auth-alt">
           Changed your mind? Click the other link in the digest — the last click
