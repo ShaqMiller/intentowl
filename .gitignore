@@ -14,3 +14,8 @@ out/
 
 # Verification builds (see NEXT_DIST_DIR in apps/web/next.config.ts)
 .next-verify/
+
+# Throwaway diagnostic scripts. Every one-off database or API probe in this
+# repo is written as apps/<app>/src/_name.ts and deleted after use; this rule
+# exists because two were once swept into a commit by `git add -A`.
+apps/*/src/_*.ts
