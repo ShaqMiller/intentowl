@@ -19,7 +19,7 @@ import { applyFilter, summarise, type FilterConfig } from "./rules.ts";
 
 interface GoldenCase {
   id: string;
-  title: string;
+  title: string | null;
   body: string | null;
   venue: string | null;
   expect: { relevant: boolean };
@@ -104,7 +104,7 @@ describe("pre-filter against the golden set", () => {
     // sampling, not the filter.
     const r = run();
     const noise = r.verdicts.filter(
-      (x) => /rust|kubernetes/i.test(x.c.title) && !x.c.expect.relevant,
+      (x) => /rust|kubernetes/i.test(x.c.title ?? "") && !x.c.expect.relevant,
     );
     expect(noise.length).toBeGreaterThan(4);
     const leaked = noise.filter((x) => x.v.keep).map((x) => x.c.title);

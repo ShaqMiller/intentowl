@@ -25,6 +25,7 @@ import {
   estimateCostUsd,
   type ClassifyUsage,
 } from "../classifier.ts";
+import { leadHeadline } from "../../scoring.ts";
 import type { CustomerProfile, FewShot, PromptItem } from "../prompt.ts";
 import type { Classification, Intent } from "../schema.ts";
 
@@ -33,7 +34,8 @@ interface GoldenCase {
   url: string;
   source: string;
   venue: string | null;
-  title: string;
+  /** Null for Bluesky, which has no titles. */
+  title: string | null;
   body: string | null;
   expect: {
     relevant: boolean;
@@ -99,7 +101,7 @@ function pickFewShots(train: readonly GoldenCase[]): FewShot[] {
   const negatives = train.filter((c) => !c.expect.relevant).sort(byAmbiguity).slice(0, 3);
 
   return [...positives, ...negatives].map((c) => ({
-    title: c.title,
+    title: c.title ?? leadHeadline(c),
     body: c.body,
     relevant: c.expect.relevant,
     intent: c.expect.intent,
@@ -268,7 +270,7 @@ async function main(): Promise<number> {
   if (falsePositives.length > 0) {
     console.log(`\nFALSE POSITIVES (${falsePositives.length}) — bad leads in the inbox:`);
     for (const { c, p } of falsePositives) {
-      console.log(`  · [${p.score}] ${c.title.slice(0, 70)}`);
+      console.log(`  · [${p.score}] ${c.source.padEnd(7)} ${leadHeadline(c, 70)}`);
       console.log(`      model : ${p.reason}`);
       if (verbose) console.log(`      label : ${c.note}`);
     }
@@ -277,7 +279,7 @@ async function main(): Promise<number> {
   if (falseNegatives.length > 0) {
     console.log(`\nFALSE NEGATIVES (${falseNegatives.length}) — leads we would have missed:`);
     for (const { c, p } of falseNegatives) {
-      console.log(`  · [${p.score}] ${c.title.slice(0, 70)}`);
+      console.log(`  · [${p.score}] ${c.source.padEnd(7)} ${leadHeadline(c, 70)}`);
       console.log(`      model : ${p.reason}`);
       if (verbose) console.log(`      label : ${c.note}`);
     }

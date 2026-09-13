@@ -172,7 +172,7 @@ const FILTER = {
 
 const candidates = JSON.parse(readFileSync(here("./candidates.json"), "utf8"));
 
-const cases = LABELS.map(([index, relevant, intent, minScore, maxScore, note]) => {
+const hnCases = LABELS.map(([index, relevant, intent, minScore, maxScore, note]) => {
   const c = candidates[index];
   if (c === undefined) throw new Error(`no candidate at index ${index}`);
   return {
@@ -186,6 +186,21 @@ const cases = LABELS.map(([index, relevant, intent, minScore, maxScore, note]) =
     note,
   };
 });
+
+/**
+ * Bluesky cases, labelled 2026-09-13 to the same standard as above.
+ *
+ * Added after the first week in production: every Bluesky lead in the digest
+ * but one was someone *giving* advice or announcing a win, scored 72-76 by
+ * Haiku — just above the escalation band, so Sonnet never saw them. The set
+ * above is entirely HN, where people post to ask; on a broadcast feed most
+ * posts on-topic are content, and the set could not see that failure at all.
+ * Half are those real production misses, half real posts from a live search,
+ * including the rarer founders on Bluesky who genuinely are asking.
+ */
+const blueskyCases = JSON.parse(readFileSync(here("./bluesky-cases.json"), "utf8"));
+
+const cases = [...hnCases, ...blueskyCases];
 
 const positives = cases.filter((c) => c.expect.relevant).length;
 writeFileSync(

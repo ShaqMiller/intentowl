@@ -1,0 +1,347 @@
+[
+ {
+  "id": "9cddf432-45da-48f0-8bcc-38aa247462e2",
+  "url": "https://bsky.app/profile/everetteaffiliate.bsky.social/post/3mvawdffwts2m",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Building something is one thing. Getting your first real users is a whole different challenge 🚀 \n\nIf you've launched a site, app, or product, how did you get your first real users? 👀 \n\nWhat actually worked for you?\n\n#BuildInPublic #IndieHackers #Startups #WebDevelopment",
+  "expect": {
+   "relevant": false,
+   "intent": "question",
+   "minScore": 0,
+   "maxScore": 39
+  },
+  "note": "Hashtag engagement question to an audience ('what worked for you?') from an affiliate account, not someone stuck."
+ },
+ {
+  "id": "a898681d-d80c-491d-be0f-944e573e48ed",
+  "url": "https://bsky.app/profile/anton.tips/post/3mv5s2kflcy2a",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "My first 5 Posthero customers all came from content.\n\nNot ads. Not cold outreach. Not a launch. Just posts on X and LinkedIn.\n\nHere's the part people don't expect: \n\nI had around 400 followers on X at the time. \nThat's nothing. No viral posts, no big audience, no algorithm hacks.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "Founder broadcasting how their own product (Posthero) got customers - a success story promoting a product, not a need."
+ },
+ {
+  "id": "08def3e7-74e2-4f06-a482-ee3716c318bb",
+  "url": "https://bsky.app/profile/aitec.bsky.social/post/3muwkulzdhx25",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "July 2026: My side project finally got its first paying customer. Duration: 14 months. Revenue: $47/month. But the difference from before: I now know who pays and why. That's worth more than 1000 beta testers.\n\n#buildinpublic #indiedev #solopreneur #tech",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 35
+  },
+  "note": "Build-in-public milestone celebrating a first paying customer - nothing unsolved is described."
+ },
+ {
+  "id": "588646eb-2b28-47da-8a7d-c70d4cb14ebf",
+  "url": "https://bsky.app/profile/adamdittrichone.bsky.social/post/3mv4bkdnnwn23",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "If you're stuck at 10k/month\n\nPick ONE. Go all in:\n\n1. Cold outreach\n2. Warm outreach\n3. Ads\n4. Content\n\nThen:\n\n1. 99% ignore the rest\n2. Do better\n3. Do more\n3. Repeat 10,000 times\n4. Get feedback\n5. Never stop\n\nFocus + volume + iteration + time\n\nSimple idea. Hard to do.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "Growth advice aimed at others ('Pick ONE') - the author is teaching, not asking."
+ },
+ {
+  "id": "81194755-44c0-4998-9d07-a856b8cba503",
+  "url": "https://bsky.app/profile/refoundinglabs.bsky.social/post/3muuduooad72m",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "2) Problem posts: reply in communities with a short, specific fix and an ask. Cold outreach micro-test: 3 emails to founders who recently posted the problem, subject: \"Two quick fixes for [problem]\". Body: one diagnostic sentence, one quick fix, one tiny ask (15-min call).",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "A how-to thread on cold outreach written for other founders - advice content, not a founder with the problem."
+ },
+ {
+  "id": "c61551e4-d892-4bb7-837c-e6cb909d33fa",
+  "url": "https://bsky.app/profile/kunstudio.bsky.social/post/3mv3lq3i4xh22",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Building 4 products as 1 person in Korea. 484 users on a Korean Saju AI. 155 on a Korea travel SaaS. 36 on a tax tool. 0 paying.\nWhere does the first paying customer come from? My guess: a DM to someone who's already in my niche. Test this week.",
+  "expect": {
+   "relevant": true,
+   "intent": "pain_point",
+   "minScore": 55,
+   "maxScore": 85
+  },
+  "note": "Solo founder with live products and zero paying customers asking where the first one comes from."
+ },
+ {
+  "id": "1f5e4260-f9b5-4d19-8881-939145b9c9d5",
+  "url": "https://bsky.app/profile/moinmybackyard.bsky.social/post/3mvayv63dls2u",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "I think it's just a bad business. You have to keep selling to new buildings, no subscription. Customer acquisition cost (travel, schmoozing, installation support) high. Each sale, you better sell a ton of these at $150 each.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 30
+  },
+  "note": "Commentary on someone else's business model."
+ },
+ {
+  "id": "7ac918c5-61cd-48f8-b55d-d470d86a5e0b",
+  "url": "https://bsky.app/profile/adamdittrichone.bsky.social/post/3mvawov43y422",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Simple idea. Hard to do. There are only 4 ways to get a customer. Cold outreach, warm outreach, ads, content. Everything you've ever read about marketing is a sub-layer of one of those 4. Focus + volume + iteration + time.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "Generic framework post about the four acquisition channels - advice, not a need."
+ },
+ {
+  "id": "e8ca78bb-dec2-4893-a161-86b5fc17319b",
+  "url": "https://bsky.app/profile/bmahi.bsky.social/post/3mv6drxmf7n24",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Free resources like this are gold for early-stage founders. Ryphor helps them find their first customers by catching real buying signals as they happen online. Grab your trial at www.ryphor.com while you're in give-first mode.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 14
+  },
+  "note": "Promotes Ryphor, a buying-signal monitoring tool - a competitor, not a buyer."
+ },
+ {
+  "id": "347c3d9f-01d6-4d04-8d94-83fce0b4f2f7",
+  "url": "https://bsky.app/profile/itskamrankhan.bsky.social/post/3muwjymnu6i2u",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "If you had to find your next 100 customers from ONE channel, which would you pick? \n\n- X\n- SEO\n- cold outreach \n\n#Marketing #Growth #Entrepreneurship",
+  "expect": {
+   "relevant": false,
+   "intent": "question",
+   "minScore": 0,
+   "maxScore": 39
+  },
+  "note": "Engagement poll with growth hashtags - the author wants replies, not help."
+ },
+ {
+  "id": "439da5ed-94af-47bc-8f6d-caa2c9d0e388",
+  "url": "https://bsky.app/profile/aliyaylagul.bsky.social/post/3mux2ojovcc2c",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "You started in the middle. There's an order.\n\n    1. Choose an idea\n    2. Validate the problem\n    3. Create an offer\n    4. Build one page\n    5. Find first customers\n    6. Sell + follow up\n    7. Improve what worked\n    8. Make it repeatable\n    9. Plan next 30 days",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "Step-by-step startup advice list aimed at others."
+ },
+ {
+  "id": "bsky-3m5yspai3kz23",
+  "url": "https://bsky.app/profile/dilyandimitrov.bsky.social/post/3m5yspai3kz23",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "How do I bring the first customers to my product?\n\nShould I offer it for free for people to try it out and get feedback, or just a discount, or something else?\n\nNever done that before",
+  "expect": {
+   "relevant": true,
+   "intent": "pain_point",
+   "minScore": 55,
+   "maxScore": 85
+  },
+  "note": "Founder asking how to bring the first customers to their product and whether to offer it free - never done it before."
+ },
+ {
+  "id": "bsky-3ldl7hqzans2x",
+  "url": "https://bsky.app/profile/whyrohitwhy.bsky.social/post/3ldl7hqzans2x",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "I launched the waitlist for my first saas justcollab.io\nSo far I have 10 people signups but all of them are friends and family.\n\nHow do I market this? \nWhere do I find the customers?\n\nPS- i am going to launch in January last week.",
+  "expect": {
+   "relevant": true,
+   "intent": "pain_point",
+   "minScore": 60,
+   "maxScore": 90
+  },
+  "note": "First-time SaaS founder with a waitlist of only friends and family asking how to market it and where to find customers."
+ },
+ {
+  "id": "bsky-3muhvkjmllm2r",
+  "url": "https://bsky.app/profile/drytrix.bsky.social/post/3muhvkjmllm2r",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "One week since Seam(De)Stress went public 🧵 The honest launch report: a repo, zero paying customers (it's free, so that tracks), and the fun realization that seamstresses don't browse GitHub. Building for non-devs is a different game. Following along:",
+  "expect": {
+   "relevant": true,
+   "intent": "pain_point",
+   "minScore": 40,
+   "maxScore": 75
+  },
+  "note": "Launch report from a solo builder with zero paying customers realising their audience is not where they are posting - a live distribution problem."
+ },
+ {
+  "id": "bsky-3mpyasiisgd2x",
+  "url": "https://bsky.app/profile/gunad.bsky.social/post/3mpyasiisgd2x",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "shipped a second product while chasing my first paying customer on the first one.\n\nPosthive is live open-source social media scheduler. one composer, 9 platforms.\n\ntwo products. zero paying customers. 6 days left.\nbuilding in public means showing all of it.",
+  "expect": {
+   "relevant": true,
+   "intent": "pain_point",
+   "minScore": 40,
+   "maxScore": 72
+  },
+  "note": "Build-in-public update, but the author is actively chasing a first paying customer across two products - a current, unsolved need."
+ },
+ {
+  "id": "bsky-3mlfv2zr6zw2s",
+  "url": "https://bsky.app/profile/brainsforai.bsky.social/post/3mlfv2zr6zw2s",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "I have zero paying customers. Zero launch. Google, OpenAI, and Anthropic are all building in the same direction. I almost quit Brains. Here's the one thing that changed my mind. https://www.usebrains.app/notes/i-almost-quit #buildinpublic #AI #AItools",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 35
+  },
+  "note": "Content-marketing hook linking to the author's own post about almost quitting - the struggle is framing for a promotion."
+ },
+ {
+  "id": "bsky-3mm6nuk2fgh2j",
+  "url": "https://bsky.app/profile/bydaveyji.bsky.social/post/3mm6nuk2fgh2j",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Your SaaS product has been live for 3 months with zero paying customers despite 50+ demos and positive feedback. \n\nEvery prospect says they love the product but need to see \"more social proof\" before committing.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 30
+  },
+  "note": "Hypothetical scenario written as content ('Your SaaS product has been live...'), not the author's own situation."
+ },
+ {
+  "id": "bsky-3mrnjaiyg2w2m",
+  "url": "https://bsky.app/profile/bluehatone.bsky.social/post/3mrnjaiyg2w2m",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Three ideas, seven tools, zero paying customers. Most AI founders fail at the offer step. One sentence offer. Five customer calls. Ship by hand in 30 days.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "Advice aphorism aimed at AI founders."
+ },
+ {
+  "id": "bsky-3mupqepvnps2w",
+  "url": "https://bsky.app/profile/hikmahtech.bsky.social/post/3mupqepvnps2w",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Nobody signing up for your SaaS? It's rarely the product. Four leaks, in order: no arrivals, \"anyone\" market, no position, feature-first page.\nhttps://www.strangertosold.com/learn/saas-no-signups?utm_source=bluesky&utm_medium=social&utm_campaign=fieldnotes",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 20
+  },
+  "note": "Advice post promoting a course page about why SaaS gets no signups - a seller."
+ },
+ {
+  "id": "bsky-3mcf7lbkh3k2r",
+  "url": "https://bsky.app/profile/bizsential.bsky.social/post/3mcf7lbkh3k2r",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "How Do I Get My First Customers Without a Big Audience?\n\nEarly customers are drawn by proximity to need and awareness of the offer. youtube.com/shorts/XvAbw...",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 20
+  },
+  "note": "Promotes a YouTube short answering the first-customers question - a seller of advice."
+ },
+ {
+  "id": "bsky-3lmcd2shzah2k",
+  "url": "https://bsky.app/profile/dcraciun.bsky.social/post/3lmcd2shzah2k",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "Here is my full marketing strategy for my SaaS:\n\nReddit engagement + f5bot alerts\nExclusive Discord community for premium users\nLaunch platforms\nBlog content + SEO optimization\nBuild in public on Twitter/X\nCrafting a HackerNews viral post\n\nSimple is always best.",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 15,
+   "maxScore": 45
+  },
+  "note": "Founder sharing the marketing strategy already working for them, F5Bot included - satisfied, not looking."
+ },
+ {
+  "id": "bsky-3lfb5pv65vk2n",
+  "url": "https://bsky.app/profile/casparwre.de/post/3lfb5pv65vk2n",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "I use an online tool called F5Bot to alert me when my product is mentioned on Reddit. It works flawlessly and often leads to wonderful interactions like this one",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 15,
+   "maxScore": 45
+  },
+  "note": "Happy F5Bot user recommending it - no complaint, no need."
+ },
+ {
+  "id": "bsky-3mu2uvgplpk2j",
+  "url": "https://bsky.app/profile/hustle-fred.bsky.social/post/3mu2uvgplpk2j",
+  "source": "bluesky",
+  "venue": null,
+  "title": null,
+  "body": "i made $900 from my users promoting my app\n\nhere is how:\n\n1> add application for affiliates in the app\n2> users apply and get a special link\n3> they make money when someone buys thorugh them\n\nJoey recently signed up to SupaBird, loved the app, became affiliate and got 4 trials #buildinpublic",
+  "expect": {
+   "relevant": false,
+   "intent": "none",
+   "minScore": 0,
+   "maxScore": 25
+  },
+  "note": "Success story promoting the author's app's affiliate programme."
+ }
+]

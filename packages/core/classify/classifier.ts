@@ -181,6 +181,17 @@ export function extractClassifications(
     return { classifications: [], warnings };
   }
 
+  // The tool is forced, so anything but "tool_use" means the call was cut off
+  // or declined. A truncated tool call can still parse — as an empty or short
+  // batch — and without this line the only trace is "N item(s) received no
+  // verdict", with nothing to say why.
+  if (response.stop_reason !== "tool_use") {
+    warnings.push(
+      `${model} stopped with stop_reason=${response.stop_reason} after ` +
+        `${parsed.value.classifications.length} classification(s), ${response.usage.output_tokens} output tokens`,
+    );
+  }
+
   // Individual bad entries are dropped, not the batch. Surfaced so a model
   // quietly degrading shows up as a warning rather than as a thin digest.
   if (parsed.dropped.length > 0) {
