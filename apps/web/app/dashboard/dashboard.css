@@ -996,3 +996,21 @@ fieldset.field legend {
    outer padding. */
 .tabwrap .field { margin-bottom: 18px; }
 .tabwrap .field:last-child { margin-bottom: 0; }
+
+/* --- plan usage ----------------------------------------------------------- */
+
+.plan-usage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 18px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.plan-usage b {
+  color: var(--ink-soft);
+  font-weight: 500;
+}

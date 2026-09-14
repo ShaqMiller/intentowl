@@ -19,7 +19,8 @@ import { z } from "zod";
 
 import { getDb } from "./db.ts";
 import { saveFeedback } from "./feedback.ts";
-import { requireCustomer } from "./session.ts";
+import { planInfo } from "./plans.ts";
+import { requireCustomer, type SessionCustomer } from "./session.ts";
 
 export interface ActionResult {
   ok: boolean;
@@ -120,11 +121,42 @@ function toWatchRow(data: z.infer<typeof watchSchema>) {
   };
 }
 
+/**
+ * Null when another running search fits the customer's plan, otherwise the
+ * reason it does not. `excludeId` is the search being saved or resumed, which
+ * must not count against itself.
+ */
+async function searchLimitReached(
+  customer: SessionCustomer,
+  excludeId?: string,
+): Promise<string | null> {
+  const plan = planInfo(customer.plan);
+  const running = await getDb()
+    .select({ id: schema.watches.id })
+    .from(schema.watches)
+    .where(
+      and(
+        eq(schema.watches.customerId, customer.id),
+        eq(schema.watches.active, true),
+      ),
+    );
+
+  if (running.filter((w) => w.id !== excludeId).length < plan.searches) return null;
+  return plan.tier === "starter"
+    ? "Starter runs one search at a time. Pause your other search first, or reply to any digest to move to Pro and run three."
+    : `${plan.name} runs up to ${plan.searches} searches at once. Pause one first, or save this one paused.`;
+}
+
 export async function createWatch(form: FormData): Promise<ActionResult> {
   const customer = await requireCustomer();
   const parsed = readWatchForm(form);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  if (parsed.data.active) {
+    const limited = await searchLimitReached(customer);
+    if (limited !== null) return { ok: false, message: limited };
   }
 
   const db = getDb();
@@ -158,6 +190,11 @@ export async function updateWatch(form: FormData): Promise<ActionResult> {
   const parsed = readWatchForm(form);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  if (parsed.data.active) {
+    const limited = await searchLimitReached(customer, id);
+    if (limited !== null) return { ok: false, message: limited };
   }
 
   const db = getDb();
@@ -195,6 +232,11 @@ export async function setWatchActive(form: FormData): Promise<ActionResult> {
   const id = form.get("id");
   const active = form.get("active") === "true";
   if (typeof id !== "string") return { ok: false, message: "Missing search id" };
+
+  if (active) {
+    const limited = await searchLimitReached(customer, id);
+    if (limited !== null) return { ok: false, message: limited };
+  }
 
   const db = getDb();
   const updated = await db

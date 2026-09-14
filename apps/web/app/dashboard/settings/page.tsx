@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 
 import { updateDelivery } from "../../../src/actions.ts";
 import { changePassword, signOutEverywhere } from "../../../src/auth-actions.ts";
+import { planInfo } from "../../../src/plans.ts";
 import { authConfigured, requireCustomer } from "../../../src/session.ts";
 import { ActionButton, ActionForm } from "../form.tsx";
 import {
@@ -188,13 +189,15 @@ export default async function SettingsPage() {
         <div className="setcard-head">
           <IconCard />
           <h3>
-            {customer.plan ?? "Concierge"} · {customer.status}
+            {planInfo(customer.plan).name} · {customer.status}
           </h3>
         </div>
         <p className="hint">
-          Subscriptions are managed in Stripe. To change plan or cancel, use the
-          link at the bottom of any digest, or reply to it and I will do it for
-          you. A self-serve billing portal is coming.
+          {planInfo(customer.plan).name} runs up to{" "}
+          {planInfo(customer.plan).searches}{" "}
+          {planInfo(customer.plan).searches === 1 ? "search" : "searches"} at once.
+          To move between Starter and Pro or to cancel, reply to any digest and I
+          will do it for you. A self-serve billing portal is coming.
         </p>
       </div>
       <div className="setcard-foot">

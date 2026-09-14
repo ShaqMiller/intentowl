@@ -2,18 +2,18 @@
  * Landing page (ARCHITECTURE.md sections 4.7 and 4.8).
  *
  * One job: convince a founder that they are missing threads where people ask
- * for what they built, and that $49 to stop missing them is obvious. Checkout
- * is a Stripe Payment Link, so there is no payment code in the app at all.
+ * for what they built, and that a free week of finding out costs them nothing.
+ * Checkout is a Stripe Payment Link with the trial on it, so there is no
+ * payment code in the app at all.
  *
  * Everything claimed here has to be true today. The sources list is the
  * dangerous one — it is tempting to list Reddit because the adapter exists,
  * but it has never run against the live API, and a landing page is a promise.
  */
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 
-import { checkout } from "../../src/checkout.ts";
 import { getPublicActivity, type PublicActivity } from "../../src/queries.ts";
+import { PlanCards } from "./plans.tsx";
 import { ScrambleWord } from "./scramble-word.tsx";
 
 export const metadata: Metadata = {
@@ -93,8 +93,16 @@ const FAQ = [
     a: "Hacker News, Lobsters, Stack Exchange, Bluesky, and any site with an RSS feed. Reddit is pending API approval. If there is a forum your customers live in that has a feed, it works today — and if it does not, adding it is usually a same-week job.",
   },
   {
+    q: "What is the difference between Starter and Pro?",
+    a: "How many searches run at once. A search is one set of terms and places to watch. Starter runs one, and you can rewrite it whenever you change direction. Pro runs up to three side by side — a second product, a different audience, or a competitor's unhappy customers.",
+  },
+  {
+    q: "How does the free trial work?",
+    a: "Your first 7 days are free. Checkout takes a card so there is nothing to re-enter if you stay, but nothing is charged until day 8 — cancel before then and you pay nothing.",
+  },
+  {
     q: "Can I cancel?",
-    a: "Any time, from the link at the bottom of any digest. Monthly is monthly, and the founding price stays locked for as long as you stay.",
+    a: "Any time, from the link at the bottom of any digest. Monthly is monthly; cancel mid-month and the digest keeps coming until the period you paid for ends.",
   },
 ];
 
@@ -131,11 +139,6 @@ export const revalidate = 60;
 
 export default async function LandingPage() {
   const activity = await getPublicActivity();
-  const monthly = checkout.monthly;
-  const annual = checkout.annual;
-  // Straight to checkout when Stripe is wired; otherwise the plan page, which
-  // works either way. Never a dead button.
-  const start = monthly ?? "/signup";
 
   return (
     <main>
@@ -159,8 +162,10 @@ export default async function LandingPage() {
           </p>
 
           <div className="hero-cta">
-            <a className="btn btn-primary" href={start}>
-              Start for $49/month
+            {/* To the plans, not straight to checkout: with two tiers the
+                choice is the next step, and the trial makes it a cheap one. */}
+            <a className="btn btn-primary" href="#pricing">
+              Start your 7-day free trial
             </a>
             <a className="btn" href="#digest">
               See a real digest
@@ -168,8 +173,7 @@ export default async function LandingPage() {
           </div>
 
           <p className="hero-fine">
-            Founding price, locked for as long as you stay · Set up by hand
-            within a day · Cancel any time
+            7 days free · From $15/month after · Cancel any time
           </p>
         </div>
       </section>
@@ -258,53 +262,13 @@ export default async function LandingPage() {
         <div className="page">
           <div className="section-head center">
             <p className="eyebrow">Pricing</p>
-            <h2>One price. Set up by hand.</h2>
+            <h2>Two plans. Both start free.</h2>
             <p className="section-sub">
-              Founding pricing while IntentOwl is young. Whatever you pay when
-              you join is what you keep paying.
+              Starter watches one thing for you. Pro watches up to three at once.
+              Either way, the first week is on us.
             </p>
           </div>
-          <div className="plans">
-            <div className="plan featured">
-              <div className="plan-top">
-                <span className="plan-name">Monthly</span>
-              </div>
-              <p className="plan-price">
-                $49<span> /month</span>
-              </p>
-              <ul>
-                <PlanItem>One ranked digest every morning</PlanItem>
-                <PlanItem>Every live source, no per-source pricing</PlanItem>
-                <PlanItem>Watch tuned by hand in week one</PlanItem>
-                <PlanItem>Cancel from any digest</PlanItem>
-              </ul>
-              <a className="btn btn-primary" href={monthly ?? "/signup"}>
-                Start monthly
-              </a>
-            </div>
-            <div className="plan">
-              <div className="plan-top">
-                <span className="plan-name">Annual</span>
-                <span className="plan-save">SAVE 66%</span>
-              </div>
-              <p className="plan-price">
-                $199<span> /year</span>
-              </p>
-              <ul>
-                <PlanItem>Everything in monthly</PlanItem>
-                <PlanItem>Two months of runway instead of twelve</PlanItem>
-                <PlanItem>New sources added at no extra cost</PlanItem>
-                <PlanItem>Price locked for as long as you stay</PlanItem>
-              </ul>
-              <a className="btn" href={annual ?? "/signup"}>
-                Start annual
-              </a>
-            </div>
-          </div>
-          <p className="plan-note" style={{ marginTop: 18 }}>
-            Reply to your receipt with what you sell and I will have your first
-            digest running within a day.
-          </p>
+          <PlanCards />
         </div>
       </section>
 
@@ -329,8 +293,8 @@ export default async function LandingPage() {
         <div className="page">
           <h2>One email. Every morning. The people already asking.</h2>
           <div className="hero-cta">
-            <a className="btn btn-primary" href={start}>
-              Start for $49/month
+            <a className="btn btn-primary" href="#pricing">
+              Start your 7-day free trial
             </a>
             <a className="btn" href="/login">
               Log in
@@ -428,22 +392,5 @@ function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
         ))}
       </ul>
     </>
-  );
-}
-
-function PlanItem({ children }: { children: ReactNode }) {
-  return (
-    <li>
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path
-          d="M3 8.5 6.2 11.6 13 4.8"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span>{children}</span>
-    </li>
   );
 }

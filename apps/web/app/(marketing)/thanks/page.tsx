@@ -1,7 +1,7 @@
 /**
  * Post-checkout page (ARCHITECTURE.md section 4.7).
  *
- * Stripe redirects here after a successful Payment Link checkout. Its only job
+ * Stripe redirects here after a Payment Link checkout starts a trial. Its only job
  * is to collect the one thing payment cannot: what the customer actually
  * sells. Without that the pipeline has no profile to classify against, so this
  * page is the difference between a paying customer and a working one.
@@ -25,7 +25,7 @@ export default function ThanksPage() {
 
   return (
     <main className="prose">
-      <p className="eyebrow">Payment received</p>
+      <p className="eyebrow">Your 7-day trial has started</p>
       <h1>Now the part that makes it yours.</h1>
       <p>
         IntentOwl works by reading posts against a description of your product,
@@ -37,7 +37,7 @@ export default function ThanksPage() {
       {form === undefined ? (
         <>
           <p>
-            <b>Reply to your Stripe receipt</b> with four things and I will set
+            <b>Reply to your Stripe confirmation email</b> with four things and I will set
             you up by hand, usually the same day:
           </p>
           <ol>

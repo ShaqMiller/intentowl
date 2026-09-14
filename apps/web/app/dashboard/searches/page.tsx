@@ -9,6 +9,7 @@
 import type { Metadata } from "next";
 
 import { setWatchActive } from "../../../src/actions.ts";
+import { planInfo } from "../../../src/plans.ts";
 import { listWatches } from "../../../src/queries.ts";
 import { requireCustomer } from "../../../src/session.ts";
 import { ActionButton } from "../form.tsx";
@@ -20,6 +21,8 @@ export const dynamic = "force-dynamic";
 export default async function SearchesPage() {
   const customer = await requireCustomer();
   const watches = await listWatches(customer.id);
+  const plan = planInfo(customer.plan);
+  const running = watches.filter((w) => w.active).length;
 
   return (
     <main className="pane">
@@ -37,6 +40,23 @@ export default async function SearchesPage() {
           New search
         </a>
       </header>
+
+      {watches.length > 0 && (
+        <p className="plan-usage">
+          <span>
+            <b>
+              {running} of {plan.searches}
+            </b>{" "}
+            {plan.searches === 1 ? "search" : "searches"} running · {plan.name}
+          </span>
+          {running >= plan.searches && (
+            <span>
+              — pause one to start another
+              {plan.tier === "starter" && ", or reply to any digest to move to Pro"}
+            </span>
+          )}
+        </p>
+      )}
 
       {watches.length === 0 ? (
         <div className="empty">

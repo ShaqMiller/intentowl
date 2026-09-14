@@ -18,9 +18,14 @@ const schema = z.object({
   // M5 — payments. All optional so the site renders before Stripe is wired.
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  /** Payment Link URLs, created in the Stripe dashboard rather than in code. */
-  STRIPE_LINK_MONTHLY: z.url().optional(),
-  STRIPE_LINK_ANNUAL: z.url().optional(),
+  /**
+   * Payment Link URLs, one per plan and interval, each carrying the 7-day
+   * trial. Created in Stripe rather than in code.
+   */
+  STRIPE_LINK_STARTER_MONTHLY: z.url().optional(),
+  STRIPE_LINK_STARTER_ANNUAL: z.url().optional(),
+  STRIPE_LINK_PRO_MONTHLY: z.url().optional(),
+  STRIPE_LINK_PRO_ANNUAL: z.url().optional(),
   /** Tally/Google form the thank-you page sends people to. */
   ONBOARDING_FORM_URL: z.url().optional(),
 

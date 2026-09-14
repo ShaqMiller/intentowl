@@ -836,6 +836,20 @@ p {
   margin-top: 4px;
 }
 
+/* Annual as a quiet second option under the trial button, not a toggle. */
+.plan-alt {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.plan-alt:hover {
+  color: var(--ink-soft);
+}
+
 .plan-note {
   font-size: 13px;
   color: var(--faint);

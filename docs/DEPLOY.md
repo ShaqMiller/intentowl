@@ -43,8 +43,10 @@ DNS and mail should be done first; the URLs below depend on them.
    APP_URL                https://intentowl.com
    STRIPE_SECRET_KEY      live key, once Stripe is activated
    STRIPE_WEBHOOK_SECRET  from the endpoint created in step 6
-   STRIPE_LINK_MONTHLY    live Payment Link
-   STRIPE_LINK_ANNUAL     live Payment Link
+   STRIPE_LINK_STARTER_MONTHLY   live Payment Link, $15/mo, 7-day trial
+   STRIPE_LINK_STARTER_ANNUAL    live Payment Link, $150/yr, 7-day trial
+   STRIPE_LINK_PRO_MONTHLY       live Payment Link, $39/mo, 7-day trial
+   STRIPE_LINK_PRO_ANNUAL        live Payment Link, $390/yr, 7-day trial
    ```
 
 5. **Domain**: Settings → Domains → add `intentowl.com` and `www`. Vercel

@@ -12,6 +12,7 @@ import "./dashboard.css";
 
 import { OwlMark } from "../(marketing)/chrome.tsx";
 import { signOut } from "../../src/auth-actions.ts";
+import { planInfo } from "../../src/plans.ts";
 import { authConfigured, getCustomer } from "../../src/session.ts";
 import { IconSignOut } from "./icons.tsx";
 import { SideNav } from "./nav.tsx";
@@ -52,7 +53,7 @@ export default async function DashboardLayout({
             {customer.email}
           </p>
           <p className="side-plan">
-            {customer.plan ?? "concierge"} · {customer.status}
+            {planInfo(customer.plan).name} · {customer.status}
           </p>
           {authConfigured() && (
             <form action={signOut} className="side-signout">
