@@ -32,7 +32,9 @@ import { DIGEST_QUEUE, DIGEST_QUEUE_OPTIONS } from "./digest.ts";
 import { HARVEST_QUEUE, HARVEST_QUEUE_OPTIONS } from "./harvest-fewshots.ts";
 import { OPS_REPORT_QUEUE, OPS_REPORT_QUEUE_OPTIONS } from "./ops-report.ts";
 import { REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS } from "./refresh-engagement.ts";
+import { RETENTION_QUEUE, RETENTION_QUEUE_OPTIONS } from "./retention.ts";
 import { SYNC_QUEUE, SYNC_QUEUE_OPTIONS } from "./sync-schedules.ts";
+import { THREADS_TOKEN_QUEUE, THREADS_TOKEN_QUEUE_OPTIONS } from "./threads-token.ts";
 import {
   POLL_QUEUE,
   POLL_QUEUE_OPTIONS,
@@ -55,6 +57,9 @@ const POLL_INTERVAL_MINUTES: Record<SourceName, number> = {
   bluesky: 15,
   rss: 30,
   x: 30,
+  // Hourly: every customer's searches share one 2,200-a-day Threads budget,
+  // so a faster cadence only reaches the cap sooner.
+  threads: 60,
 };
 
 /** Drains whatever the polls have queued up. */
@@ -90,6 +95,15 @@ const REFRESH_CRON = "25 */2 * * *";
  * it worked, long enough that the reconcile is background noise.
  */
 const SYNC_CRON = "*/10 * * * *";
+
+/**
+ * Daily check; the job itself only refreshes weekly. Daily so a failed refresh
+ * is retried the next morning, long before a 60-day token runs out.
+ */
+const THREADS_TOKEN_CRON = "20 5 * * *";
+
+/** Deletes Reddit posts past their 30-day retention, overnight. */
+const RETENTION_CRON = "50 3 * * *";
 
 export interface SyncResult {
   added: number;
@@ -172,6 +186,8 @@ const OWNED_QUEUES = new Set<string>([
   HARVEST_QUEUE,
   REFRESH_QUEUE,
   SYNC_QUEUE,
+  THREADS_TOKEN_QUEUE,
+  RETENTION_QUEUE,
 ]);
 
 /** Create every queue the scheduler targets. Idempotent; safe to repeat. */
@@ -183,6 +199,8 @@ export async function ensureQueues(boss: PgBoss): Promise<void> {
   await boss.createQueue(HARVEST_QUEUE, HARVEST_QUEUE_OPTIONS);
   await boss.createQueue(REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS);
   await boss.createQueue(SYNC_QUEUE, SYNC_QUEUE_OPTIONS);
+  await boss.createQueue(THREADS_TOKEN_QUEUE, THREADS_TOKEN_QUEUE_OPTIONS);
+  await boss.createQueue(RETENTION_QUEUE, RETENTION_QUEUE_OPTIONS);
 }
 
 interface DesiredSchedule {
@@ -224,6 +242,20 @@ async function desiredSchedules(db: Db): Promise<DesiredSchedule[]> {
       queue: SYNC_QUEUE,
       key: "sync-schedules",
       cron: SYNC_CRON,
+      tz: "UTC",
+      data: null,
+    },
+    {
+      queue: THREADS_TOKEN_QUEUE,
+      key: "refresh-threads-token",
+      cron: THREADS_TOKEN_CRON,
+      tz: "UTC",
+      data: null,
+    },
+    {
+      queue: RETENTION_QUEUE,
+      key: "retention",
+      cron: RETENTION_CRON,
       tz: "UTC",
       data: null,
     },

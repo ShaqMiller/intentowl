@@ -14,8 +14,10 @@ import { registerHeartbeat } from "./heartbeat.ts";
 import { registerOpsReport } from "./ops-report.ts";
 import { registerPoll, type AdapterRegistry } from "./poll.ts";
 import { registerRefreshEngagement } from "./refresh-engagement.ts";
+import { registerRetention } from "./retention.ts";
 import { syncSchedules } from "./schedules.ts";
 import { registerSyncSchedules } from "./sync-schedules.ts";
+import { registerThreadsToken } from "./threads-token.ts";
 
 /**
  * Every job the worker runs is registered here.
@@ -41,6 +43,8 @@ export async function registerJobs(
   await registerHarvest(boss, db);
   await registerRefreshEngagement(boss, db, adapters);
   await registerSyncSchedules(boss, db);
+  await registerThreadsToken(boss, db);
+  await registerRetention(boss, db);
 
   // Last: the queues have to exist before anything can be scheduled onto them.
   await syncSchedules(boss, db);

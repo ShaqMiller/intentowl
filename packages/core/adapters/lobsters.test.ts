@@ -30,12 +30,21 @@ const watch: WatchConfig = {
   excludeTerms: [],
 };
 
+/**
+ * An hour ago, in Lobsters' offset style. Relative, not fixed: the default was
+ * 2026-09-07, and a week later the adapter's seven-day cold start excluded it,
+ * failing every test that polls without a cursor — the same calendar rot the
+ * Bluesky fixtures had. Tests that pass an explicit cursor keep fixed dates,
+ * because there the comparison is to the cursor, not to today.
+ */
+const RECENT = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
 /** Shape taken from a real lobste.rs/newest.json response. */
 function story(overrides: Record<string, unknown> = {}) {
   return {
     short_id: "2yrepa",
     short_id_url: "https://lobste.rs/s/2yrepa",
-    created_at: "2026-09-07T14:49:00.961-05:00",
+    created_at: RECENT,
     title: "Evaluating Performance and Correctness",
     url: "https://example.com/article",
     score: 12,

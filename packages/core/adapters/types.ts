@@ -21,6 +21,7 @@ export const sourceName = z.enum([
   "bluesky",
   "rss",
   "x",
+  "threads",
 ]);
 export type SourceName = z.infer<typeof sourceName>;
 
@@ -86,6 +87,11 @@ export const cursor = z.union([
      */
     newestPublishedAt: z.number().int().nonnegative(),
   }),
+  z.object({
+    kind: z.literal("threads"),
+    /** `timestamp` of the newest post seen, unix seconds — the unit `since` takes. */
+    newestTimestamp: z.number().int().nonnegative(),
+  }),
 ]);
 export type Cursor = z.infer<typeof cursor>;
 
@@ -104,6 +110,18 @@ export interface WatchConfig {
    * per source as more of them land.
    */
   sourceConfig?: unknown;
+}
+
+/**
+ * The warning for include terms past an adapter's per-poll cap. Those terms
+ * are never sent as queries, so they can only ever filter posts the other
+ * terms fetched — worth saying out loud rather than silently.
+ */
+export function skippedTermsWarning(terms: readonly string[]): string {
+  return (
+    `${terms.length} include term(s) are past this source's per-poll limit and are never searched: ` +
+    terms.join(", ")
+  );
 }
 
 /** What one fetch cost, for `api_usage`. */

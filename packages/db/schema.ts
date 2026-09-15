@@ -39,6 +39,7 @@ export const source = pgEnum("source", [
   "bluesky",
   "rss",
   "x",
+  "threads",
 ]);
 
 export const intent = pgEnum("intent", [
@@ -157,6 +158,28 @@ export const cursors = pgTable(
   },
   (t) => [primaryKey({ columns: [t.watchId, t.source] })],
 );
+
+/**
+ * Access tokens for sources whose tokens expire, and so cannot live in env
+ * alone.
+ *
+ * Threads is the reason: a long-lived token lasts 60 days and can only be
+ * refreshed while it is still valid, so one missed window means re-authorising
+ * by hand. The worker refreshes weekly and keeps the newest token here; env
+ * only seeds it.
+ */
+export const sourceTokens = pgTable("source_tokens", {
+  source: source("source").primaryKey(),
+  accessToken: text("access_token").notNull(),
+  /**
+   * sha256 of the env token this row descends from. When someone pastes a new
+   * token into env, the fingerprint no longer matches and the stored token is
+   * replaced rather than silently preferred.
+   */
+  seedFingerprint: text("seed_fingerprint").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  refreshedAt: timestamp("refreshed_at", { withTimezone: true }).notNull(),
+});
 
 // --- pipeline ---------------------------------------------------------------
 

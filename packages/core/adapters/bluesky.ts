@@ -30,6 +30,7 @@ import {
 import { TokenBucket } from "./rate-limit.ts";
 import {
   cursorFor,
+  skippedTermsWarning,
   type Cursor,
   type FetchResult,
   type RawItem,
@@ -45,8 +46,11 @@ const CREATE_SESSION = `${HOST}/xrpc/com.atproto.server.createSession`;
 /** Posts per search page. The lexicon caps `limit` at 100. */
 const PAGE_SIZE = 100;
 
-/** Terms searched per poll, matching the HN adapter's shape and budget. */
-const MAX_TERMS_PER_POLL = 10;
+/**
+ * Terms searched per poll, matching the HN adapter. Was 10, which never
+ * searched a longer watch's later terms at all.
+ */
+const MAX_TERMS_PER_POLL = 30;
 
 /** Pages walked per term before accepting a gap and warning. */
 const MAX_PAGES_PER_TERM = 2;
@@ -157,6 +161,9 @@ export function createBlueskyAdapter(
       const items: RawItem[] = [];
       const seen = new Set<string>();
       const warnings: string[] = [];
+      if (watch.includeTerms.length > MAX_TERMS_PER_POLL) {
+        warnings.push(skippedTermsWarning(watch.includeTerms.slice(MAX_TERMS_PER_POLL)));
+      }
       let newest = since;
       let calls = 0;
       // Bounds the 401 branch below to one re-mint per poll. It claimed to

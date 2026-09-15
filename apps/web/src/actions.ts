@@ -36,6 +36,7 @@ const SOURCE = z.enum([
   "bluesky",
   "rss",
   "x",
+  "threads",
 ]);
 
 /**

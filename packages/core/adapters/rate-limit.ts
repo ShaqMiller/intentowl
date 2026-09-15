@@ -105,5 +105,8 @@ export const redditBucket = new TokenBucket({
  */
 export const hnBucket = new TokenBucket({
   capacity: 5,
-  refillPerSecond: 10 / 60,
+  // One a second: 3,600/hour against Algolia's published 10,000/hour per IP.
+  // At the old 10/minute a 25-term watch outlasted the poll job's five-minute
+  // expiry before it finished searching.
+  refillPerSecond: 1,
 });

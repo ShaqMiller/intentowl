@@ -13,13 +13,20 @@ import {
   createRedditAdapter,
   createRssAdapter,
   createStackExchangeAdapter,
+  createThreadsAdapter,
 } from "@intentowl/core";
+import type { Db } from "@intentowl/db";
 
 import { env } from "./env.ts";
 import type { AdapterRegistry } from "./jobs/poll.ts";
+import { currentThreadsToken } from "./jobs/threads-token.ts";
 import { logger } from "./logger.ts";
 
-export function createAdapters(): AdapterRegistry {
+/**
+ * `db` is optional so the CLI can build adapters without a connection. Without
+ * it, Threads uses the env token as-is and never sees a refreshed one.
+ */
+export function createAdapters(db?: Db): AdapterRegistry {
   const registry: AdapterRegistry = {
     // Free and unauthenticated, so always available.
     hn: createHnAdapter(),
@@ -66,6 +73,20 @@ export function createAdapters(): AdapterRegistry {
   } else {
     logger.warn(
       "bluesky credentials absent; the bluesky adapter is not registered",
+    );
+  }
+
+  const threadsToken = env.THREADS_ACCESS_TOKEN;
+  if (threadsToken !== undefined) {
+    registry.threads = createThreadsAdapter({
+      getAccessToken: () =>
+        db === undefined
+          ? Promise.resolve(threadsToken)
+          : currentThreadsToken(db, threadsToken),
+    });
+  } else {
+    logger.warn(
+      "threads token absent; the threads adapter is not registered",
     );
   }
 

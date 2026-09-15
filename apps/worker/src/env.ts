@@ -47,6 +47,12 @@ const schema = z.object({
   // M6
   BLUESKY_IDENTIFIER: z.string().optional(),
   BLUESKY_APP_PASSWORD: z.string().optional(),
+  /**
+   * Threads long-lived access token (60 days). Seeds `source_tokens`, where the
+   * worker refreshes it weekly, so it only needs replacing if a refresh window
+   * is missed. See docs/THREADS_SETUP.md.
+   */
+  THREADS_ACCESS_TOKEN: z.string().optional(),
   OPS_SLACK_WEBHOOK_URL: z.url().optional(),
   /**
    * HMAC key for the feedback links in the digest. Optional: without it the

@@ -43,6 +43,13 @@
       "when": 1788884822813,
       "tag": "0005_stormy_taskmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789434551888,
+      "tag": "0006_mixed_shinko_yamashiro",
+      "breakpoints": true
     }
   ]
 }

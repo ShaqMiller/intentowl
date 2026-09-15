@@ -20,3 +20,11 @@ export type { StackExchangeAdapterOptions } from "./stackexchange.ts";
 export type { HnAdapterOptions } from "./hn.ts";
 export * from "./rss.ts";
 export * from "./bluesky.ts";
+// Explicit, not `export *`: threads.ts and bluesky.ts both export `toRawItem`.
+export {
+  createThreadsAdapter,
+  parseThreadsTimestamp,
+  threadsBucket,
+  toRawItem as threadsToRawItem,
+} from "./threads.ts";
+export type { ThreadsAdapterOptions } from "./threads.ts";

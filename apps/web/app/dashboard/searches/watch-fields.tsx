@@ -50,6 +50,7 @@ const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> = [
 
 const PENDING_SOURCES: Array<{ key: string; label: string; note: string }> = [
   { key: "reddit", label: "Reddit", note: "awaiting API approval" },
+  { key: "threads", label: "Threads", note: "awaiting Meta approval" },
 ];
 
 export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {

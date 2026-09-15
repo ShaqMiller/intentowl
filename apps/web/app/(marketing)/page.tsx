@@ -314,6 +314,7 @@ const SOURCE_LABELS: Record<string, string> = {
   lobsters: "Lobsters",
   stackexchange: "Stack Exchange",
   bluesky: "Bluesky",
+  threads: "Threads",
   rss: "RSS feeds",
 };
 

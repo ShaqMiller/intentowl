@@ -15,6 +15,7 @@ import { AdapterError, fetchJson } from "./http.ts";
 import { hnBucket } from "./rate-limit.ts";
 import {
   cursorFor,
+  skippedTermsWarning,
   type Cursor,
   type EngagementRequest,
   type EngagementResult,
@@ -39,7 +40,12 @@ const COLD_START_LOOKBACK_SECONDS = 7 * 24 * 60 * 60;
  * "how", "find"). One request per term is the only shape that means what the
  * watch means.
  */
-const MAX_TERMS_PER_POLL = 10;
+/**
+ * Terms searched per poll. Was 10, which silently never searched the rest of a
+ * longer watch: terms past the tenth only ever filtered posts the first ten had
+ * already fetched. 30 covers the longest production watch (25) with room.
+ */
+const MAX_TERMS_PER_POLL = 30;
 
 /** Pages to walk per term before accepting a gap and warning about it. */
 const MAX_PAGES_PER_TERM = 3;
@@ -177,6 +183,13 @@ export function createHnAdapter(options: HnAdapterOptions = {}): SourceAdapter {
         }
       }
 
+      const warnings = [
+        ...(saturated.length > 0 ? [saturatedWarning(saturated)] : []),
+        ...(watch.includeTerms.length > MAX_TERMS_PER_POLL
+          ? [skippedTermsWarning(watch.includeTerms.slice(MAX_TERMS_PER_POLL))]
+          : []),
+      ];
+
       const nextCursor: Cursor = { kind: "hn", newestCreatedAt: newest };
       return {
         items,
@@ -185,7 +198,7 @@ export function createHnAdapter(options: HnAdapterOptions = {}): SourceAdapter {
         // A term still full after every page is too broad to cover in one
         // window: the cursor advances past items we never fetched. Surfaced so
         // it can be narrowed rather than silently losing leads.
-        ...(saturated.length > 0 ? { warnings: [saturatedWarning(saturated)] } : {}),
+        ...(warnings.length > 0 ? { warnings } : {}),
       };
     },
   };

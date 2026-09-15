@@ -19,7 +19,7 @@ async function main(): Promise<void> {
   await boss.start();
   logger.info("pg-boss started");
 
-  await registerJobs(boss, db, createAdapters());
+  await registerJobs(boss, db, createAdapters(db));
 
   const http = startHttpServer(db);
 
