@@ -89,7 +89,14 @@ const watchSchema = z.object({
   subreddits: z.array(z.string().min(1)).max(40),
   feeds: z.array(feedUrl).max(20),
   active: z.boolean(),
-});
+})
+  // RSS with no feeds has nothing to read: every poll fails and the search
+  // finds nothing, silently. Feeds without RSS ticked are fine — they are kept
+  // for when it is switched on.
+  .refine((w) => !w.sources.includes("rss") || w.feeds.length > 0, {
+    path: ["feeds"],
+    message: "RSS feeds needs at least one feed URL. Add one, or untick RSS feeds.",
+  });
 
 function readWatchForm(form: FormData) {
   return watchSchema.safeParse({

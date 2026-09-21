@@ -19,6 +19,13 @@ import { LIVE_SOURCES } from "../searches/watch-fields.tsx";
 /** Where a new search looks by default: the busiest sources with real asks. */
 const DEFAULT_SOURCES = new Set(["hn", "bluesky", "lobsters"]);
 
+/**
+ * RSS is left out of setup: it needs feed URLs, which this screen does not
+ * ask for, and ticking it without any would be refused. It can be switched on
+ * later in the search editor, where the feed field lives.
+ */
+const SETUP_SOURCES = LIVE_SOURCES.filter((s) => s.key !== "rss");
+
 export function SetupWizard({
   drafting,
   preview,
@@ -193,7 +200,7 @@ export function SetupWizard({
               <fieldset className="field">
                 <legend>Where to look</legend>
                 <div className="checks">
-                  {LIVE_SOURCES.map((s) => (
+                  {SETUP_SOURCES.map((s) => (
                     <label className="check" key={s.key}>
                       <input type="checkbox" name="sources" value={s.key} defaultChecked={DEFAULT_SOURCES.has(s.key)} />
                       <span>

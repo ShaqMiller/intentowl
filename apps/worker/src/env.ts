@@ -31,8 +31,28 @@ const schema = z.object({
   ANTHROPIC_WORKSPACE_ID: z.string().optional(),
   // M3
   RESEND_API_KEY: z.string().optional(),
-  /** Verified sender. Resend rejects a From on an unverified domain. */
-  DIGEST_FROM: z.string().default("IntentOwl <onboarding@resend.dev>"),
+  /**
+   * Verified sender. Resend rejects a From on an unverified domain, and one
+   * that is not `addr@x.y` or `Name <addr@x.y>`.
+   *
+   * Quotes pasted around the value in a hosting dashboard are stripped: a
+   * dashboard field is not a .env file, keeps them literally, and on
+   * 21 Sep 2026 that silently broke every alert email. Anything still
+   * malformed fails at boot, so the deploy is refused (the previous one keeps
+   * running) instead of the next digest failing at 7am.
+   */
+  DIGEST_FROM: z
+    .string()
+    .default("IntentOwl <onboarding@resend.dev>")
+    .transform((value) => value.trim().replace(/^(["'])(.*)\1$/s, "$2").trim())
+    .superRefine((value, ctx) => {
+      const shaped = /^(?:[^<>]+ <)?[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+>?$/.test(value);
+      if (shaped && value.includes("<") === value.endsWith(">")) return;
+      ctx.addIssue({
+        code: "custom",
+        message: `must look like "Name <you@domain.com>" or "you@domain.com", without quotes; got ${JSON.stringify(value)}`,
+      });
+    }),
   /**
    * Where a customer's reply goes.
    *
