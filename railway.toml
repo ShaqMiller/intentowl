@@ -5,10 +5,11 @@
 # stay running and holds state between jobs — rate-limiter token buckets, the
 # Bluesky access token, the pg-boss queue connection.
 #
-# Nixpacks reads pnpm-lock.yaml and installs the whole workspace, which is what
-# we want: the worker runs TypeScript through tsx at runtime rather than
-# building to JavaScript, so tsx (a devDependency) has to survive install.
-# Do not add a --prod flag here without also adding a build step.
+# Nixpacks installs the whole workspace, dev dependencies included: the worker
+# runs TypeScript through tsx at runtime rather than building to JavaScript, so
+# tsx and tsc (devDependencies) have to survive install. nixpacks.toml pins the
+# install command with --prod=false so a NODE_ENV=production on the service
+# cannot silently skip them. Do not remove that without adding a build step.
 
 [build]
 builder = "NIXPACKS"

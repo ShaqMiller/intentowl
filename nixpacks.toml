@@ -1,0 +1,9 @@
+# Nixpacks build settings for the Railway worker (see railway.toml).
+#
+# Install every dependency, dev ones included, even when NODE_ENV=production.
+# The worker runs TypeScript through tsx and its build gate is `tsc --noEmit`;
+# both are devDependencies, as are the @types packages core and db need to
+# typecheck. A production-only install drops them all and the build fails
+# with "tsc: not found" — which is what happened on 21 Sep 2026.
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile --prod=false"]
