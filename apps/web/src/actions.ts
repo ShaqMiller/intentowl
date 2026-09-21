@@ -144,7 +144,7 @@ async function searchLimitReached(
 
   if (running.filter((w) => w.id !== excludeId).length < plan.searches) return null;
   return plan.tier === "starter"
-    ? "Starter runs one search at a time. Pause your other search first, or reply to any digest to move to Pro and run three."
+    ? "Starter runs one search at a time. Pause your other search first, or switch to Pro under Settings → Billing to run three."
     : `${plan.name} runs up to ${plan.searches} searches at once. Pause one first, or save this one paused.`;
 }
 

@@ -346,3 +346,16 @@ export async function getPublicActivity(): Promise<PublicActivity | null> {
     return null;
   }
 }
+
+/**
+ * The Stripe customer behind an account, or null for accounts onboarded by
+ * hand. Decides whether Settings offers the billing portal.
+ */
+export async function getStripeCustomerId(customerId: string): Promise<string | null> {
+  const rows = await getDb()
+    .select({ stripeCustomerId: schema.customers.stripeCustomerId })
+    .from(schema.customers)
+    .where(eq(schema.customers.id, customerId))
+    .limit(1);
+  return rows[0]?.stripeCustomerId ?? null;
+}

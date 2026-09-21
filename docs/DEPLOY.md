@@ -47,6 +47,10 @@ DNS and mail should be done first; the URLs below depend on them.
    STRIPE_LINK_STARTER_ANNUAL    live Payment Link, $150/yr, 7-day trial
    STRIPE_LINK_PRO_MONTHLY       live Payment Link, $39/mo, 7-day trial
    STRIPE_LINK_PRO_ANNUAL        live Payment Link, $390/yr, 7-day trial
+   ANTHROPIC_API_KEY      same key as the worker; the setup wizard drafts a
+                          new customer's profile with it. Without it the
+                          wizard still works, as a form filled in by hand.
+   ANTHROPIC_WORKSPACE_ID only if the worker needs it too
    ```
 
 5. **Domain**: Settings → Domains → add `intentowl.com` and `www`. Vercel
@@ -60,6 +64,15 @@ DNS and mail should be done first; the URLs below depend on them.
    `customer.subscription.deleted`. Put its signing secret in
    `STRIPE_WEBHOOK_SECRET`. Until this exists, a real payment creates no
    customer row.
+7. **Customer portal** (Settings → Billing → "Manage billing"): a portal
+   configuration named "IntentOwl self-serve" exists in **test mode**
+   (`bpc_1UIBUbRI9nQ1b7znYVLlh6ym`, the account default). Live mode needs its
+   own: switch plans between the four Starter/Pro prices with proration,
+   cancel at period end with a reason, update payment method, invoice history,
+   email changes **off** (Stripe's email is not the customer row's key),
+   privacy URL `https://intentowl.com/privacy`, return URL
+   `https://intentowl.com/dashboard/settings`. The button only appears when
+   `STRIPE_SECRET_KEY` is set and the customer came through checkout.
 7. **Supabase redirect URLs**: Authentication → URL Configuration → add
    `https://intentowl.com/auth/callback`. Confirmation links point at whatever
    is configured here, and localhost will not work for a customer.
@@ -81,7 +94,9 @@ DNS and mail should be done first; the URLs below depend on them.
    FEEDBACK_SECRET        must match Vercel's exactly
    STACKEXCHANGE_KEY
    BLUESKY_IDENTIFIER / BLUESKY_APP_PASSWORD
-   OPS_SLACK_WEBHOOK_URL  optional but recommended
+   OPS_SLACK_WEBHOOK_URL  optional; alerts also go by email (below)
+   OPS_ALERT_EMAIL        where the watchdog emails problems; defaults to
+                          DIGEST_REPLY_TO
    ```
 
    Railway injects `PORT` itself; do not set it.

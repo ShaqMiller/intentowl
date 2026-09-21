@@ -15,7 +15,10 @@ import type { ReactNode } from "react";
 
 import { updateDelivery } from "../../../src/actions.ts";
 import { changePassword, signOutEverywhere } from "../../../src/auth-actions.ts";
+import { openBillingPortal } from "../../../src/billing-actions.ts";
+import { env } from "../../../src/env.ts";
 import { planInfo } from "../../../src/plans.ts";
+import { getStripeCustomerId } from "../../../src/queries.ts";
 import { authConfigured, requireCustomer } from "../../../src/session.ts";
 import { ActionButton, ActionForm } from "../form.tsx";
 import {
@@ -52,8 +55,23 @@ const COMMON_ZONES = [
   "Pacific/Auckland",
 ];
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const customer = await requireCustomer();
+  const params = await searchParams;
+  const stripeCustomerId = await getStripeCustomerId(customer.id);
+  // The portal needs both a Stripe customer (made at checkout) and the key.
+  // Accounts onboarded by hand have neither, and get the manual route.
+  const portal = env.STRIPE_SECRET_KEY !== undefined && stripeCustomerId !== null;
+  const billingProblem =
+    params["billing"] === "error"
+      ? "Stripe did not open the billing page just now. Try again in a minute, or reply to any digest."
+      : params["billing"] === "unavailable"
+        ? "This account is not billed through Stripe checkout, so there is no billing page to open. Reply to any digest to change plans."
+        : null;
   const zones = [...new Set([customer.tz, ...COMMON_ZONES])];
   const hour = String(customer.digestHour).padStart(2, "0");
 
@@ -196,12 +214,22 @@ export default async function SettingsPage() {
           {planInfo(customer.plan).name} runs up to{" "}
           {planInfo(customer.plan).searches}{" "}
           {planInfo(customer.plan).searches === 1 ? "search" : "searches"} at once.
-          To move between Starter and Pro or to cancel, reply to any digest and I
-          will do it for you. A self-serve billing portal is coming.
+          {portal
+            ? " Switch between Starter and Pro, update your card, see invoices or cancel on Stripe's billing page. A cancellation takes effect at the end of the period you have paid for."
+            : " To move between Starter and Pro or to cancel, reply to any digest and I will do it for you."}
         </p>
+        {billingProblem !== null && <p className="flash bad">{billingProblem}</p>}
       </div>
       <div className="setcard-foot">
         <span>Billed to {customer.email}.</span>
+        {portal && (
+          <form action={openBillingPortal}>
+            <button className="btn btn-primary btn-sm" type="submit">
+              <IconCard size={13} />
+              Manage billing
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ export default async function SearchesPage() {
           {running >= plan.searches && (
             <span>
               — pause one to start another
-              {plan.tier === "starter" && ", or reply to any digest to move to Pro"}
+              {plan.tier === "starter" && ", or switch to Pro under Settings → Billing"}
             </span>
           )}
         </p>
