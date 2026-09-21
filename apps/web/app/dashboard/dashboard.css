@@ -686,6 +686,21 @@ fieldset.field legend {
   flex: none;
 }
 
+/* The site-wide `.field input` rule (full width, padding, dark well, inset
+   shadow) is written for text inputs, and it also matched every checkbox in a
+   fieldset.field — stretching each one across its card and pushing the label
+   out of sight. Scoped twice so it beats that rule whichever file loads last. */
+.field .check input,
+.field .check input:hover:not(:disabled),
+.field .check input:focus {
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
 .check b {
   display: block;
   font-size: 13.5px;
