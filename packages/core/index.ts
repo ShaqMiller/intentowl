@@ -12,3 +12,4 @@ export * from "./digest/index.ts";
 export * from "./feedback.ts";
 export * from "./email.ts";
 export * from "./ops/alerts.ts";
+export * from "./onboarding/draft.ts";

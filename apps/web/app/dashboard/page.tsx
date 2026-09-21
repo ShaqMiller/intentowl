@@ -5,9 +5,10 @@
  * order. Two views of one thing that disagree is how you lose trust in both.
  */
 import { leadHeadline } from "@intentowl/core";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
+import { redirect } from "next/navigation";
 
-import { listLeads, listWatches, getStats } from "../../src/queries.ts";
+import { getProfile, listLeads, listWatches, getStats } from "../../src/queries.ts";
 import { requireCustomer } from "../../src/session.ts";
 import { IconExternal, IconInbox } from "./icons.tsx";
 import { RateLead } from "./rate.tsx";
@@ -48,11 +49,19 @@ export default async function LeadsPage({
   const watchParam = typeof params["watch"] === "string" ? params["watch"] : undefined;
   const intentParam = typeof params["intent"] === "string" ? params["intent"] : undefined;
 
-  const [watches, stats, leads] = await Promise.all([
+  const [watches, stats, leads, profile] = await Promise.all([
     listWatches(customer.id),
     getStats(customer.id),
     listLeads(customer.id, { watchId: watchParam, intent: intentParam, days: 7 }),
+    getProfile(customer.id),
   ]);
+
+  // Nothing to show until there is something to judge posts against and
+  // somewhere to look. Setup takes three minutes; an empty feed teaches nothing.
+  if (watches.length === 0 && (profile?.productDesc ?? null) === null) {
+    redirect("/dashboard/welcome" as Route);
+  }
+  const welcome = params["welcome"] === "1";
 
   const filtered = watchParam !== undefined || intentParam !== undefined;
 
@@ -67,6 +76,16 @@ export default async function LeadsPage({
           </p>
         </div>
       </header>
+
+      {welcome && (
+        <div className="notice welcome-notice" role="status">
+          <b>Your search is running.</b> The first poll looks back a week, so
+          posts usually start appearing within the hour. Your first digest
+          arrives tomorrow at {String(customer.digestHour).padStart(2, "0")}:00
+          {" "}{customer.tz}. Rate leads as they come in — it teaches the
+          classifier what you mean by a good one.
+        </div>
+      )}
 
       <div className="stats">
         <Stat label="Leads, 24h" value={stats.leads24h} />

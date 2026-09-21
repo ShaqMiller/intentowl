@@ -1014,3 +1014,73 @@ fieldset.field legend {
   color: var(--ink-soft);
   font-weight: 500;
 }
+
+/* --- setup wizard ---------------------------------------------------------- */
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* A real sequence, so it is numbered. The current step carries the accent
+   the sidebar uses for "you are here"; finished steps go quiet, not green. */
+.wizard-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  font-size: 13px;
+  color: var(--faint);
+}
+
+.wizard-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wizard-steps span {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.wizard-steps li.on {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.wizard-steps li.on span {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.wizard-steps li.done {
+  color: var(--muted);
+}
+
+.wizard-review {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.welcome-notice {
+  margin-bottom: 20px;
+}

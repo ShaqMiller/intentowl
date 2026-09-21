@@ -36,7 +36,7 @@ export interface WatchDefaults {
   active?: boolean;
 }
 
-const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> = [
+export const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> = [
   { key: "hn", label: "Hacker News", note: "Ask HN, Show HN, comments" },
   { key: "lobsters", label: "Lobsters", note: "small, developer-heavy" },
   {

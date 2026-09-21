@@ -35,6 +35,13 @@ const schema = z.object({
   SUPABASE_URL: z.url().optional(),
   /** Publishable key. Safe to expose; row-level security is what protects data. */
   SUPABASE_ANON_KEY: z.string().optional(),
+  /**
+   * Onboarding: Claude drafts a new customer's profile and first search. Optional
+   * — without it the setup wizard asks the customer to fill the form in by hand.
+   */
+  ANTHROPIC_API_KEY: z.string().optional(),
+  /** Only when the API key is org-scoped rather than workspace-scoped. */
+  ANTHROPIC_WORKSPACE_ID: z.string().optional(),
   /** Must match the worker's, which signs the links this app verifies. */
   FEEDBACK_SECRET: z.string().min(16).optional(),
 });

@@ -34,24 +34,26 @@ export default function ThanksPage() {
         biggest lever on quality.
       </p>
 
-      {form === undefined ? (
-        <>
-          <p>
-            <b>Reply to your Stripe confirmation email</b> with four things and I will set
-            you up by hand, usually the same day:
-          </p>
-          <ol>
-            <li>What your product does, in a paragraph.</li>
-            <li>Who your ideal customer is — and who is definitely not.</li>
-            <li>Your competitors by name.</li>
-            <li>Communities you already know your customers hang out in.</li>
-          </ol>
-        </>
-      ) : (
+      <ol>
+        <li>
+          <b>Set your password</b> with the email you just used at checkout.
+          We send a confirmation link to that address.
+        </li>
+        <li>
+          <b>Describe what you sell</b> in a few sentences. IntentOwl drafts
+          your profile and search terms from it, and you check every word before
+          anything runs. About three minutes.
+        </li>
+      </ol>
+      <p>
+        <a className="btn btn-primary" href="/login/claim">
+          Set your password
+        </a>
+      </p>
+      {form !== undefined && (
         <p>
-          <a className="btn btn-primary" href={form}>
-            Fill in the onboarding form
-          </a>
+          Prefer to hand it over? <a href={form}>Fill in the onboarding form</a>{" "}
+          and I will set it up for you.
         </p>
       )}
 
