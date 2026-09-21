@@ -10,7 +10,8 @@ import { redirect } from "next/navigation";
 
 import { getProfile, listLeads, listWatches, getStats } from "../../src/queries.ts";
 import { requireCustomer } from "../../src/session.ts";
-import { IconExternal, IconInbox } from "./icons.tsx";
+import { Owl } from "../owl.tsx";
+import { IconExternal } from "./icons.tsx";
 import { RateLead } from "./rate.tsx";
 
 export const metadata: Metadata = { title: "Leads" };
@@ -19,12 +20,18 @@ export const metadata: Metadata = { title: "Leads" };
 // a slow one.
 export const dynamic = "force-dynamic";
 
-const INTENTS: Array<{ key: string; label: string }> = [
-  { key: "buying_intent", label: "Buying intent" },
-  { key: "competitor_switch", label: "Leaving a competitor" },
-  { key: "pain_point", label: "Describing the pain" },
-  { key: "research", label: "Researching" },
+// `tone` picks the chip colour: lilac for asking, sky for pain, honey for
+// weighing options, plain for everything quieter.
+const INTENTS: Array<{ key: string; label: string; tone: string }> = [
+  { key: "buying_intent", label: "Buying intent", tone: "intent-tool" },
+  { key: "competitor_switch", label: "Leaving a competitor", tone: "intent-compare" },
+  { key: "pain_point", label: "Describing the pain", tone: "intent-pain" },
+  { key: "research", label: "Researching", tone: "intent-plain" },
 ];
+
+function intentTone(key: string): string {
+  return INTENTS.find((i) => i.key === key)?.tone ?? "intent-plain";
+}
 
 function intentLabel(key: string): string {
   return INTENTS.find((i) => i.key === key)?.label ?? key.replace(/_/g, " ");
@@ -88,20 +95,21 @@ export default async function LeadsPage({
       )}
 
       <div className="stats">
-        <Stat label="Leads, 24h" value={stats.leads24h} />
+        <Stat label="Leads, 24h" value={stats.leads24h} lead />
         <Stat label="Leads, 7d" value={stats.leads7d} />
         <Stat label="Posts read, 24h" value={stats.scanned24h} />
         <Stat label="Active searches" value={stats.activeWatches} />
       </div>
 
       <div className="filters">
-        <FilterLink label="All searches" href="/dashboard" on={!filtered} />
+        <FilterLink label="All searches" href="/dashboard" on={!filtered} kind="filter-watch" />
         {watches.map((w) => (
           <FilterLink
             key={w.id}
             label={w.name}
             href={`/dashboard?watch=${w.id}`}
             on={watchParam === w.id}
+            kind="filter-watch"
           />
         ))}
         <span className="filter-divider" aria-hidden="true" />
@@ -111,13 +119,14 @@ export default async function LeadsPage({
             label={i.label}
             href={`/dashboard?intent=${i.key}`}
             on={intentParam === i.key}
+            kind={`filter-intent ${i.tone}`}
           />
         ))}
       </div>
 
       {leads.length === 0 ? (
         <div className="empty">
-          <IconInbox size={28} />
+          <Owl mood="sleepy" size={96} />
           <h3>Nothing here yet.</h3>
           <p>
             {watches.length === 0
@@ -134,11 +143,16 @@ export default async function LeadsPage({
         <ol className="feed">
           {leads.map((lead) => (
             <li className="feed-item" key={lead.itemId}>
-              <div className="score">{lead.score}</div>
+              <div className={lead.score >= 90 ? "score" : "score soft"}>
+                <b>{lead.score}</b>
+                <span>Score</span>
+              </div>
               <div className="feed-body">
                 <p className="feed-meta">
-                  <span className="chip">{intentLabel(lead.intent)}</span>
-                  <span>{lead.venue ?? lead.source}</span>
+                  <span className={`intent ${intentTone(lead.intent)}`}>
+                    {intentLabel(lead.intent)}
+                  </span>
+                  <span className="feed-venue">{lead.venue ?? lead.source}</span>
                   <span>·</span>
                   <span>{lead.author ?? "unknown"}</span>
                   <span>·</span>
@@ -151,12 +165,20 @@ export default async function LeadsPage({
                     {leadHeadline(lead)}
                   </a>
                 </h3>
-                {lead.reason !== null && <p className="feed-why">{lead.reason}</p>}
-                {lead.replyAngle !== null && (
-                  <p className="feed-angle">
-                    <b>Angle</b>
-                    {lead.replyAngle}
+                {lead.reason !== null && (
+                  <p className="feed-why">
+                    <b>Why it matters:</b> {lead.reason}
                   </p>
+                )}
+                {lead.replyAngle !== null && (
+                  <div className="feed-angle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+                    </svg>
+                    <p>
+                      <b>Angle:</b> {lead.replyAngle}
+                    </p>
+                  </div>
                 )}
                 <div className="feed-actions">
                   <a
@@ -165,8 +187,8 @@ export default async function LeadsPage({
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <IconExternal size={13} />
                     Open thread
+                    <IconExternal size={13} />
                   </a>
                   <RateLead itemId={lead.itemId} initial={lead.feedback} />
                 </div>
@@ -179,11 +201,11 @@ export default async function LeadsPage({
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value, lead = false }: { label: string; value: number; lead?: boolean }) {
   return (
-    <div className="stat">
-      <p className="stat-value">{value.toLocaleString()}</p>
+    <div className={lead ? "stat stat-lead" : "stat"}>
       <p className="stat-label">{label}</p>
+      <p className="stat-value">{value.toLocaleString()}</p>
     </div>
   );
 }
@@ -192,13 +214,15 @@ function FilterLink({
   label,
   href,
   on,
+  kind,
 }: {
   label: string;
   href: string;
   on: boolean;
+  kind: string;
 }) {
   return (
-    <a className={on ? "filter on" : "filter"} href={href}>
+    <a className={on ? `filter ${kind} on` : `filter ${kind}`} href={href} aria-current={on ? "page" : undefined}>
       {label}
     </a>
   );

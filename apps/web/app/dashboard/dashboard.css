@@ -7,12 +7,13 @@
  */
 
 /*
- * TEMPORARY BRIDGE — remove in the Phase 2 dashboard restyle.
+ * TEMPORARY BRIDGE — remove once the remaining dashboard pages are restyled.
  *
  * The site moved to the light "Morning Paper" tokens in globals.css. The rules
  * below still name the old dark tokens, so they are mapped onto the new
  * palette here, scoped to the dashboard shell, to keep it legible until it is
- * restyled properly. Nothing outside the dashboard reads these names.
+ * restyled properly. The shell and Leads page no longer use them; Searches,
+ * What you sell, Settings and the wizard still do.
  */
 .shell {
   --ground: var(--paper);
@@ -27,10 +28,13 @@
   --accent-wash: var(--honey-wash);
 }
 
+/* --- shell ---------------------------------------------------------------- */
+
 .shell {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-columns: 264px minmax(0, 1fr);
   min-height: 100vh;
+  background: var(--paper);
 }
 
 @media (max-width: 860px) {
@@ -40,79 +44,188 @@
 }
 
 .side {
-  border-right: 1px solid var(--line);
-  background: var(--surface);
-  padding: 18px 14px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 28px;
+  padding: 24px 18px;
+  background: var(--card);
+  border-right: 2px solid var(--ink);
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
 }
 
 @media (max-width: 860px) {
   .side {
     position: static;
     height: auto;
+    gap: 18px;
+    border-right: 0;
+    border-bottom: 2px solid var(--ink);
   }
 }
 
 .side-brand {
-  padding: 4px 8px;
+  padding: 0 8px;
+  font-size: 22px;
 }
 
 .side-nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
 .side-link {
-  display: block;
-  padding: 8px 10px;
-  border-radius: 7px;
-  font-size: 14px;
-  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-soft);
   text-decoration: none;
-  transition: background 0.13s ease, color 0.13s ease;
+  transition: background 80ms ease;
+}
+
+.side-link svg {
+  flex: none;
 }
 
 .side-link:hover {
-  background: var(--raised);
-  color: var(--ink-soft);
+  background: var(--sunken);
+  color: var(--ink);
 }
 
-/* The rail is the only accent in the sidebar, so the current section reads at
-   a glance instead of having to be hunted for. */
 .side-link.active {
-  background: var(--raised);
+  background: var(--honey-wash);
+  border-color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
   color: var(--ink);
+  font-weight: 800;
+}
+
+@media (max-width: 860px) {
+  .side-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .side-link {
+    padding: 8px 11px;
+    font-size: 14px;
+  }
+}
+
+.side-plan-card {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--sunken);
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+}
+
+.side-plan {
+  font-family: var(--mono);
+  font-size: 11px;
   font-weight: 600;
-  box-shadow: inset 2px 0 0 var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.side-plan-usage {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.side-meter {
+  height: 10px;
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.side-meter span {
+  display: block;
+  height: 100%;
+  background: var(--honey);
+}
+
+.side-upgrade {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--honey-deep);
 }
 
 .side-foot {
-  margin-top: auto;
-  padding: 12px 10px 4px;
-  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.side-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sky);
+  border: 2px solid var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.side-who {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .side-email {
-  font-size: 12.5px;
-  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.side-plan {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--faint);
-  margin-top: 3px;
+.side-signout button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.side-signout button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* On a phone the sidebar stacks above the feed; the plan card would push the
+   leads a full screen down. Searches still shows the same usage line. */
+@media (max-width: 860px) {
+  .side-plan-card {
+    display: none;
+  }
 }
 
 .main {
@@ -120,29 +233,37 @@
 }
 
 .impersonation {
-  background: var(--accent-wash);
-  border-bottom: 1px solid rgba(240, 196, 129, 0.24);
+  background: var(--honey-wash);
+  border-bottom: 2px solid var(--ink);
   color: var(--ink-soft);
   font-size: 13px;
-  padding: 9px 28px;
+  padding: 9px 40px;
 }
 
 .impersonation b {
-  color: var(--accent);
+  color: var(--honey-deep);
+}
+
+@media (max-width: 600px) {
+  .impersonation {
+    padding: 9px 16px;
+  }
 }
 
 /*
- * The leads feed fills the window.
- *
- * It was capped at 1000px, which left a wide screen mostly empty beside a
- * column of leads. Reading width is already protected where it matters —
- * .feed-why and .feed-angle cap themselves in `ch` — so the container can
- * spread without the prose becoming unreadable. Cards and stat tiles use the
- * extra room, which is what the space is for.
+ * The leads feed fills the window. Reading width is protected where it
+ * matters (.feed-why and .feed-angle cap themselves in ch), so the container
+ * can spread without the prose becoming unreadable.
  */
 .pane {
-  padding: 30px 32px 72px;
+  padding: 32px 40px 72px;
   max-width: 1600px;
+}
+
+@media (max-width: 600px) {
+  .pane {
+    padding: 24px 16px 56px;
+  }
 }
 
 /* Forms are the exception. A text input stretched across a 27-inch monitor is
@@ -153,29 +274,34 @@
 
 .pane-head {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 26px;
+  margin-bottom: 24px;
 }
 
 .pane-head h1 {
-  font-size: 26px;
+  margin: 0;
+  font-family: var(--display);
+  font-size: 36px;
+  font-weight: 800;
   letter-spacing: -0.025em;
+  line-height: 1.1;
 }
 
 .pane-sub {
-  margin-top: 7px;
-  font-size: 14.5px;
-  color: var(--muted);
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--ink-soft);
   max-width: 62ch;
   line-height: 1.55;
 }
 
 .crumb {
-  font-size: 12.5px;
-  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
   margin-bottom: 8px;
 }
 
@@ -192,37 +318,64 @@
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
   margin-bottom: 24px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
   .stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
 }
 
 .stat {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* The number people come for gets the honey. */
+.stat-lead {
+  background: var(--honey);
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat-lead .stat-label {
+  color: var(--ink);
 }
 
 .stat-value {
   font-family: var(--display);
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: var(--faint);
-  margin-top: 3px;
+@media (max-width: 600px) {
+  .stat {
+    padding: 14px 16px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+  }
 }
 
 /* --- filters -------------------------------------------------------------- */
@@ -231,39 +384,66 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 22px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--line);
+  gap: 10px;
+  margin-bottom: 24px;
 }
 
 .filter {
-  font-size: 13px;
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border: 2px solid var(--ink);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
   text-decoration: none;
-  padding: 5px 11px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  transition: border-color 0.13s ease, color 0.13s ease;
+  white-space: nowrap;
+  transition: transform 80ms ease;
 }
 
 .filter:hover {
-  border-color: var(--line-strong);
-  color: var(--ink-soft);
+  transform: translateY(-1px);
+}
+
+/* Searches are places, so they read as buttons; intents are kinds, so they
+   read as the same coloured chips the lead cards wear. */
+.filter-watch {
+  border-radius: 12px;
+}
+
+.filter-intent {
+  border-radius: 999px;
+}
+
+.filter-intent.intent-tool {
+  background: var(--lilac);
+}
+
+.filter-intent.intent-pain {
+  background: var(--sky);
+}
+
+.filter-intent.intent-compare {
+  background: var(--honey-wash);
 }
 
 .filter.on {
-  color: var(--ground);
   background: var(--ink);
-  border-color: var(--ink);
-  font-weight: 600;
+  color: var(--paper);
+  font-weight: 800;
 }
 
 .filter-divider {
-  width: 1px;
-  height: 18px;
-  background: var(--line);
-  margin: 0 4px;
+  width: 2px;
+  height: 26px;
+  background: var(--hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter:hover {
+    transform: none;
+  }
 }
 
 /* --- leads feed ----------------------------------------------------------- */
@@ -272,61 +452,101 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .feed-item {
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  gap: 16px;
-  padding: 20px 16px;
-  margin: 0 -16px;
-  border-radius: 10px;
-  border-bottom: 1px solid var(--line);
-  transition: background 0.13s ease;
+  display: flex;
+  gap: 20px;
+  padding: 22px 24px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
-/* The whole row is a target — its title opens the thread — so it should say so
-   on hover rather than leaving the link to announce itself alone. */
-.feed-item:hover {
-  background: rgba(255, 255, 255, 0.022);
+@media (max-width: 600px) {
+  .feed-item {
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+  }
+}
+
+.score {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--honey);
+  border: 2px solid var(--ink);
+}
+
+.score.soft {
+  background: var(--honey-wash);
+}
+
+.score b {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.score span {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .feed-body {
+  flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .feed-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
+  gap: 6px 10px;
   font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--faint);
-  margin-bottom: 7px;
-}
-
-.chip {
-  color: var(--accent);
-  border: 1px solid rgba(240, 196, 129, 0.28);
-  background: var(--accent-wash);
-  border-radius: 999px;
-  padding: 2px 8px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-size: 10px;
-}
-
-.feed-watch {
+  font-size: 13px;
   color: var(--muted);
 }
 
-.feed-title {
-  font-size: 16.5px;
+.feed-meta .intent {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 10px;
+}
+
+/* "Researching" has no colour of its own in the palette: plain card. */
+.intent-plain {
+  background: var(--card);
+}
+
+.feed-venue {
   font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: -0.015em;
-  margin-bottom: 7px;
+  color: var(--ink);
+}
+
+.feed-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .feed-title a {
@@ -334,103 +554,168 @@
 }
 
 .feed-title a:hover {
+  color: var(--honey-deep);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .feed-why {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: 15px;
   line-height: 1.55;
+  color: var(--ink-soft);
   max-width: 76ch;
+}
+
+.feed-why b {
+  color: var(--ink);
 }
 
 .feed-angle {
-  margin-top: 10px;
-  padding: 10px 13px;
-  font-size: 13.5px;
-  color: var(--ink-soft);
-  line-height: 1.55;
-  background: rgba(255, 255, 255, 0.022);
-  border-left: 2px solid var(--accent-dim);
-  border-radius: 0 6px 6px 0;
-  max-width: 76ch;
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--honey-wash);
+  border: 1.5px dashed var(--honey-deep);
+  border-radius: 14px;
+  max-width: calc(76ch + 64px);
 }
 
-.feed-angle b {
-  display: block;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent);
-  font-weight: 500;
-  margin-bottom: 3px;
+.feed-angle svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--honey-deep);
+}
+
+.feed-angle p {
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .feed-actions {
-  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding-top: 2px;
 }
 
-/* Rating sits beside "Open thread" as a pair of quiet buttons. A pressed one
-   takes a semantic tint — green for good, red for not — never the accent,
-   which stays reserved for focus and the one scramble word. */
+/* Rating sits at the far end of the action row: Not for me in berry, Good
+   lead in leaf. Once rated, a pill records the choice in the same colour. */
 .rate {
+  margin-left: auto;
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.feed-actions .btn-sm {
+  padding: 9px 14px;
+  font-size: 14px;
+  border-radius: 11px;
   gap: 8px;
 }
 
-.rate-btn {
-  color: var(--ink-soft);
+.feed-actions .rate-btn {
+  gap: 6px;
 }
 
-.rate-btn.is-up {
-  color: #9adbb0;
-  border-color: rgba(154, 219, 176, 0.38);
-  background: rgba(154, 219, 176, 0.07);
+.rate-down {
+  --shade: var(--berry);
+  color: var(--berry);
+  border-color: var(--berry);
 }
 
-.rate-btn.is-down {
-  color: #efa69c;
-  border-color: rgba(239, 166, 156, 0.38);
-  background: rgba(239, 166, 156, 0.07);
+.rate-up {
+  --shade: var(--leaf);
+  background: var(--leaf-wash);
+  color: var(--leaf);
+  border-color: var(--leaf);
+  font-weight: 800;
 }
 
 .rate-btn:disabled {
   cursor: progress;
 }
 
-.rate-note {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--faint);
+.rated {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.rated-up {
+  background: var(--leaf-wash);
+  color: var(--leaf);
+}
+
+.rated-down {
+  background: var(--berry-wash);
+  color: var(--berry);
+}
+
+.rate-undo {
+  padding: 8px;
+  background: none;
+  border: 0;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.rate-undo:hover {
+  color: var(--ink);
+}
+
+.rate-undo:disabled {
+  cursor: progress;
+}
+
+@media (max-width: 600px) {
+  .rate {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
 }
 
 /* --- empty state ---------------------------------------------------------- */
 
 .empty {
-  border: 1px dashed var(--line-strong);
-  border-radius: 12px;
-  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 44px 28px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
   text-align: center;
 }
 
+.empty svg {
+  margin-bottom: 14px;
+}
+
 .empty h3 {
-  font-size: 18px;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
   margin-bottom: 8px;
 }
 
 .empty p {
-  font-size: 14.5px;
-  color: var(--muted);
+  font-size: 15px;
+  color: var(--ink-soft);
   max-width: 54ch;
-  margin: 0 auto 18px;
+  margin: 0 auto 20px;
   line-height: 1.6;
 }
 
@@ -984,29 +1269,7 @@ fieldset.field legend {
 
 /* --- icons in existing furniture ------------------------------------------ */
 
-.side-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.side-link svg { opacity: 0.65; flex: none; }
-.side-link.active svg { opacity: 1; color: var(--accent); }
-.side-link:hover svg { opacity: 1; }
-
-.side-signout button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  text-decoration: none;
-}
-
 .btn svg { flex: none; opacity: 0.85; }
-
-.empty svg {
-  color: var(--faint);
-  margin-bottom: 14px;
-}
 
 .source-chip {
   display: inline-flex;
