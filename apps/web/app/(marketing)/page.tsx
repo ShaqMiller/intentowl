@@ -18,6 +18,7 @@ import { getPublicActivity, type PublicActivity } from "../../src/queries.ts";
 import { Owl } from "../owl.tsx";
 import { PlanCards } from "./plans.tsx";
 import { ScrambleWord } from "./scramble-word.tsx";
+import { WatchingOwl } from "./watching-owl.tsx";
 
 export const metadata: Metadata = {
   title: "Never miss someone asking for what you built",
@@ -182,7 +183,7 @@ export default async function LandingPage() {
           </div>
 
           <div className="hero-art" id="digest">
-            <Owl mood="watching" size={110} className="hero-owl" />
+            <WatchingOwl size={110} className="hero-owl" />
             <div className="mail">
               <div className="mail-head">
                 <p className="mail-from">Inbox · 07:00 · IntentOwl daily digest</p>

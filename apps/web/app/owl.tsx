@@ -68,10 +68,13 @@ function Watching() {
       <path d="M27 70 Q34 86 30 100 M93 70 Q86 86 90 100" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />
       <circle cx="43" cy="56" r="16" fill="#fff" stroke={INK} strokeWidth="4" />
       <circle cx="77" cy="56" r="16" fill="#fff" stroke={INK} strokeWidth="4" />
-      <circle cx="46" cy="58" r="6.5" fill={INK} />
-      <circle cx="80" cy="58" r="6.5" fill={INK} />
-      <circle cx="48" cy="55.5" r="2" fill="#fff" />
-      <circle cx="82" cy="55.5" r="2" fill="#fff" />
+      {/* Grouped so WatchingOwl can point them at the cursor. */}
+      <g className="owl-pupils">
+        <circle cx="46" cy="58" r="6.5" fill={INK} />
+        <circle cx="80" cy="58" r="6.5" fill={INK} />
+        <circle cx="48" cy="55.5" r="2" fill="#fff" />
+        <circle cx="82" cy="55.5" r="2" fill="#fff" />
+      </g>
       <path d="M54 72 L66 72 L60 81 Z" fill={EMBER} stroke={INK} strokeWidth="3" strokeLinejoin="round" />
     </>
   );

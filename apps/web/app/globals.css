@@ -508,6 +508,15 @@ p {
   position: absolute;
   top: 0;
   right: 56px;
+  display: block;
+  line-height: 0;
+}
+
+/* Otto's pupils follow the pointer (WatchingOwl sets --px/--py in viewBox
+   units). Unset, they sit where the drawing puts them. */
+.owl-follow .owl-pupils {
+  transform: translate(calc(var(--px, 0) * 1px), calc(var(--py, 0) * 1px));
+  transition: transform 120ms ease-out;
 }
 
 .mail {
