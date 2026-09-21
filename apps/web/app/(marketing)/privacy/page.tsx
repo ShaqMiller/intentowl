@@ -18,7 +18,7 @@ const CONTACT = "tools@intentowl.com";
 
 export default function PrivacyPage() {
   return (
-    <main className="prose">
+    <main className="prose legal">
       <p className="eyebrow">Last updated 14 September 2026</p>
       <h1>Privacy policy</h1>
       <p>

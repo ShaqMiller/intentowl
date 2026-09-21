@@ -21,7 +21,7 @@ export default function SignupPage() {
   const ready = Object.values(checkout).some((links) => links.monthly !== undefined);
 
   return (
-    <main className="section" style={{ borderTop: 0 }}>
+    <main className="section signup">
       <div className="page">
         <div className="section-head center">
           <p className="eyebrow">Sign up</p>
@@ -34,10 +34,7 @@ export default function SignupPage() {
         </div>
 
         {!ready && (
-          <div
-            className="notice"
-            style={{ maxWidth: 560, margin: "0 auto 26px" }}
-          >
+          <div className="notice signup-notice">
             <b>Checkout is opening shortly.</b> The plans below are final; the
             payment links are being switched on. Reply to any conversation you
             have already started with me and I will onboard you manually in the
@@ -47,7 +44,7 @@ export default function SignupPage() {
 
         <PlanCards />
 
-        <p className="plan-note" style={{ marginTop: 10 }}>
+        <p className="plan-note signup-login">
           Already a customer? <a href="/login">Log in</a>.
         </p>
       </div>

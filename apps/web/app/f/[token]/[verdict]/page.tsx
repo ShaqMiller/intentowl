@@ -24,6 +24,7 @@ import { redirect } from "next/navigation";
 
 import { env } from "../../../../src/env.ts";
 import { loadFeedbackTarget, saveFeedback } from "../../../../src/feedback.ts";
+import { Owl, OwlLogo } from "../../../owl.tsx";
 
 export const metadata: Metadata = {
   title: "Rate this lead",
@@ -56,7 +57,12 @@ export default async function FeedbackPage({
   const state = await resolve(token, verdict);
 
   return (
-    <main className="auth">
+    <main className="auth feedback">
+      {/* No site nav on this page, so the wordmark says whose link it was. */}
+      <a className="brand feedback-brand" href="/">
+        <OwlLogo size={32} />
+        IntentOwl
+      </a>
       <div className="auth-card">{render(state, recorded === "1")}</div>
     </main>
   );
@@ -116,9 +122,10 @@ function render(state: State, recorded: boolean) {
     if (recorded && state.current === state.verdict) {
       return (
         <>
+          <Owl mood={good ? "happy" : "sleepy"} size={96} className="feedback-owl" />
           <h1>{good ? "Noted — more like that." : "Noted — fewer like that."}</h1>
-          <p className="auth-lede">“{state.headline}”</p>
-          <div className="notice">
+          <p className="feedback-quote">“{state.headline}”</p>
+          <div className={good ? "notice notice-leaf" : "notice notice-berry"}>
             {good
               ? "This one goes into the examples your classifier learns from, so leads like it score higher."
               : "This one goes into the examples your classifier learns from as a miss, so posts like it score lower."}{" "}
@@ -134,8 +141,9 @@ function render(state: State, recorded: boolean) {
 
     return (
       <>
+        <Owl mood={good ? "happy" : "sleepy"} size={96} className="feedback-owl" />
         <h1>{good ? "Mark this as a good lead?" : "Mark this as not for you?"}</h1>
-        <p className="auth-lede">“{state.headline}”</p>
+        <p className="feedback-quote">“{state.headline}”</p>
         {state.current !== null && state.current !== state.verdict && (
           <div className="notice">
             You marked this <b>{LABEL[state.current]}</b> before. Confirming replaces that.
@@ -149,7 +157,7 @@ function render(state: State, recorded: boolean) {
         <form action={confirmFeedback}>
           <input type="hidden" name="token" value={state.token} />
           <input type="hidden" name="verdict" value={state.verdict} />
-          <button className="btn btn-primary" type="submit">
+          <button className={good ? "btn btn-leaf" : "btn btn-berry"} type="submit">
             {good ? "Yes, good lead" : "Yes, not for me"}
           </button>
         </form>
