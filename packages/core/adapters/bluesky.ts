@@ -59,6 +59,14 @@ const MAX_PAGES_PER_TERM = 2;
 const COLD_START_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
+ * Re-mint the session before Bluesky expires it. Access tokens live about two
+ * hours, and an expired one comes back as HTTP 400 `ExpiredToken` rather than
+ * 401 — so waiting for the failure depends on recognising an error code in a
+ * body. Renewing at 90 minutes means the normal path never meets it.
+ */
+const SESSION_MAX_AGE_MS = 90 * 60 * 1000;
+
+/**
  * Bluesky publishes no hard public rate limit for reads, but the documented
  * write budget is 3000/hour per account. One request/second is well inside
  * anything plausible and keeps a poll polite.
@@ -120,6 +128,7 @@ export function createBlueskyAdapter(
    * refresh dance is two code paths to get wrong.
    */
   let accessJwt: string | null = null;
+  let mintedAt = 0;
 
   async function authenticate(): Promise<string> {
     await bucket.take();
@@ -137,6 +146,7 @@ export function createBlueskyAdapter(
       session,
     );
     accessJwt = result.accessJwt;
+    mintedAt = Date.now();
     return result.accessJwt;
   }
 
@@ -173,11 +183,21 @@ export function createBlueskyAdapter(
       // legitimately need a fresh token after this one's expires.
       let reauthenticated = false;
 
-      let token = accessJwt ?? (await authenticate());
-      calls += accessJwt === null ? 1 : 0;
+      let token: string;
+      if (accessJwt !== null && Date.now() - mintedAt < SESSION_MAX_AGE_MS) {
+        token = accessJwt;
+      } else {
+        token = await authenticate();
+        calls += 1;
+      }
+
+      let searched = 0;
+      let rejectedOutright = 0;
+      let lastRejection = "";
 
       for (const term of watch.includeTerms.slice(0, MAX_TERMS_PER_POLL)) {
         let pageCursor: string | undefined;
+        searched += 1;
 
         for (let page = 0; page < MAX_PAGES_PER_TERM; page += 1) {
           await bucket.take();
@@ -202,8 +222,9 @@ export function createBlueskyAdapter(
               searchResponse,
             );
           } catch (error) {
-            // An expired token looks like a 401. Re-mint once per poll and
-            // retry the page; a second 401 falls through and fails the job.
+            // An expired or invalid session (400 ExpiredToken, or a 401). Re-mint
+            // once per poll and retry the page; if the fresh session is refused
+            // too, it falls through and fails the job.
             if (isUnauthorized(error) && accessJwt !== null && !reauthenticated) {
               reauthenticated = true;
               accessJwt = null;
@@ -213,11 +234,16 @@ export function createBlueskyAdapter(
               continue;
             }
 
-            // A plain rejection — a 400 — is about this request, not the
-            // source. Throwing it aborted the whole poll, so one bad page
-            // silenced every term: 92 of 101 Bluesky polls failed between 12
-            // and 13 September while every term, queried on its own, returned
-            // 200. Keep what this term already found, say so, move on.
+            // A plain rejection is about this request, not the source: keep
+            // what this term already found, say so, move on. Only plain
+            // rejections, though, and never all of them — see the check after
+            // the loop.
+            //
+            // History worth keeping: the 92 failed polls on 12-13 September
+            // were blamed on "one bad page" and fixed with this tolerance. They
+            // were expired sessions reported as 400. The tolerance turned a
+            // loud failure into a silent one, and the source returned nothing
+            // from 15 to 21 September while every poll "succeeded".
             //
             // Everything else still propagates on purpose. A SchemaError means
             // the payload contract changed and must fail loudly; a rate limit
@@ -236,6 +262,8 @@ export function createBlueskyAdapter(
                 `term "${term}" page ${page + 1} was rejected (${error.message}); ` +
                   `kept ${page === 0 ? "nothing" : "the earlier pages"} for this term`,
               );
+              if (page === 0) rejectedOutright += 1;
+              lastRejection = error.message;
               break;
             }
             throw error;
@@ -273,6 +301,17 @@ export function createBlueskyAdapter(
         }
       }
 
+      // One rejected term is a bad query. Every term rejected is the source,
+      // the session or the account — and must fail the job, not return an
+      // empty poll that looks exactly like a quiet day.
+      if (searched > 0 && rejectedOutright === searched) {
+        throw new AdapterError(
+          SOURCE,
+          `every Bluesky search this poll was rejected (${rejectedOutright} of ${searched}); ` +
+            `last: ${lastRejection}`,
+        );
+      }
+
       return {
         items,
         nextCursor:
@@ -284,9 +323,17 @@ export function createBlueskyAdapter(
   };
 }
 
+/**
+ * A session Bluesky will not accept. Not only 401: the AppView reports an
+ * expired or malformed access token as 400 with `ExpiredToken` or
+ * `InvalidToken` in the body, which `fetchJson` now carries in the message.
+ */
 function isUnauthorized(error: unknown): boolean {
   if (error instanceof RateLimitedError) return false;
-  return error instanceof AdapterError && /\b401\b/.test(error.message);
+  return (
+    error instanceof AdapterError &&
+    /\b401\b|ExpiredToken|InvalidToken|AuthRequired|AuthMissing/.test(error.message)
+  );
 }
 
 /**

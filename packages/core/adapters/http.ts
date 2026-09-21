@@ -110,9 +110,14 @@ export async function fetchJson<T>(
   }
 
   if (!response.ok) {
+    // The status alone is not enough: providers put the reason in the body.
+    // Bluesky reports an expired session as `400 {"error":"ExpiredToken"}`,
+    // and with only "returned 400" in the message that read as a bad search
+    // term for a week while every poll came back empty.
+    const detail = await readErrorDetail(response);
     throw new AdapterError(
       source,
-      `${redactUrl(url)} returned ${response.status} ${response.statusText}`,
+      `${redactUrl(url)} returned ${response.status} ${response.statusText}${detail}`,
     );
   }
 
@@ -155,6 +160,20 @@ function readRetryAfter(response: Response): number {
 }
 
 /** Keep query strings out of error messages — they can carry tokens. */
+/**
+ * The first 200 characters of an error body, prefixed for appending to a
+ * message. Error bodies carry codes and reasons, not credentials; the request
+ * URL, which can carry a token, is redacted separately.
+ */
+async function readErrorDetail(response: Response): Promise<string> {
+  try {
+    const text = (await response.text()).replace(/\s+/g, " ").trim();
+    return text === "" ? "" : `: ${text.slice(0, 200)}`;
+  } catch {
+    return "";
+  }
+}
+
 function redactUrl(url: string): string {
   try {
     const parsed = new URL(url);

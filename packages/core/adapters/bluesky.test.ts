@@ -8,7 +8,7 @@
  */
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { createBlueskyAdapter } from "./bluesky.ts";
 import { TokenBucket } from "./rate-limit.ts";
@@ -265,6 +265,71 @@ describe("bluesky rejected requests", () => {
 
     expect(result.items).toHaveLength(100);
     expect(result.warnings?.some((w) => w.includes("page 2"))).toBe(true);
+  });
+
+  it("renews a session Bluesky reports as expired with a 400", async () => {
+    // What the live AppView actually sends for an expired access token. The
+    // adapter only recognised 401, so every term was "rejected" and the
+    // source returned nothing from 15 to 21 September.
+    const calls = { n: 0 };
+    let searches = 0;
+    server.use(
+      sessionHandler(calls),
+      http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", () => {
+        searches += 1;
+        if (searches === 1) {
+          return HttpResponse.json(
+            { error: "ExpiredToken", message: "Token has expired" },
+            { status: 400 },
+          );
+        }
+        return HttpResponse.json({ posts: [postFixture()] });
+      }),
+    );
+
+    const result = await adapter().fetchNew(watch(), null);
+
+    expect(result.items).toHaveLength(1);
+    expect(calls.n).toBe(2);
+    expect(result.warnings).toBeUndefined();
+  });
+
+  it("renews a session older than 90 minutes before searching", async () => {
+    const calls = { n: 0 };
+    server.use(
+      sessionHandler(calls),
+      http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", () =>
+        HttpResponse.json({ posts: [postFixture()] }),
+      ),
+    );
+
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const bsky = adapter();
+      await bsky.fetchNew(watch(), null);
+      await bsky.fetchNew(watch(), null);
+      expect(calls.n).toBe(1);
+
+      vi.setSystemTime(Date.now() + 91 * 60 * 1000);
+      await bsky.fetchNew(watch(), null);
+      expect(calls.n).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("fails the poll when every term is rejected", async () => {
+    const calls = { n: 0 };
+    server.use(
+      sessionHandler(calls),
+      http.get("https://bsky.social/xrpc/app.bsky.feed.searchPosts", () =>
+        HttpResponse.json({ error: "BadQueryString" }, { status: 400 }),
+      ),
+    );
+
+    await expect(
+      adapter().fetchNew(watch({ includeTerms: ["a", "b"] }), null),
+    ).rejects.toThrow(/every Bluesky search this poll was rejected \(2 of 2\).*BadQueryString/);
   });
 
   it("still fails loudly when the credentials are wrong", async () => {
