@@ -184,6 +184,11 @@ export async function registerPoll(
   await boss.createQueue(POLL_QUEUE, POLL_QUEUE_OPTIONS);
 
   await boss.work<PollJobData>(POLL_QUEUE, { batchSize: 1 }, async (jobs) => {
+    // Returned so pg-boss stores it as the job's output. Fetched counts and
+    // warnings were only ever logged, which is how a source that returned
+    // nothing for a week looked like a column of successful jobs. The
+    // watchdog reads these to tell a quiet source from a broken one.
+    let last: PollOutcome | undefined;
     for (const job of jobs) {
       const outcome = await runPoll({
         db,
@@ -200,7 +205,9 @@ export async function registerPoll(
           singletonKey: pollSingletonKey(job.data),
         });
       }
+      last = outcome;
     }
+    return last;
   });
 
   logger.info({ queue: POLL_QUEUE }, "poll worker registered");

@@ -362,3 +362,20 @@ export const apiUsage = pgTable(
     index("api_usage_day_idx").on(t.day),
   ],
 );
+
+/**
+ * Operator alerts the watchdog has raised, so a problem is emailed once when
+ * it starts, at most daily while it lasts, and once when it clears — rather
+ * than every half hour, or once and then never again.
+ */
+export const opsAlerts = pgTable("ops_alerts", {
+  /** e.g. `source_silent:bluesky`, `job_failed:poll`. */
+  key: text("key").primaryKey(),
+  level: text("level").notNull(),
+  title: text("title").notNull(),
+  detail: text("detail"),
+  firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull(),
+  lastNotifiedAt: timestamp("last_notified_at", { withTimezone: true }),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+});

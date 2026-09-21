@@ -55,6 +55,11 @@ const schema = z.object({
   THREADS_ACCESS_TOKEN: z.string().optional(),
   OPS_SLACK_WEBHOOK_URL: z.url().optional(),
   /**
+   * Where the watchdog emails operator alerts. Defaults to DIGEST_REPLY_TO,
+   * the inbox that already receives customer replies.
+   */
+  OPS_ALERT_EMAIL: z.string().optional(),
+  /**
    * HMAC key for the feedback links in the digest. Optional: without it the
    * digest simply renders no thumbs, rather than rendering links that cannot
    * be verified. Must match the web app, which receives the clicks.

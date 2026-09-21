@@ -35,6 +35,7 @@ import { REFRESH_QUEUE, REFRESH_QUEUE_OPTIONS } from "./refresh-engagement.ts";
 import { RETENTION_QUEUE, RETENTION_QUEUE_OPTIONS } from "./retention.ts";
 import { SYNC_QUEUE, SYNC_QUEUE_OPTIONS } from "./sync-schedules.ts";
 import { THREADS_TOKEN_QUEUE, THREADS_TOKEN_QUEUE_OPTIONS } from "./threads-token.ts";
+import { WATCHDOG_QUEUE, WATCHDOG_QUEUE_OPTIONS } from "./watchdog.ts";
 import {
   POLL_QUEUE,
   POLL_QUEUE_OPTIONS,
@@ -104,6 +105,9 @@ const THREADS_TOKEN_CRON = "20 5 * * *";
 
 /** Deletes Reddit posts past their 30-day retention, overnight. */
 const RETENTION_CRON = "50 3 * * *";
+
+/** Every half hour, off the hour so it does not land on top of the polls. */
+const WATCHDOG_CRON = "7,37 * * * *";
 
 export interface SyncResult {
   added: number;
@@ -188,6 +192,7 @@ const OWNED_QUEUES = new Set<string>([
   SYNC_QUEUE,
   THREADS_TOKEN_QUEUE,
   RETENTION_QUEUE,
+  WATCHDOG_QUEUE,
 ]);
 
 /** Create every queue the scheduler targets. Idempotent; safe to repeat. */
@@ -201,6 +206,7 @@ export async function ensureQueues(boss: PgBoss): Promise<void> {
   await boss.createQueue(SYNC_QUEUE, SYNC_QUEUE_OPTIONS);
   await boss.createQueue(THREADS_TOKEN_QUEUE, THREADS_TOKEN_QUEUE_OPTIONS);
   await boss.createQueue(RETENTION_QUEUE, RETENTION_QUEUE_OPTIONS);
+  await boss.createQueue(WATCHDOG_QUEUE, WATCHDOG_QUEUE_OPTIONS);
 }
 
 interface DesiredSchedule {
@@ -256,6 +262,13 @@ async function desiredSchedules(db: Db): Promise<DesiredSchedule[]> {
       queue: RETENTION_QUEUE,
       key: "retention",
       cron: RETENTION_CRON,
+      tz: "UTC",
+      data: null,
+    },
+    {
+      queue: WATCHDOG_QUEUE,
+      key: "watchdog",
+      cron: WATCHDOG_CRON,
       tz: "UTC",
       data: null,
     },

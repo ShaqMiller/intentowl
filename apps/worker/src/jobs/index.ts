@@ -18,6 +18,7 @@ import { registerRetention } from "./retention.ts";
 import { syncSchedules } from "./schedules.ts";
 import { registerSyncSchedules } from "./sync-schedules.ts";
 import { registerThreadsToken } from "./threads-token.ts";
+import { registerWatchdog } from "./watchdog.ts";
 
 /**
  * Every job the worker runs is registered here.
@@ -45,6 +46,7 @@ export async function registerJobs(
   await registerSyncSchedules(boss, db);
   await registerThreadsToken(boss, db);
   await registerRetention(boss, db);
+  await registerWatchdog(boss, db);
 
   // Last: the queues have to exist before anything can be scheduled onto them.
   await syncSchedules(boss, db);

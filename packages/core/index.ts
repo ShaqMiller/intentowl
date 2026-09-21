@@ -10,3 +10,5 @@ export * from "./classify/index.ts";
 export * from "./scoring.ts";
 export * from "./digest/index.ts";
 export * from "./feedback.ts";
+export * from "./email.ts";
+export * from "./ops/alerts.ts";
