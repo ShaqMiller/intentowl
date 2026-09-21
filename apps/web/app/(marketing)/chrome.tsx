@@ -4,31 +4,24 @@
  * Both take the checkout destination as a prop rather than reading env
  * themselves, so there is exactly one place in the app that decides what
  * "Sign up" means depending on whether Stripe is wired yet.
+ *
+ * Below 900px the centre links fold into a menu button. It is a native
+ * <details>, so it works without JavaScript and is keyboard-operable as is.
  */
 import type { ReactNode } from "react";
 
-export function OwlMark({ size = 20 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 22c-4.97 0-9-3.8-9-8.5V10a9 9 0 0 1 18 0v3.5c0 4.7-4.03 8.5-9 8.5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <circle cx="8.6" cy="10.6" r="2.7" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="15.4" cy="10.6" r="2.7" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="8.6" cy="10.6" r="1.05" fill="#F0C481" />
-      <circle cx="15.4" cy="10.6" r="1.05" fill="#F0C481" />
-      <path d="M12 13.8 10.9 15.6h2.2L12 13.8Z" fill="currentColor" />
-    </svg>
-  );
+import { OwlLogo } from "../owl.tsx";
+
+/** The logo mark. Kept under this name because the dashboard imports it too. */
+export function OwlMark({ size = 36 }: { size?: number }) {
+  return <OwlLogo size={size} />;
 }
+
+const NAV_LINKS = [
+  { href: "/#how", label: "How it works" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#faq", label: "FAQ" },
+];
 
 export function SiteNav({ signupHref }: { signupHref: string }) {
   return (
@@ -39,18 +32,34 @@ export function SiteNav({ signupHref }: { signupHref: string }) {
           IntentOwl
         </a>
         <div className="nav-links">
-          <a href="/#how">How it works</a>
-          <a href="/#sources">Sources</a>
-          <a href="/#pricing">Pricing</a>
-          <a href="/#faq">FAQ</a>
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href}>
+              {link.label}
+            </a>
+          ))}
         </div>
         <div className="nav-right">
           <a className="nav-login" href="/login">
             Log in
           </a>
           <a className="btn btn-primary btn-sm" href={signupHref}>
-            Sign up
+            Start free trial
           </a>
+          <details className="nav-menu">
+            <summary className="btn btn-sm" aria-label="Menu">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </summary>
+            <div className="nav-menu-panel">
+              {NAV_LINKS.map((link) => (
+                <a key={link.href} href={link.href}>
+                  {link.label}
+                </a>
+              ))}
+              <a href="/login">Log in</a>
+            </div>
+          </details>
         </div>
       </div>
     </nav>
@@ -62,9 +71,10 @@ export function SiteFooter({ signupHref }: { signupHref: string }) {
     <footer className="foot">
       <div className="page">
         <div className="foot-inner">
-          <div>
-            <a className="brand" href="/">
-              <OwlMark size={18} />
+          <div className="foot-brand">
+            {/* Wordmark only: the closing section above already has an Otto,
+                and it is one owl per screen. */}
+            <a className="foot-wordmark" href="/">
               IntentOwl
             </a>
             <p className="foot-blurb">

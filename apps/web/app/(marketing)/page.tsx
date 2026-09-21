@@ -1,5 +1,6 @@
 /**
- * Landing page (ARCHITECTURE.md sections 4.7 and 4.8).
+ * Landing page (ARCHITECTURE.md sections 4.7 and 4.8), in the "Morning Paper"
+ * design system.
  *
  * One job: convince a founder that they are missing threads where people ask
  * for what they built, and that a free week of finding out costs them nothing.
@@ -11,8 +12,10 @@
  * but it has never run against the live API, and a landing page is a promise.
  */
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
 import { getPublicActivity, type PublicActivity } from "../../src/queries.ts";
+import { Owl } from "../owl.tsx";
 import { PlanCards } from "./plans.tsx";
 import { ScrambleWord } from "./scramble-word.tsx";
 
@@ -25,9 +28,8 @@ export const metadata: Metadata = {
 /**
  * Sources that genuinely poll in production today.
  *
- * Reddit is deliberately absent from `live`: the adapter is built and tested
- * against recorded fixtures but has never touched the live API, and app
- * approval is outstanding. It moves up on the day it actually polls.
+ * Reddit and Threads are deliberately absent from `live`: both adapters are
+ * built but wait on platform approval. They move up on the day they poll.
  */
 const LIVE_SOURCES = [
   "Hacker News",
@@ -36,21 +38,24 @@ const LIVE_SOURCES = [
   "Bluesky",
   "RSS feeds",
 ];
-const NEXT_SOURCES = ["Reddit"];
+const NEXT_SOURCES = ["Reddit", "Threads"];
 
 /** The rotating word in the headline — live sources only, same promise. */
-const SCRAMBLE_SOURCES = ["HACKER NEWS", "LOBSTERS", "STACK EXCHANGE"];
+const SCRAMBLE_SOURCES = ["Hacker News", "Lobsters", "Stack Exchange"];
 
 const STEPS = [
   {
+    tag: "You · 3 minutes",
     title: "You describe what you sell",
     body: "Your product, who it is for, your competitors, and who is definitely not a customer. One paragraph each. This is the part that makes the results yours instead of generic.",
   },
   {
+    tag: "IntentOwl · all day",
     title: "We read the communities all day",
     body: "Every ten to twenty minutes, across every source. A cheap keyword pass throws out the obvious noise, then Claude reads what survives against your description — not against a keyword list.",
   },
   {
+    tag: "IntentOwl · 7am",
     title: "You get one email at 7am",
     body: "Ranked, grouped, fifteen at most. Each lead carries the post, why it matters to you specifically, and an angle to reply from. Nothing is ever auto-posted.",
   },
@@ -106,7 +111,7 @@ const FAQ = [
   },
 ];
 
-/** The example lead shown in the framed digest. Illustrative, not a customer's. */
+/** The example leads shown in the sample digest. Illustrative, not a customer's. */
 const SAMPLE_LEADS = [
   {
     score: 88,
@@ -143,80 +148,76 @@ export default async function LandingPage() {
   return (
     <main>
       <section className="hero">
-        <div className="page">
-          <a className="badge" href="#sources">
-            <span className="badge-dot" />
-            Five sources live · Reddit next
-          </a>
-
-          <h1>
-            Right now someone on{" "}
-            <ScrambleWord words={SCRAMBLE_SOURCES} /> is{" "}
-            <span className="dim">asking for what you built.</span>
-          </h1>
-
-          <p className="hero-sub">
-            IntentOwl reads those communities all day, judges every post against
-            what you actually sell, and sends you one ranked email at 7am. You
-            write the reply.
-          </p>
-
-          <div className="hero-cta">
-            {/* To the plans, not straight to checkout: with two tiers the
-                choice is the next step, and the trial makes it a cheap one. */}
-            <a className="btn btn-primary" href="#pricing">
-              Start your 7-day free trial
+        <div className="page hero-grid">
+          <div className="hero-copy">
+            <a className="badge" href="#sources">
+              <span className="badge-dot" />
+              Five sources live · Reddit next
             </a>
-            <a className="btn" href="#digest">
-              See a real digest
-            </a>
-          </div>
 
-          <p className="hero-fine">
-            7 days free · From $15/month after · Cancel any time
-          </p>
-        </div>
-      </section>
+            <h1>
+              Right now someone on <ScrambleWord words={SCRAMBLE_SOURCES} /> is{" "}
+              <span className="dim">asking for what you built.</span>
+            </h1>
 
-      <section className="page showcase" id="digest">
-        <div className="frame">
-          <div className="frame-bar">
-            <span className="frame-dots">
-              <i />
-              <i />
-              <i />
-            </span>
-            <span>Inbox · 07:00 · IntentOwl daily digest</span>
-          </div>
-          <div className="digest">
-            <div className="digest-head">
-              <h3>11 leads worth your morning</h3>
-              <p>
-                Tuesday, from 3,140 posts read across three communities in the
-                last 24 hours.
-              </p>
+            <p className="hero-sub">
+              IntentOwl reads those communities all day, judges every post
+              against what you actually sell, and sends you one ranked email at
+              7am. You write the reply.
+            </p>
+
+            <div className="hero-cta">
+              {/* To the plans, not straight to checkout: with two tiers the
+                  choice is the next step, and the trial makes it a cheap one. */}
+              <a className="btn btn-primary btn-lg" href="#pricing">
+                Start your 7-day free trial
+                <ArrowIcon />
+              </a>
+              <a className="btn btn-lg" href="#digest">
+                See a real digest
+              </a>
             </div>
-            <p className="group-label">Buying intent · 2 of 11</p>
-            {SAMPLE_LEADS.map((lead) => (
-              <article className="lead" key={lead.score}>
-                <div className="score">{lead.score}</div>
-                <div>
-                  <p className="lead-meta">{lead.meta}</p>
-                  <p className="lead-title">{lead.title}</p>
-                  <p className="lead-why">{lead.why}</p>
-                  <p className="lead-angle">
-                    <b>Angle</b>
-                    {lead.angle}
-                  </p>
-                </div>
-              </article>
-            ))}
+
+            <p className="hero-fine">7 days free · From $15/month after · Cancel any time</p>
+          </div>
+
+          <div className="hero-art" id="digest">
+            <Owl mood="watching" size={110} className="hero-owl" />
+            <div className="mail">
+              <div className="mail-head">
+                <p className="mail-from">Inbox · 07:00 · IntentOwl daily digest</p>
+                <h3>11 leads worth your morning</h3>
+                <p className="mail-sub">
+                  Tuesday, from 3,140 posts read across three communities in the
+                  last 24 hours.
+                </p>
+              </div>
+              <p className="mail-group">Buying intent · 2 of 11</p>
+              {SAMPLE_LEADS.map((lead, i) => (
+                <article className="mail-lead" key={lead.score}>
+                  <span className={i === 0 ? "score-badge" : "score-badge soft"}>{lead.score}</span>
+                  <div className="mail-lead-body">
+                    <p className="mail-meta">
+                      <span className="intent intent-tool">Buying intent</span>
+                      {lead.meta}
+                    </p>
+                    <p className="mail-title">{lead.title}</p>
+                    <p className="mail-why">{lead.why}</p>
+                    <p className="angle">
+                      <b>Angle:</b> {lead.angle}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="page sources" id="sources">
-        <ActivityStrip activity={activity} />
+      <section className="sources" id="sources">
+        <div className="page">
+          <ActivityStrip activity={activity} />
+        </div>
       </section>
 
       <section className="section" id="how">
@@ -229,27 +230,67 @@ export default async function LandingPage() {
               is read an email and decide who is worth talking to.
             </p>
           </div>
-          <ol className="steps">
+          <ol className="how-grid">
             {STEPS.map((step, i) => (
-              <li key={step.title}>
-                <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
+              <li className="how-card" key={step.title}>
+                <div className={`how-art how-art-${i + 1}`}>{STEP_ART[i]}</div>
+                <div className="how-body">
+                  <div className="how-tags">
+                    <span className="num">{i + 1}</span>
+                    <span className={i === 0 ? "tag tag-honey" : "tag"}>{step.tag}</span>
+                  </div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </div>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="section">
+      <section className="section section-sunken">
         <div className="page">
-          <div className="section-head center">
-            <p className="eyebrow">Why it finds things alerts miss</p>
-            <h2>Most leads never say your keyword.</h2>
+          <div className="compare">
+            <div className="compare-copy">
+              <p className="eyebrow">Why it finds things alerts miss</p>
+              <h2>Most leads never say your keyword.</h2>
+            </div>
+            {/* An illustration of the difference, not a real post. */}
+            <div className="compare-demo" aria-label="Example: a post a keyword alert misses">
+              <div className="post-card">
+                <p className="post-meta">Lobsters · 1h ago</p>
+                <p className="post-text">
+                  “Spent the weekend writing a script to ping our API every five
+                  minutes. There has to be a better way?”
+                </p>
+              </div>
+              <div className="verdicts">
+                <div className="verdict verdict-miss">
+                  <span className="verdict-icon">
+                    <CrossIcon />
+                  </span>
+                  <span>
+                    <b>Keyword alert</b>
+                    <small>“uptime monitor”: no match</small>
+                  </span>
+                </div>
+                <div className="verdict verdict-hit">
+                  <span className="verdict-icon">
+                    <CheckIcon />
+                  </span>
+                  <span>
+                    <b>IntentOwl</b>
+                    <small>Score 91 · Describing a pain</small>
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
+
           <div className="grid-3">
-            {FEATURES.map((f) => (
-              <div className="card" key={f.title}>
+            {FEATURES.map((f, i) => (
+              <div className="card feature" key={f.title}>
+                <span className={`icon-tile icon-tile-${i + 1}`}>{FEATURE_ICONS[i]}</span>
                 <h3>{f.title}</h3>
                 <p>{f.body}</p>
               </div>
@@ -272,16 +313,19 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="section" id="faq">
-        <div className="page">
-          <div className="section-head center">
+      <section className="section section-faq" id="faq">
+        <div className="page faq-grid">
+          <div className="faq-head">
             <p className="eyebrow">Questions</p>
             <h2>The ones people actually ask.</h2>
           </div>
           <div className="faq">
             {FAQ.map((item, i) => (
               <details key={item.q} open={i === 0}>
-                <summary>{item.q}</summary>
+                <summary>
+                  {item.q}
+                  <span className="faq-toggle" aria-hidden="true" />
+                </summary>
                 <p>{item.a}</p>
               </details>
             ))}
@@ -291,18 +335,23 @@ export default async function LandingPage() {
 
       <section className="closer">
         <div className="page">
-          <h2>One email. Every morning. The people already asking.</h2>
-          <div className="hero-cta">
-            <a className="btn btn-primary" href="#pricing">
-              Start your 7-day free trial
-            </a>
-            <a className="btn" href="/login">
-              Log in
-            </a>
+          <div className="closer-card">
+            <div className="closer-copy">
+              <h2>One email. Every morning. The people already asking.</h2>
+              <p className="closer-fine">
+                Nothing is ever posted on your behalf. You write every reply.
+              </p>
+              <div className="hero-cta">
+                <a className="btn btn-dark btn-lg" href="#pricing">
+                  Start your 7-day free trial
+                </a>
+                <a className="btn btn-lg" href="/login">
+                  Log in
+                </a>
+              </div>
+            </div>
+            <Owl mood="happy" size={220} body="#FFFFFF" belly="#FDEFC9" className="closer-owl" />
           </div>
-          <p className="hero-fine">
-            Nothing is ever posted on your behalf. You write every reply.
-          </p>
         </div>
       </section>
     </main>
@@ -344,18 +393,17 @@ function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
   if (activity === null) {
     return (
       <>
-        <p className="sources-label">Reading, every ten to twenty minutes</p>
-        <ul className="source-row">
+        <p className="sources-label">
+          <span className="live-dot" aria-hidden="true" />
+          Reading, every ten to twenty minutes
+        </p>
+        <ul className="source-pills">
           {LIVE_SOURCES.map((name) => (
-            <li key={name}>
-              <span className="pulse" />
-              {name}
-            </li>
+            <li key={name}>{name}</li>
           ))}
           {NEXT_SOURCES.map((name) => (
             <li className="soon" key={name}>
-              <span className="pulse" />
-              {name}
+              {name} · soon
             </li>
           ))}
         </ul>
@@ -364,6 +412,7 @@ function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
   }
 
   const live = activity.sources.filter((s) => s.lastPolledAt !== null).length;
+  const polled = new Set(activity.sources.map((s) => s.source));
 
   return (
     <>
@@ -374,20 +423,16 @@ function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
         24 hours · {activity.postsReadTotal.toLocaleString()} all time
       </p>
 
-      <ul className="source-grid">
+      <ul className="source-pills">
         {activity.sources.map((s) => (
-          <li key={s.source}>
-            <span className={s.lastPolledAt === null ? "pulse soon" : "pulse"} />
-            <span className="source-name">
-              {SOURCE_LABELS[s.source] ?? s.source}
-            </span>
+          <li className={s.lastPolledAt === null ? "soon" : undefined} key={s.source}>
+            {SOURCE_LABELS[s.source] ?? s.source}
             <span className="source-when">{ago(s.lastPolledAt)}</span>
           </li>
         ))}
-        {NEXT_SOURCES.map((name) => (
+        {NEXT_SOURCES.filter((name) => !polled.has(name.toLowerCase())).map((name) => (
           <li className="soon" key={name}>
-            <span className="pulse soon" />
-            <span className="source-name">{name}</span>
+            {name} · soon
             <span className="source-when">awaiting approval</span>
           </li>
         ))}
@@ -395,3 +440,75 @@ function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
     </>
   );
 }
+
+// --- illustrations ----------------------------------------------------------
+// Inline so they inherit nothing and cost no requests. Geometry from the
+// design system's home page artboard.
+
+function ArrowIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+function CrossIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
+const STEP_ART: ReactNode[] = [
+  <svg key="describe" width="220" height="140" viewBox="0 0 220 140" aria-hidden="true">
+    <rect x="30" y="18" width="160" height="108" rx="14" fill="#FFFFFF" stroke="#1C1A16" strokeWidth="3" />
+    <rect x="48" y="38" width="80" height="10" rx="5" fill="#1C1A16" />
+    <rect x="48" y="60" width="124" height="8" rx="4" fill="#E6DCC8" />
+    <rect x="48" y="76" width="110" height="8" rx="4" fill="#E6DCC8" />
+    <rect x="48" y="92" width="70" height="8" rx="4" fill="#E6DCC8" />
+    <path d="M150 112 L186 76 L198 88 L162 124 L146 128 Z" fill="#F5B83D" stroke="#1C1A16" strokeWidth="3" strokeLinejoin="round" />
+  </svg>,
+  <svg key="read" width="220" height="140" viewBox="0 0 220 140" aria-hidden="true">
+    <rect x="22" y="20" width="76" height="44" rx="10" fill="#FFFFFF" stroke="#1C1A16" strokeWidth="3" />
+    <rect x="108" y="20" width="76" height="44" rx="10" fill="#FFFFFF" stroke="#1C1A16" strokeWidth="3" />
+    <rect x="22" y="76" width="76" height="44" rx="10" fill="#F5B83D" stroke="#1C1A16" strokeWidth="3" />
+    <rect x="108" y="76" width="76" height="44" rx="10" fill="#FFFFFF" stroke="#1C1A16" strokeWidth="3" />
+    <rect x="34" y="34" width="44" height="6" rx="3" fill="#E6DCC8" />
+    <rect x="120" y="34" width="50" height="6" rx="3" fill="#E6DCC8" />
+    <rect x="34" y="90" width="50" height="6" rx="3" fill="#1C1A16" />
+    <rect x="120" y="90" width="40" height="6" rx="3" fill="#E6DCC8" />
+    <circle cx="78" cy="102" r="22" fill="none" stroke="#1C1A16" strokeWidth="5" />
+    <path d="M94 118 L112 136" stroke="#1C1A16" strokeWidth="7" strokeLinecap="round" />
+  </svg>,
+  <svg key="email" width="220" height="140" viewBox="0 0 220 140" aria-hidden="true">
+    <rect x="40" y="30" width="140" height="92" rx="12" fill="#FFFFFF" stroke="#1C1A16" strokeWidth="3" />
+    <path d="M42 34 L110 84 L178 34" fill="none" stroke="#1C1A16" strokeWidth="3" strokeLinejoin="round" />
+    <rect x="128" y="8" width="76" height="34" rx="17" fill="#F5B83D" stroke="#1C1A16" strokeWidth="3" />
+    <text x="166" y="31" textAnchor="middle" fontFamily="IBM Plex Mono, monospace" fontWeight="600" fontSize="15" fill="#1C1A16">
+      7:00
+    </text>
+  </svg>,
+];
+
+const FEATURE_ICONS: ReactNode[] = [
+  <svg key="eye" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1A16" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>,
+  <svg key="bars" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1A16" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+  </svg>,
+  <svg key="moon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1A16" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+  </svg>,
+];

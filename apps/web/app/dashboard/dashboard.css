@@ -6,6 +6,27 @@
  * scan without reading, and controls that look like controls.
  */
 
+/*
+ * TEMPORARY BRIDGE — remove in the Phase 2 dashboard restyle.
+ *
+ * The site moved to the light "Morning Paper" tokens in globals.css. The rules
+ * below still name the old dark tokens, so they are mapped onto the new
+ * palette here, scoped to the dashboard shell, to keep it legible until it is
+ * restyled properly. Nothing outside the dashboard reads these names.
+ */
+.shell {
+  --ground: var(--paper);
+  --surface: var(--card);
+  --raised: var(--sunken);
+  --well: var(--card);
+  --line: var(--hairline);
+  --line-strong: #CDBFA6;
+  --faint: var(--muted);
+  --accent: var(--honey-deep);
+  --accent-dim: var(--honey);
+  --accent-wash: var(--honey-wash);
+}
+
 .shell {
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);
