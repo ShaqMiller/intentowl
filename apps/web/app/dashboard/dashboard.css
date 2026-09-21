@@ -27,7 +27,7 @@
   gap: 28px;
   padding: 24px 18px;
   background: var(--card);
-  border-right: 2px solid var(--ink);
+  border-right: 1.5px solid var(--ink);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -40,7 +40,7 @@
     height: auto;
     gap: 18px;
     border-right: 0;
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 1.5px solid var(--ink);
   }
 }
 
@@ -60,7 +60,7 @@
   align-items: center;
   gap: 12px;
   padding: 11px 12px;
-  border: 2px solid transparent;
+  border: 1.5px solid transparent;
   border-radius: 12px;
   font-size: 15px;
   font-weight: 700;
@@ -80,8 +80,8 @@
 
 .side-link.active {
   background: var(--honey-wash);
-  border-color: var(--ink);
-  box-shadow: 0 3px 0 var(--ink);
+  border-color: var(--soft-line);
+  box-shadow: 0 2px 0 var(--ink);
   color: var(--ink);
   font-weight: 800;
 }
@@ -105,7 +105,7 @@
   gap: 10px;
   padding: 16px;
   background: var(--sunken);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 16px;
 }
 
@@ -159,7 +159,7 @@
   height: 36px;
   border-radius: 50%;
   background: var(--sky);
-  border: 2px solid var(--ink);
+  border: 1px solid var(--soft-line);
   font-size: 13px;
   font-weight: 800;
 }
@@ -212,7 +212,7 @@
 
 .impersonation {
   background: var(--honey-wash);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
   color: var(--ink-soft);
   font-size: 13px;
   padding: 9px 40px;
@@ -263,7 +263,7 @@
   margin: 0;
   font-family: var(--display);
   font-size: 36px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
@@ -314,7 +314,7 @@
   gap: 6px;
   padding: 18px 20px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 18px;
   box-shadow: var(--shadow-sm);
 }
@@ -340,7 +340,7 @@
 .stat-value {
   font-family: var(--display);
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -370,18 +370,18 @@
   display: inline-flex;
   align-items: center;
   padding: 8px 14px;
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   background: var(--card);
   color: var(--ink);
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
-  transition: transform 80ms ease;
+  transition: background-color 80ms ease;
 }
 
 .filter:hover {
-  transform: translateY(-1px);
+  background-color: var(--sunken);
 }
 
 /* Searches are places, so they read as buttons; intents are kinds, so they
@@ -392,6 +392,7 @@
 
 .filter-intent {
   border-radius: 999px;
+  border-color: var(--soft-line);
 }
 
 .filter-intent.intent-tool {
@@ -407,6 +408,7 @@
 }
 
 .filter.on {
+  border-color: var(--ink);
   background: var(--ink);
   color: var(--paper);
   font-weight: 800;
@@ -418,11 +420,6 @@
   background: var(--hairline);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .filter:hover {
-    transform: none;
-  }
-}
 
 /* --- leads feed ----------------------------------------------------------- */
 
@@ -440,9 +437,9 @@
   gap: 20px;
   padding: 22px 24px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 20px;
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 600px) {
@@ -463,17 +460,18 @@
   height: 72px;
   border-radius: 50%;
   background: var(--honey);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
 }
 
 .score.soft {
   background: var(--honey-wash);
+  border-color: var(--soft-line);
 }
 
 .score b {
   font-family: var(--display);
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -672,7 +670,7 @@
   align-items: center;
   padding: 44px 28px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 20px;
   box-shadow: var(--shadow);
   text-align: center;
@@ -685,7 +683,7 @@
 .empty h3 {
   font-family: var(--display);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
@@ -716,7 +714,7 @@
   flex-wrap: wrap;
   padding: 22px 24px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 20px;
   box-shadow: var(--shadow-sm);
 }
@@ -745,7 +743,7 @@
 .watch-name {
   font-family: var(--display);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
   text-decoration: none;
@@ -760,7 +758,7 @@
 .badge-paused {
   padding: 3px 10px;
   background: var(--card);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--soft-line);
   border-radius: 999px;
   font-family: var(--mono);
   font-size: 11px;
@@ -785,7 +783,7 @@
 .term {
   padding: 4px 10px;
   background: var(--honey-wash);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--soft-line);
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
@@ -813,7 +811,7 @@
 .watch-count b {
   font-family: var(--display);
   font-size: 32px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -861,7 +859,7 @@
 /* --- cards ------------------------------------------------------------------ */
 
 /*
- * One card for every form: 2px ink outline, 24px radius, 8px hard shadow.
+ * One card for every form: 1.5px ink outline, 24px radius, 4px hard shadow.
  * The setup wizard, the search editor and each settings section all use it,
  * so a form looks the same wherever it turns up.
  */
@@ -869,9 +867,9 @@
 .setcard,
 .wizard-card {
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 24px;
-  box-shadow: 8px 8px 0 var(--ink);
+  box-shadow: var(--shadow);
 }
 
 .card-form {
@@ -907,7 +905,7 @@
   height: 36px;
   padding: 8px;
   background: var(--honey-wash);
-  border: 2px solid var(--ink);
+  border: 1px solid var(--soft-line);
   border-radius: 10px;
   color: var(--ink);
 }
@@ -917,7 +915,7 @@
   margin: 0;
   font-family: var(--display);
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.015em;
 }
 
@@ -980,14 +978,14 @@
   padding: 9px 16px;
   background: var(--card);
   color: var(--ink);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
   font-family: var(--body);
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 80ms ease;
+  transition: background-color 80ms ease;
 }
 
 .tab svg {
@@ -995,10 +993,11 @@
 }
 
 .tab:hover {
-  transform: translateY(-1px);
+  background: var(--sunken);
 }
 
-.tab.on {
+.tab.on,
+.tab.on:hover {
   background: var(--ink);
   color: var(--paper);
   font-weight: 800;
@@ -1013,11 +1012,6 @@
   outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tab:hover {
-    transform: none;
-  }
-}
 
 /* --- inputs ----------------------------------------------------------------- */
 
@@ -1038,7 +1032,7 @@
   padding: 13px 16px;
   background: var(--card);
   color: var(--ink);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 14px;
   font-family: var(--body);
   font-size: 16px;
@@ -1128,7 +1122,7 @@ fieldset.field legend {
   align-items: flex-start;
   padding: 12px 14px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 14px;
   cursor: pointer;
 }
@@ -1265,7 +1259,7 @@ fieldset.field legend {
   gap: 14px;
   padding: 20px 40px;
   background: var(--card);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
 }
 
 .wizard-top-label {
@@ -1281,7 +1275,7 @@ fieldset.field legend {
   width: 200px;
   height: 12px;
   background: var(--sunken);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -1290,7 +1284,7 @@ fieldset.field legend {
   display: block;
   height: 100%;
   background: var(--honey);
-  border-right: 2px solid var(--ink);
+  border-right: 1.5px solid var(--ink);
   transition: width 240ms ease;
 }
 
@@ -1314,8 +1308,8 @@ fieldset.field legend {
   margin: 0;
   font-family: var(--display);
   font-size: 46px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   line-height: 1.05;
   text-wrap: balance;
 }
@@ -1344,7 +1338,7 @@ fieldset.field legend {
   gap: 10px;
   padding: 8px 16px 8px 8px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
   font-size: 15px;
   font-weight: 700;
@@ -1367,7 +1361,7 @@ fieldset.field legend {
 
 .wizard-steps li.on {
   background: var(--honey);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
   color: var(--ink);
   font-weight: 800;
 }
@@ -1414,7 +1408,7 @@ fieldset.field legend {
   margin-bottom: 26px;
   padding: 14px 18px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 16px 16px 16px 4px;
   font-size: 16px;
   font-weight: 600;

@@ -350,7 +350,7 @@ export default async function LandingPage() {
                 </a>
               </div>
             </div>
-            <Owl mood="happy" size={220} body="#FFFFFF" belly="#FDEFC9" className="closer-owl" />
+            <Owl mood="happy" size={150} body="#FFFFFF" belly="#FDEFC9" className="closer-owl" />
           </div>
         </div>
       </section>

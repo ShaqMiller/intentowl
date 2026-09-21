@@ -5,10 +5,12 @@
  * Light only: there is no dark theme and no theme switch.
  *
  * The signature, applied everywhere it appears:
- *   - 2px solid ink outlines on cards, buttons, inputs; 1.5px on chips
- *   - hard offset shadows in ink, never blurred (6px cards, 4px small cards,
- *     10px for the hero digest and the closing card)
- *   - pressable buttons that lift on hover and sink on press
+ *   - 1.5px ink outlines on cards, buttons, inputs; tinted chips and icon
+ *     tiles take a faint 1px line instead
+ *   - small hard offset shadows in ink, never blurred (4px cards, 3px small
+ *     cards, 5px for the hero digest and the closing card)
+ *   - buttons that press down 2px, with no bounce
+ *   - nothing rotated or tilted
  *   - radii: buttons 12-14px, cards 20-24px, chips and pills fully round
  *
  * Deliberately absent: gradients, glows, blurred shadows, left-border accent
@@ -42,9 +44,12 @@
   --body: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, "Cascadia Mono", monospace;
 
-  --shadow-sm: 4px 4px 0 var(--ink);
-  --shadow: 6px 6px 0 var(--ink);
-  --shadow-lg: 10px 10px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow: 4px 4px 0 var(--ink);
+  --shadow-lg: 5px 5px 0 var(--ink);
+
+  /* Tinted chips, intent labels and icon tiles: a faint line, not ink. */
+  --soft-line: rgba(28, 26, 22, 0.14);
 
   --nav-h: 76px;
   /* 1200px of content plus the 24px gutters. */
@@ -83,7 +88,7 @@ svg {
 }
 
 :focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -92,10 +97,10 @@ h1,
 h2,
 h3 {
   font-family: var(--display);
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.022em;
   text-wrap: balance;
 }
 
@@ -131,7 +136,7 @@ p {
   top: 0;
   z-index: 40;
   background: var(--paper);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
 }
 
 .nav-inner {
@@ -153,7 +158,7 @@ p {
   color: var(--ink);
   text-decoration: none;
   font-family: var(--display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 25px;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -221,7 +226,7 @@ p {
   flex-direction: column;
   padding: 8px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 16px;
   box-shadow: var(--shadow-sm);
 }
@@ -240,12 +245,12 @@ p {
 /* ------------------------------------------------------------ buttons --- */
 
 /*
- * Pressable: a solid ink ledge under the button. Hover lifts it a pixel; press
- * sinks it almost flush, so it feels physically pushed. The ledge depth and
- * colour are variables so size and the dark variant change only those.
+ * Pressable, quietly: a 2px ink ledge under the button. Hover leaves it
+ * alone; press sinks it flush. The ledge depth and colour are variables so
+ * size and the dark variant change only those.
  */
 .btn {
-  --lift: 4px;
+  --lift: 2px;
   --shade: var(--ink);
   display: inline-flex;
   align-items: center;
@@ -254,7 +259,7 @@ p {
   padding: 14px 22px;
   background: var(--card);
   color: var(--ink);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 12px;
   box-shadow: 0 var(--lift) 0 var(--shade);
   font-family: var(--body);
@@ -267,25 +272,24 @@ p {
 }
 
 .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 calc(var(--lift) + 1px) 0 var(--shade);
+  box-shadow: 0 var(--lift) 0 var(--shade);
 }
 
 .btn:active {
-  transform: translateY(calc(var(--lift) - 1px));
-  box-shadow: 0 1px 0 var(--shade);
+  transform: translateY(var(--lift));
+  box-shadow: 0 0 0 var(--shade);
 }
 
 .btn-primary {
   background: var(--honey);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .btn-dark {
   --shade: var(--honey-deep);
   background: var(--ink);
   color: var(--paper);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* Semantic: the two rating answers, in the colours the dashboard uses. */
@@ -294,7 +298,7 @@ p {
   background: var(--leaf-wash);
   color: var(--leaf);
   border-color: var(--leaf);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .btn-berry {
@@ -302,17 +306,17 @@ p {
   background: var(--card);
   color: var(--berry);
   border-color: var(--berry);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .btn-sm {
-  --lift: 3px;
+  --lift: 2px;
   padding: 10px 16px;
   font-size: 15px;
 }
 
 .btn-lg {
-  --lift: 5px;
+  --lift: 3px;
   padding: 17px 26px;
   font-size: 17px;
   border-radius: 14px;
@@ -351,7 +355,7 @@ p {
   align-items: center;
   padding: 3px 9px;
   border-radius: 999px;
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--soft-line);
   font-family: var(--body);
   font-weight: 700;
   font-size: 12px;
@@ -380,15 +384,16 @@ p {
   height: 46px;
   border-radius: 50%;
   background: var(--honey);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   font-family: var(--display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 17px;
   font-variant-numeric: tabular-nums;
 }
 
 .score-badge.soft {
   background: var(--honey-wash);
+  border-color: var(--soft-line);
 }
 
 /* ---------------------------------------------------------------- hero --- */
@@ -417,7 +422,7 @@ p {
   gap: 10px;
   padding: 8px 14px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
   font-family: var(--mono);
   font-size: 13px;
@@ -437,7 +442,7 @@ p {
 .hero h1 {
   font-size: 66px;
   line-height: 1.06;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
 }
 
 .hero h1 .dim {
@@ -455,10 +460,9 @@ p {
   padding: 0 14px 4px;
   margin: 0 2px;
   background: var(--honey);
-  border: 3px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 16px;
-  box-shadow: 5px 5px 0 var(--ink);
-  transform: rotate(-2deg);
+  box-shadow: 3px 3px 0 var(--ink);
   white-space: nowrap;
 }
 
@@ -509,7 +513,7 @@ p {
 .mail {
   position: relative;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 22px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
@@ -521,7 +525,7 @@ p {
   gap: 4px;
   padding: 18px 24px;
   background: var(--honey-wash);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
 }
 
 .mail-from {
@@ -694,8 +698,8 @@ p {
 
 .section-sunken {
   background: var(--sunken);
-  border-top: 2px solid var(--ink);
-  border-bottom: 2px solid var(--ink);
+  border-top: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
 }
 
 .section-head {
@@ -713,7 +717,7 @@ p {
 .section h2 {
   font-size: 52px;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   max-width: 760px;
 }
 
@@ -738,7 +742,7 @@ p {
   display: flex;
   flex-direction: column;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 22px;
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -748,7 +752,7 @@ p {
   height: 190px;
   display: grid;
   place-items: center;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
 }
 
 .how-art-1 {
@@ -786,7 +790,7 @@ p {
   background: var(--ink);
   color: var(--paper);
   font-family: var(--display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 16px;
 }
 
@@ -832,7 +836,7 @@ p {
 .section .compare-copy h2 {
   font-size: 56px;
   line-height: 1.03;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
 }
 
 .compare-demo {
@@ -847,9 +851,9 @@ p {
   gap: 10px;
   padding: 22px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 18px;
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: var(--shadow);
 }
 
 .post-meta {
@@ -875,7 +879,7 @@ p {
   align-items: center;
   gap: 12px;
   padding: 16px 18px;
-  border: 2px solid;
+  border: 1.5px solid;
   border-radius: 14px;
 }
 
@@ -945,7 +949,7 @@ p {
   gap: 12px;
   padding: 26px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 20px;
 }
 
@@ -967,7 +971,7 @@ p {
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--soft-line);
 }
 
 .icon-tile-1 {
@@ -996,7 +1000,7 @@ p {
   padding: 5px;
   margin-bottom: 40px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
 }
 
@@ -1032,7 +1036,7 @@ p {
   gap: 22px;
   padding: 34px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 24px;
   box-shadow: var(--shadow);
 }
@@ -1073,9 +1077,9 @@ p {
 
 .plan-price .amount {
   font-family: var(--display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 64px;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -1170,7 +1174,7 @@ p {
 
 .faq details {
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 16px;
   padding: 20px 24px;
 }
@@ -1203,7 +1207,7 @@ p {
   height: 30px;
   border-radius: 50%;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
 }
 
 .faq-toggle::before,
@@ -1252,7 +1256,7 @@ p {
   gap: 48px;
   padding: 64px 72px;
   background: var(--honey);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 32px;
   box-shadow: var(--shadow-lg);
 }
@@ -1267,7 +1271,7 @@ p {
 .closer h2 {
   font-size: 58px;
   line-height: 1.02;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
   max-width: 720px;
 }
 
@@ -1305,7 +1309,7 @@ p {
 
 .foot-wordmark {
   font-family: var(--display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 26px;
   letter-spacing: -0.02em;
   color: var(--honey);
@@ -1381,9 +1385,9 @@ p {
   max-width: 460px;
   padding: 36px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 24px;
-  box-shadow: 8px 8px 0 var(--ink);
+  box-shadow: var(--shadow);
 }
 
 .auth-card h1 {
@@ -1523,7 +1527,7 @@ p {
 .thanks-pill {
   padding: 6px 14px;
   background: var(--leaf-wash);
-  border: 1.5px solid var(--leaf);
+  border: 1px solid var(--soft-line);
   border-radius: 999px;
   font-family: var(--mono);
   font-size: 13px;
@@ -1536,7 +1540,7 @@ p {
 .thanks-head h1 {
   font-size: 48px;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -1563,7 +1567,7 @@ p {
   align-items: flex-start;
   padding: 20px 22px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 20px;
   box-shadow: var(--shadow-sm);
 }
@@ -1587,10 +1591,10 @@ p {
   height: 36px;
   border-radius: 50%;
   background: var(--honey);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   font-family: var(--display);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .thanks-cta {
@@ -1647,7 +1651,7 @@ p {
   padding: 13px 16px;
   background: var(--card);
   color: var(--ink);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 14px;
   font-family: var(--body);
   font-size: 16px;
@@ -1675,7 +1679,7 @@ p {
   padding: 14px 16px;
   margin-bottom: 24px;
   background: var(--honey-wash);
-  border: 2px solid var(--ink);
+  border: 1.5px solid var(--ink);
   border-radius: 16px;
   font-size: 14px;
   line-height: 1.6;
@@ -1755,7 +1759,7 @@ p {
   display: inline-block;
   padding: 5px 12px;
   background: var(--card);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--soft-line);
   border-radius: 999px;
   color: var(--ink-soft);
 }
