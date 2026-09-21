@@ -8,6 +8,7 @@
  *   M1  run-poll --watch=<id> [--source=reddit|hn] [--dry-run]
  *   M3  send-digest --customer=<id> [--dry-run]
  *   M4  seed --file=<customer.json>
+ *       create-account --email=<address>
  */
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -18,6 +19,7 @@ import { eq, sql } from "drizzle-orm";
 
 import { createAdapters } from "./adapters.ts";
 import { createBoss } from "./boss.ts";
+import { createAccount, type CreateAccountInput } from "./create-account.ts";
 import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
 import { runDigest } from "./jobs/digest.ts";
@@ -46,6 +48,14 @@ const USAGE = `intentowl cli
       Build today's digest. --dry-run renders it to docs/digest-preview.html
       and sends nothing. Without it, the digest is recorded and emailed, once
       per customer per local day unless --force.
+
+  create-account --email=<address> [--name=<name>] [--plan=<plan>]
+                 [--tz=<zone>] [--hour=<0-23>] [--update]
+      Create a customer directly, skipping Stripe and the signup pages.
+      <plan> is starter-monthly, starter-annual, pro-monthly or pro-annual;
+      omit it for an unbilled account with Pro limits. The person then sets
+      a password at /login/claim with the same email and lands in the setup
+      wizard. Idempotent by email; --update changes an existing account.
 
   seed --file=<customer.json>
       Onboard or update a customer from a JSON file. Idempotent by email.
@@ -83,6 +93,9 @@ async function main(): Promise<number> {
 
     case "send-digest":
       return await sendDigestCommand(flags);
+
+    case "create-account":
+      return await createAccountCommand(flags);
 
     case "seed":
       return await seedCommand(flags);
@@ -171,6 +184,45 @@ async function classifyBatchCommand(): Promise<number> {
     return 0;
   } finally {
     await boss.stop({ graceful: true, close: true, timeout: 10_000 });
+  }
+}
+
+async function createAccountCommand(flags: Flags): Promise<number> {
+  const email = flags.string("email");
+  if (email === undefined) {
+    process.stderr.write("create-account requires --email=<address>\n");
+    return 1;
+  }
+  const name = flags.string("name");
+  const plan = flags.string("plan");
+  const tz = flags.string("tz");
+  const hour = flags.string("hour");
+
+  const { pool, db } = createDb(env.DATABASE_URL);
+  try {
+    const result = await createAccount(db, {
+      email,
+      update: flags.boolean("update"),
+      ...(name === undefined ? {} : { name }),
+      // Validated against the plan list inside createAccount.
+      ...(plan === undefined ? {} : { plan: plan as CreateAccountInput["plan"] }),
+      ...(tz === undefined ? {} : { tz }),
+      ...(hour === undefined ? {} : { digestHour: hour }),
+    });
+
+    const verb = { created: "created", updated: "updated", exists: "already exists:" }[result.outcome];
+    process.stdout.write(`${verb} ${result.email} (${result.id})\n`);
+    if (result.claimed) {
+      process.stdout.write("Login already set up. They sign in at /login.\n");
+    } else {
+      process.stdout.write(
+        `Next: open /login/claim, enter ${result.email} and a password, then click the\n` +
+          "confirmation link sent to that inbox. First sign-in opens the setup wizard.\n",
+      );
+    }
+    return 0;
+  } finally {
+    await pool.end();
   }
 }
 
