@@ -13,7 +13,8 @@ import { planInfo } from "../../../src/plans.ts";
 import { listWatches } from "../../../src/queries.ts";
 import { requireCustomer } from "../../../src/session.ts";
 import { ActionButton } from "../form.tsx";
-import { IconPause, IconPlay, IconPlus, IconSearch } from "../icons.tsx";
+import { Owl } from "../../owl.tsx";
+import { IconPause, IconPlay, IconPlus } from "../icons.tsx";
 
 export const metadata: Metadata = { title: "Searches" };
 export const dynamic = "force-dynamic";
@@ -60,7 +61,7 @@ export default async function SearchesPage() {
 
       {watches.length === 0 ? (
         <div className="empty">
-          <IconSearch size={28} />
+          <Owl mood="sleepy" size={96} />
           <h3>No searches yet.</h3>
           <p>
             A search is a set of terms plus the places to look. Nothing is polled

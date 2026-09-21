@@ -6,28 +6,6 @@
  * scan without reading, and controls that look like controls.
  */
 
-/*
- * TEMPORARY BRIDGE — remove once the remaining dashboard pages are restyled.
- *
- * The site moved to the light "Morning Paper" tokens in globals.css. The rules
- * below still name the old dark tokens, so they are mapped onto the new
- * palette here, scoped to the dashboard shell, to keep it legible until it is
- * restyled properly. The shell and Leads page no longer use them; Searches,
- * What you sell, Settings and the wizard still do.
- */
-.shell {
-  --ground: var(--paper);
-  --surface: var(--card);
-  --raised: var(--sunken);
-  --well: var(--card);
-  --line: var(--hairline);
-  --line-strong: #CDBFA6;
-  --faint: var(--muted);
-  --accent: var(--honey-deep);
-  --accent-dim: var(--honey);
-  --accent-wash: var(--honey-wash);
-}
-
 /* --- shell ---------------------------------------------------------------- */
 
 .shell {
@@ -727,225 +705,409 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
 .watch {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 22px;
+  gap: 24px;
   flex-wrap: wrap;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: var(--surface);
-  padding: 18px 20px;
-  transition: border-color 0.13s ease, background 0.13s ease;
+  padding: 22px 24px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
 }
 
-.watch:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
+/* Paused reads as set aside: sunk into the page, not greyed into illegibility. */
 .watch.paused {
-  opacity: 0.62;
+  background: var(--sunken);
+  box-shadow: none;
 }
 
 .watch-main {
   min-width: 0;
   flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .watch-top {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 5px;
 }
 
 .watch-name {
   font-family: var(--display);
-  font-size: 16.5px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 800;
   letter-spacing: -0.02em;
+  line-height: 1.2;
   text-decoration: none;
 }
 
 .watch-name:hover {
+  color: var(--honey-deep);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .badge-paused {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--faint);
-  border: 1px solid var(--line-strong);
+  padding: 3px 10px;
+  background: var(--card);
+  border: 1.5px solid var(--ink);
   border-radius: 999px;
-  padding: 2px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .watch-meta {
   font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--faint);
-  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .watch-terms {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .term {
-  font-size: 12px;
-  color: var(--ink-soft);
-  background: var(--raised);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 3px 8px;
+  padding: 4px 10px;
+  background: var(--honey-wash);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .term.more {
-  color: var(--faint);
-  background: transparent;
+  background: var(--card);
+  color: var(--muted);
+  border-style: dashed;
 }
 
 .watch-side {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
   flex: none;
 }
 
 .watch-count {
-  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .watch-count b {
-  display: block;
   font-family: var(--display);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
 }
 
 .watch-count span {
+  font-family: var(--mono);
   font-size: 11px;
-  color: var(--faint);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .watch-buttons {
   display: flex;
-  gap: 7px;
+  gap: 10px;
   align-items: center;
 }
 
-/* --- forms ---------------------------------------------------------------- */
-
-.card-form {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  padding: 24px;
+.watch-buttons .btn-sm {
+  padding: 9px 14px;
+  font-size: 14px;
+  border-radius: 11px;
+  gap: 6px;
 }
 
-.card-form .field:last-of-type {
+/* --- plan usage ----------------------------------------------------------- */
+
+.plan-usage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -8px 0 20px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.plan-usage b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* --- cards ------------------------------------------------------------------ */
+
+/*
+ * One card for every form: 2px ink outline, 24px radius, 8px hard shadow.
+ * The setup wizard, the search editor and each settings section all use it,
+ * so a form looks the same wherever it turns up.
+ */
+.card-form,
+.setcard,
+.wizard-card {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.card-form {
+  padding: 32px;
+}
+
+/* Settings are a column of separate cards, not one page-wide form. */
+.setcard {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.setcard:last-child {
   margin-bottom: 0;
 }
 
-/*
- * These are the controls a customer actually works in — the include terms, the
- * feed URLs, the send hour — so they get the full treatment: a recessed well,
- * a hover that acknowledges the pointer, and a focus ring that says clearly
- * which field has the keyboard.
- *
- * The inset highlight is the detail that matters most. It reads as the top
- * edge catching light, which is what turns a flat rectangle into something
- * that looks like it will accept typing.
- */
-.field textarea,
-.field select,
-.card-form .field input {
-  font-family: var(--body);
-  font-size: 14.5px;
+.setcard-body {
+  padding: 28px 32px 24px;
+}
+
+.setcard-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* The section icon sits in a small honey tile. */
+.setcard-head svg {
+  flex: none;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: var(--honey-wash);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
   color: var(--ink);
-  background: var(--well);
-  border: 1px solid var(--line-strong);
-  border-radius: 9px;
-  padding: 11px 13px;
+}
+
+.setcard-head h2,
+.setcard-head h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.setcard-body > .hint {
+  margin-bottom: 18px;
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.setcard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 32px 22px;
+  border-top: 1.5px solid var(--hairline);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.setcard-foot .flash {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .card-form {
+    padding: 20px;
+  }
+
+  .setcard-body {
+    padding: 20px 20px 18px;
+  }
+
+  .setcard-foot {
+    padding: 16px 20px 18px;
+  }
+}
+
+/* --- tabs ------------------------------------------------------------------- */
+
+/* Pills. The current tab is ink with paper text; the rest are outlined. */
+.tabwrap {
+  margin-top: 4px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 80ms ease;
+}
+
+.tab svg {
+  flex: none;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+}
+
+.tab.on {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 800;
+}
+
+.tab.on svg {
+  color: var(--honey);
+}
+
+.tab:focus-visible {
+  outline: 3px solid var(--honey);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab:hover {
+    transform: none;
+  }
+}
+
+/* --- inputs ----------------------------------------------------------------- */
+
+/*
+ * Text inputs come from globals.css. Textareas and selects follow the same
+ * rules here: 2px ink outline, 14px radius, honey-wash focus ring.
+ */
+.shell .field label,
+.shell fieldset.field legend {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.field textarea,
+.field select {
   width: 100%;
-  line-height: 1.5;
+  padding: 13px 16px;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  font-family: var(--body);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.55;
   resize: vertical;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-  transition: border-color 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+  transition: box-shadow 80ms ease;
 }
 
-.field textarea:hover:not(:disabled),
-.field select:hover:not(:disabled),
-.card-form .field input:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.24);
-}
-
-.field textarea:focus,
-.field select:focus,
-.card-form .field input:focus {
-  outline: none;
-  border-color: rgba(240, 196, 129, 0.55);
-  box-shadow:
-    0 0 0 3px rgba(240, 196, 129, 0.13),
-    inset 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.field input:disabled,
-.field textarea:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.field select {
+  max-width: 480px;
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231C1A16' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  cursor: pointer;
 }
 
 .field textarea::placeholder {
-  color: var(--faint);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--honey-wash);
+}
+
+.field textarea:disabled,
+.field select:disabled {
+  background: var(--sunken);
+  cursor: not-allowed;
 }
 
 fieldset.field {
   border: 0;
   padding: 0;
-  margin: 0 0 16px;
+  margin: 0 0 18px;
+  min-width: 0;
 }
 
 fieldset.field legend {
-  font-size: 13px;
-  color: var(--ink-soft);
-  font-weight: 600;
   padding: 0;
-  margin-bottom: 9px;
+  margin-bottom: 10px;
 }
 
+/* Field-level hints are the small mono line under an input. */
 .hint {
-  font-size: 12.5px;
-  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
   line-height: 1.55;
   max-width: 68ch;
 }
 
 .hint code {
   font-family: var(--mono);
-  font-size: 11.5px;
-  background: var(--raised);
-  border: 1px solid var(--line);
+  background: var(--sunken);
+  border: 1px solid var(--hairline);
   border-radius: 4px;
   padding: 1px 5px;
 }
 
 .checks {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
   margin-bottom: 8px;
 }
 
@@ -955,30 +1117,30 @@ fieldset.field legend {
   }
 }
 
-.check {
-  display: flex;
-  gap: 9px;
-  align-items: flex-start;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--ground);
-  padding: 11px 12px;
-  cursor: pointer;
-  transition: border-color 0.13s ease, background 0.13s ease;
+/* Sources stack in one column inside a two-column pane. */
+.checks-tall {
+  grid-template-columns: 1fr;
 }
 
-.check:hover:not(.disabled) {
-  border-color: rgba(255, 255, 255, 0.24);
+.check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  cursor: pointer;
 }
 
 /* A chosen source should read as chosen without having to find the tick. */
 .check:has(input:checked) {
-  background: var(--raised);
-  border-color: rgba(240, 196, 129, 0.35);
+  background: var(--honey-wash);
 }
 
 .check.disabled {
-  opacity: 0.42;
+  opacity: 0.5;
+  border-style: dashed;
   cursor: not-allowed;
 }
 
@@ -987,19 +1149,20 @@ fieldset.field legend {
 }
 
 .check input {
-  margin-top: 2px;
-  accent-color: var(--accent);
   flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--ink);
 }
 
-/* The site-wide `.field input` rule (full width, padding, dark well, inset
-   shadow) is written for text inputs, and it also matched every checkbox in a
-   fieldset.field — stretching each one across its card and pushing the label
-   out of sight. Scoped twice so it beats that rule whichever file loads last. */
+/* The site-wide `.field input` rule is written for text inputs. Scoped twice
+   so a checkbox inside a fieldset.field is never stretched by it. */
 .field .check input,
 .field .check input:hover:not(:disabled),
 .field .check input:focus {
-  width: auto;
+  width: 18px;
+  max-width: none;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -1008,28 +1171,35 @@ fieldset.field legend {
 }
 
 .check b {
-  display: block;
-  font-size: 13.5px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.check b svg {
+  flex: none;
+  color: var(--honey-deep);
 }
 
 .check em {
   display: block;
-  font-style: normal;
-  font-size: 12px;
-  color: var(--faint);
   margin-top: 2px;
+  font-style: normal;
+  font-size: 13px;
   line-height: 1.4;
+  color: var(--muted);
 }
 
-.row-2 {
+.grid2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
 }
 
-@media (max-width: 600px) {
-  .row-2 {
+@media (max-width: 900px) {
+  .grid2 {
     grid-template-columns: 1fr;
   }
 }
@@ -1037,11 +1207,11 @@ fieldset.field legend {
 .form-foot {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1.5px solid var(--hairline);
 }
 
 .inline-form {
@@ -1050,336 +1220,310 @@ fieldset.field legend {
   gap: 8px;
 }
 
-.flash {
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.flash.ok {
-  color: #6FCB96;
-}
-
-.flash.bad {
-  color: #E9917F;
-}
-
-/* --- settings ------------------------------------------------------------- */
-
-.settings-block {
-  margin-bottom: 36px;
-}
-
-.settings-block h2 {
-  font-size: 17px;
-  letter-spacing: -0.02em;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
-}
-
-.note-card {
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: var(--surface);
-  padding: 18px 20px;
-}
-
-.note-card h3 {
-  font-size: 15px;
-  margin-bottom: 7px;
-  letter-spacing: -0.015em;
-}
-
-.note-card p {
-  font-size: 13.5px;
-  color: var(--muted);
-  line-height: 1.6;
-  max-width: 68ch;
-}
-
 .note-inline {
-  margin-top: 16px;
-  font-size: 13px;
-  color: var(--faint);
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
   line-height: 1.6;
   max-width: 68ch;
 }
 
-.side-signout {
-  margin-top: 10px;
+.btn svg {
+  flex: none;
 }
 
-.side-signout button {
-  background: none;
-  border: 0;
-  padding: 0;
-  font-family: var(--body);
-  font-size: 12.5px;
-  color: var(--faint);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+/* Field rhythm inside cards and tab panes; the card supplies the padding. */
+.setcard .field,
+.wizard-card .field {
+  margin-bottom: 0;
 }
 
-.side-signout button:hover {
-  color: var(--ink-soft);
+.tabwrap .field {
+  margin-bottom: 20px;
 }
 
-.auth-flash {
-  margin-top: 14px;
+.tabwrap .field:last-child,
+.card-form .field:last-of-type {
+  margin-bottom: 0;
 }
 
-/* ==========================================================================
-   Tabs, setting cards, and two-column rows
-   Replaces the single long column of fields. The old layout put every control
-   in one 720px strip with one save at the bottom, which read as a form to get
-   through rather than a set of decisions to make.
-   ========================================================================== */
-
-.tabwrap { margin-top: 4px; }
-
-.tabs {
-  display: flex;
-  gap: 2px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 26px;
-  overflow-x: auto;
-  scrollbar-width: none;
+.welcome-notice {
+  margin-bottom: 24px;
 }
 
-.tabs::-webkit-scrollbar { display: none; }
+/* --- setup wizard ------------------------------------------------------------ */
 
-.tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--display);
-  font-size: 13.5px;
-  color: var(--muted);
-  background: none;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  padding: 10px 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.13s ease, border-color 0.13s ease;
+.wizard-page {
+  min-height: 100%;
 }
 
-.tab svg { opacity: 0.7; }
-
-.tab:hover { color: var(--ink-soft); }
-.tab:hover svg { opacity: 1; }
-
-/* The accent marks position, which is a job rather than decoration — the one
-   use it earns inside the app. */
-.tab.on {
-  color: var(--ink);
-  font-weight: 600;
-  border-bottom-color: var(--accent);
-}
-
-.tab.on svg { opacity: 1; color: var(--accent); }
-
-/* --- setting cards -------------------------------------------------------- */
-
-/*
- * One card per decision, each saving on its own.
- *
- * The footer is what makes it read as deliberate: it states the consequence of
- * the change on the left and carries the action on the right, so you are never
- * committing a whole page of edits with one button and hoping.
- */
-.setcard {
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: var(--surface);
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.setcard:last-child { margin-bottom: 0; }
-
-.setcard-body { padding: 20px 22px; }
-
-.setcard-head {
+/* Progress lives in a white header bar across the top, like the design. */
+.wizard-top {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-bottom: 6px;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px 40px;
+  background: var(--card);
+  border-bottom: 2px solid var(--ink);
 }
 
-.setcard-head svg { color: var(--faint); flex: none; }
-.setcard-head h3 { font-size: 15px; letter-spacing: -0.015em; }
-
-.setcard-body .hint { margin-bottom: 14px; }
-.setcard-body .field { margin-bottom: 0; }
-
-.setcard-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 12px 22px;
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid var(--line);
-  font-size: 12.5px;
-  color: var(--faint);
-}
-
-.setcard-foot .flash { margin: 0; }
-
-/* --- two-column rows ------------------------------------------------------ */
-
-.row2 {
-  display: grid;
-  grid-template-columns: 290px minmax(0, 1fr);
-  gap: 36px;
-  padding: 24px 0;
-  border-top: 1px solid var(--line);
-}
-
-.row2:first-of-type { border-top: 0; padding-top: 0; }
-
-@media (max-width: 900px) {
-  .row2 { grid-template-columns: 1fr; gap: 12px; }
-}
-
-.row2-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--ink-soft);
-}
-
-.row2-label svg { color: var(--faint); flex: none; }
-
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-
-@media (max-width: 900px) {
-  .grid2 { grid-template-columns: 1fr; }
-}
-
-/* --- icons in existing furniture ------------------------------------------ */
-
-.btn svg { flex: none; opacity: 0.85; }
-
-.source-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.check b { display: flex; align-items: center; gap: 7px; }
-.check b svg { color: var(--faint); flex: none; }
-
-/* Sources stack in one column inside a two-column pane, rather than trying to
-   fit a three-across grid into half the width. */
-.checks-tall {
-  grid-template-columns: 1fr;
-  gap: 7px;
-}
-
-.setcard .grid2 { gap: 18px; }
-.setcard .field { margin-bottom: 0; }
-.setcard .grid2 .field + .field { margin-top: 0; }
-
-/* Inside a tab pane the fields need their own rhythm; the card supplies the
-   outer padding. */
-.tabwrap .field { margin-bottom: 18px; }
-.tabwrap .field:last-child { margin-bottom: 0; }
-
-/* --- plan usage ----------------------------------------------------------- */
-
-.plan-usage {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: -6px 0 18px;
+.wizard-top-label {
   font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--faint);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.plan-usage b {
+.wizard-progress {
+  width: 200px;
+  height: 12px;
+  background: var(--sunken);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.wizard-progress span {
+  display: block;
+  height: 100%;
+  background: var(--honey);
+  border-right: 2px solid var(--ink);
+  transition: width 240ms ease;
+}
+
+.wizard-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 48px 24px 72px;
+}
+
+.wizard-intro {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.wizard-intro h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.wizard-intro p {
+  font-size: 18px;
+  line-height: 1.55;
   color: var(--ink-soft);
-  font-weight: 500;
 }
 
-/* --- setup wizard ---------------------------------------------------------- */
+/* A real sequence, so it is numbered: pills joined by ink rules. */
+.wizard-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
 
-.wizard {
+.wizard-steps li:not(.wizard-sep) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 8px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.wizard-steps li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--sunken);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.wizard-steps li.on {
+  background: var(--honey);
+  box-shadow: 0 3px 0 var(--ink);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.wizard-steps li.on span {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.wizard-steps li.done span {
+  background: var(--leaf-wash);
+  border-color: var(--leaf);
+  color: var(--leaf);
+}
+
+.wizard-sep {
+  width: 40px;
+  height: 2px;
+  background: var(--ink);
+}
+
+.wizard-main {
+  width: 100%;
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-/* A real sequence, so it is numbered. The current step carries the accent
-   the sidebar uses for "you are here"; finished steps go quiet, not green. */
-.wizard-steps {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 4px;
+.wizard-otto {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  font-size: 13px;
-  color: var(--faint);
+  align-items: flex-end;
+  gap: 14px;
 }
 
-.wizard-steps li {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.wizard-otto svg {
+  flex: none;
 }
 
-.wizard-steps span {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  font-family: var(--mono);
-  font-size: 11px;
-}
-
-.wizard-steps li.on {
-  color: var(--ink);
+/* Speech bubble: the flat corner points back at Otto. */
+.wizard-bubble {
+  max-width: 520px;
+  margin-bottom: 26px;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 16px 16px 16px 4px;
+  font-size: 16px;
   font-weight: 600;
-}
-
-.wizard-steps li.on span {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.wizard-steps li.done {
-  color: var(--muted);
+  line-height: 1.5;
 }
 
 .wizard-review {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
-.wizard-note {
+.wizard-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+}
+
+.wizard-notice svg {
+  flex: none;
+  margin-top: 4px;
+}
+
+.wizard-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+}
+
+.wizard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wizard-section .setcard-head {
+  margin-bottom: 0;
+}
+
+.wizard-section + .wizard-section {
+  padding-top: 24px;
+  border-top: 1.5px solid var(--hairline);
+}
+
+.wizard-foot {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+  border-top: 1.5px solid var(--hairline);
+  font-size: 14px;
+  font-weight: 600;
   color: var(--muted);
 }
 
-.welcome-notice {
-  margin-bottom: 20px;
+.wizard-foot .flash {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .wizard-top {
+    padding: 16px;
+  }
+
+  .wizard-progress {
+    width: 140px;
+  }
+
+  .wizard-body {
+    padding: 32px 16px 56px;
+    gap: 22px;
+  }
+
+  .wizard-intro h1 {
+    font-size: 34px;
+  }
+
+  .wizard-intro p {
+    font-size: 16px;
+  }
+
+  .wizard-sep {
+    display: none;
+  }
+
+  .wizard-steps {
+    gap: 8px;
+  }
+
+  .wizard-steps li:not(.wizard-sep) {
+    font-size: 13px;
+  }
+
+  .wizard-card {
+    padding: 20px;
+  }
+
+  .wizard-bubble {
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wizard-progress span {
+    transition: none;
+  }
 }

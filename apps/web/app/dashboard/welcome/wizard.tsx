@@ -8,17 +8,27 @@
  * The review step is the whole profile and search on one screen, because a
  * draft is only useful if every part of it can be corrected before it runs.
  */
-import { useActionState } from "react";
+import { useActionState, type ReactNode } from "react";
 
 import type { ActionResult } from "../../../src/actions.ts";
 import { completeSetup, draftSetup, type DraftState } from "../../../src/onboarding-actions.ts";
-import { IconAlert, IconCheck, IconPulse, IconTag, IconTarget } from "../icons.tsx";
+import { Owl } from "../../owl.tsx";
+import { IconAlert, IconPulse, IconTag, IconTarget } from "../icons.tsx";
 import { LIVE_SOURCES } from "../searches/watch-fields.tsx";
 
 /** Where a new search looks by default: the busiest sources with real asks. */
 const DEFAULT_SOURCES = new Set(["hn", "bluesky", "lobsters"]);
 
-export function SetupWizard({ drafting, preview }: { drafting: boolean; preview: boolean }) {
+export function SetupWizard({
+  drafting,
+  preview,
+  intro,
+}: {
+  drafting: boolean;
+  preview: boolean;
+  /** The page heading and lede, rendered by the server page. */
+  intro: ReactNode;
+}) {
   const [draftState, draftAction, drafting_] = useActionState<DraftState, FormData>(draftSetup, {
     stage: "describe",
   });
@@ -26,33 +36,65 @@ export function SetupWizard({ drafting, preview }: { drafting: boolean; preview:
 
   const step = draftState.stage === "describe" ? 1 : 2;
 
+  // What Otto says. Step 1 carries what used to be the card's hint; step 2 the
+  // "drafted from your description" note.
+  const bubble =
+    step === 1
+      ? `A few sentences, the way you would explain it to another founder.${
+          drafting
+            ? " We draft your profile and search terms from this; you review every word before anything runs."
+            : " You will fill in the details on the next screen."
+        }`
+      : `${draftState.stage === "review" && draftState.drafted ? "Drafted from your description. " : ""}Change anything that is not quite right — this is what every post will be judged against.`;
+
   return (
     <div className="wizard">
-      <ol className="wizard-steps" aria-label="Setup steps">
-        <li className={step === 1 ? "on" : "done"}>
-          <span>1</span> Describe what you sell
-        </li>
-        <li className={step === 2 ? "on" : ""}>
-          <span>2</span> Review your search
-        </li>
-        <li>
-          <span>3</span> Leads arrive
-        </li>
-      </ol>
+      <header className="wizard-top">
+        <span className="wizard-top-label">
+          Step {step} of 3
+        </span>
+        <div
+          className="wizard-progress"
+          role="progressbar"
+          aria-label="Setup progress"
+          aria-valuemin={1}
+          aria-valuemax={3}
+          aria-valuenow={step}
+        >
+          <span style={{ width: `${(step / 3) * 100}%` }} />
+        </div>
+      </header>
+
+      <div className="wizard-body">
+        <div className="wizard-intro">{intro}</div>
+
+        <ol className="wizard-steps" aria-label="Setup steps">
+          <li className={step === 1 ? "on" : "done"} aria-current={step === 1 ? "step" : undefined}>
+            <span>1</span> Describe what you sell
+          </li>
+          <li className="wizard-sep" aria-hidden="true" />
+          <li className={step === 2 ? "on" : ""} aria-current={step === 2 ? "step" : undefined}>
+            <span>2</span> Review your search
+          </li>
+          <li className="wizard-sep" aria-hidden="true" />
+          <li>
+            <span>3</span> Leads arrive
+          </li>
+        </ol>
+
+        <div className="wizard-main">
+          <div className="wizard-otto">
+            <Owl mood="watching" size={84} />
+            <p className="wizard-bubble">{bubble}</p>
+          </div>
 
       {draftState.stage === "describe" ? (
-        <form action={draftAction} className="setcard">
-          <div className="setcard-body">
+        <form action={draftAction} className="wizard-card">
+          <section className="wizard-section">
             <div className="setcard-head">
               <IconTarget />
-              <h3>What do you sell?</h3>
+              <h2>What do you sell?</h2>
             </div>
-            <p className="hint">
-              A few sentences, the way you would explain it to another founder.
-              {drafting
-                ? " We draft your profile and search terms from this; you review every word before anything runs."
-                : " You will fill in the details on the next screen."}
-            </p>
             <div className="field">
               <label htmlFor="description">Your product</label>
               <textarea
@@ -73,8 +115,8 @@ export function SetupWizard({ drafting, preview }: { drafting: boolean; preview:
                 <textarea id="competitors" name="competitors" rows={3} placeholder="FreshBooks, Wave" />
               </div>
             </div>
-          </div>
-          <div className="setcard-foot">
+          </section>
+          <div className="wizard-foot">
             {draftState.message === undefined ? (
               <span>{drafting ? "Takes about 20 seconds." : "Nothing is saved yet."}</span>
             ) : (
@@ -82,30 +124,25 @@ export function SetupWizard({ drafting, preview }: { drafting: boolean; preview:
                 {draftState.message}
               </p>
             )}
-            <button className="btn btn-primary btn-sm" type="submit" disabled={drafting_}>
+            <button className="btn btn-primary" type="submit" disabled={drafting_}>
               {drafting_ ? "Drafting…" : drafting ? "Draft my setup" : "Continue"}
+              <Arrow />
             </button>
           </div>
         </form>
       ) : (
         <form action={saveAction} className="wizard-review">
           {draftState.message !== undefined && (
-            <div className="notice">
-              <IconAlert size={13} /> {draftState.message}
+            <div className="notice wizard-notice">
+              <IconAlert size={14} /> {draftState.message}
             </div>
           )}
-          {draftState.drafted && (
-            <p className="wizard-note">
-              <IconCheck size={13} /> Drafted from your description. Change anything that is not quite right — this is
-              what every post will be judged against.
-            </p>
-          )}
 
-          <div className="setcard">
-            <div className="setcard-body">
+          <div className="wizard-card">
+            <section className="wizard-section">
               <div className="setcard-head">
                 <IconTarget />
-                <h3>Your profile</h3>
+                <h2>Your profile</h2>
               </div>
               <div className="field">
                 <label htmlFor="productDesc">What the product does</label>
@@ -128,14 +165,12 @@ export function SetupWizard({ drafting, preview }: { drafting: boolean; preview:
                   <p className="hint">One per line. Keeps plausible-but-useless posts out of your inbox.</p>
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
 
-          <div className="setcard">
-            <div className="setcard-body">
+            <section className="wizard-section">
               <div className="setcard-head">
                 <IconTag />
-                <h3>Your first search</h3>
+                <h2>Your first search</h2>
               </div>
               <div className="field">
                 <label htmlFor="name">Search name</label>
@@ -175,8 +210,8 @@ export function SetupWizard({ drafting, preview }: { drafting: boolean; preview:
               <input type="hidden" name="active" value="on" />
               <input type="hidden" name="subreddits" value="" />
               <input type="hidden" name="feeds" value="" />
-            </div>
-            <div className="setcard-foot">
+            </section>
+            <div className="wizard-foot">
               {saveState !== null && !saveState.ok ? (
                 <p className="flash bad" role="status">
                   {saveState.message}
@@ -188,13 +223,24 @@ export function SetupWizard({ drafting, preview }: { drafting: boolean; preview:
                     : "Polling starts within minutes and looks back a week."}
                 </span>
               )}
-              <button className="btn btn-primary btn-sm" type="submit" disabled={saving || preview}>
+              <button className="btn btn-primary" type="submit" disabled={saving || preview}>
                 {saving ? "Starting…" : "Start my search"}
+                <Arrow />
               </button>
             </div>
           </div>
         </form>
       )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+function Arrow() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
   );
 }
