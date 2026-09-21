@@ -24,9 +24,9 @@ export const dynamic = "force-dynamic";
 // weighing options, plain for everything quieter.
 const INTENTS: Array<{ key: string; label: string; tone: string }> = [
   { key: "buying_intent", label: "Buying intent", tone: "intent-tool" },
-  { key: "competitor_switch", label: "Leaving a competitor", tone: "intent-compare" },
+  { key: "competitor_complaint", label: "Leaving a competitor", tone: "intent-compare" },
   { key: "pain_point", label: "Describing the pain", tone: "intent-pain" },
-  { key: "research", label: "Researching", tone: "intent-plain" },
+  { key: "question", label: "Researching", tone: "intent-plain" },
 ];
 
 function intentTone(key: string): string {
