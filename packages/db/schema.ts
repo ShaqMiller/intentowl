@@ -40,6 +40,7 @@ export const source = pgEnum("source", [
   "rss",
   "x",
   "threads",
+  "github",
 ]);
 
 export const intent = pgEnum("intent", [

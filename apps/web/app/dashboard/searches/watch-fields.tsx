@@ -46,6 +46,11 @@ export const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> =
   },
   { key: "rss", label: "RSS feeds", note: "any blog or forum with a feed" },
   { key: "bluesky", label: "Bluesky", note: "short posts, fast moving" },
+  {
+    key: "github",
+    label: "GitHub issues",
+    note: "people leaving a tool, in its own repo",
+  },
 ];
 
 const PENDING_SOURCES: Array<{ key: string; label: string; note: string }> = [

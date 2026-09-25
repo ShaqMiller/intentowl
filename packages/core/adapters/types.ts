@@ -22,6 +22,7 @@ export const sourceName = z.enum([
   "rss",
   "x",
   "threads",
+  "github",
 ]);
 export type SourceName = z.infer<typeof sourceName>;
 
@@ -86,6 +87,11 @@ export const cursor = z.union([
      * and a per-feed cursor would strand state for feeds that go away.
      */
     newestPublishedAt: z.number().int().nonnegative(),
+  }),
+  z.object({
+    kind: z.literal("github"),
+    /** `created_at` of the newest issue seen, epoch milliseconds. */
+    newestCreatedAt: z.number().int().nonnegative(),
   }),
   z.object({
     kind: z.literal("threads"),

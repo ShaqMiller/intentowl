@@ -48,7 +48,8 @@ import {
  * Reddit and HN are the volume sources and move fastest. Stack Exchange is
  * hourly on purpose: its daily quota is shared across every customer, and at
  * twelve minutes a single watch cannot afford to search all of its terms.
- * Slowing it down is what makes full term coverage affordable.
+ * Slowing it down is what makes full term coverage affordable. GitHub is on
+ * the same logic with a smaller penalty: its limit is per minute, not per day.
  */
 const POLL_INTERVAL_MINUTES: Record<SourceName, number> = {
   reddit: 12,
@@ -58,6 +59,10 @@ const POLL_INTERVAL_MINUTES: Record<SourceName, number> = {
   bluesky: 15,
   rss: 30,
   x: 30,
+  // Search is 30 requests/minute for the whole account, shared by every
+  // watch, and an issue thread stays worth replying to for days. Half-hourly
+  // leaves headroom and loses nothing.
+  github: 30,
   // Hourly: every customer's searches share one 2,200-a-day Threads budget,
   // so a faster cadence only reaches the cap sooner.
   threads: 60,

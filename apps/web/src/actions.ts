@@ -37,6 +37,7 @@ const SOURCE = z.enum([
   "rss",
   "x",
   "threads",
+  "github",
 ]);
 
 /**

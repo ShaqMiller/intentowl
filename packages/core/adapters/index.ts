@@ -28,3 +28,6 @@ export {
   toRawItem as threadsToRawItem,
 } from "./threads.ts";
 export type { ThreadsAdapterOptions } from "./threads.ts";
+// Explicit for the same reason: github.ts exports its own `toRawItem`.
+export { createGithubAdapter, githubBucket, quoteTerm, repoFromApiUrl } from "./github.ts";
+export type { GithubAdapterOptions } from "./github.ts";

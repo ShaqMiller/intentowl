@@ -8,6 +8,7 @@
  */
 import {
   createBlueskyAdapter,
+  createGithubAdapter,
   createHnAdapter,
   createLobstersAdapter,
   createRedditAdapter,
@@ -40,6 +41,11 @@ export function createAdapters(db?: Db): AdapterRegistry {
     // available; a watch with no feeds fails at the point of use with a clear
     // message rather than being silently absent here.
     rss: createRssAdapter(),
+    // Public issue search needs no auth. A token only raises the rate limit,
+    // so this is registered either way.
+    github: createGithubAdapter(
+      env.GITHUB_TOKEN === undefined ? {} : { token: env.GITHUB_TOKEN },
+    ),
   };
 
   if (
