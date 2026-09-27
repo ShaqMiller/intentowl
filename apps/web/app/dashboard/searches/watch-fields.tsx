@@ -24,6 +24,8 @@ import {
   IconTag,
 } from "../icons.tsx";
 import { Tabs } from "../tabs.tsx";
+import { TagInput } from "../tag-input.tsx";
+import { TermPreview } from "./term-preview.tsx";
 
 export interface WatchDefaults {
   id?: string;
@@ -66,7 +68,7 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
     <div className="grid2">
       <div>
         <fieldset className="field">
-          <legend>Sources</legend>
+          <legend>Where should we read?</legend>
           <div className="checks checks-tall">
             {LIVE_SOURCES.map((s) => (
               <label className="check" key={s.key}>
@@ -102,81 +104,55 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
       </div>
 
       <div>
-        <div className="field">
-          <label htmlFor="feeds">RSS feed URLs</label>
-          <textarea
-            id="feeds"
-            name="feeds"
-            rows={5}
-            defaultValue={(defaults.feeds ?? []).join("\n")}
-            placeholder={
-              "https://example.com/blog/feed.xml\nhttps://forum.example.com/latest.rss"
-            }
-          />
-          <p className="hint">
-            One per line, http or https. Used when RSS is ticked. Entries are
-            matched against your include terms like every other source.
-          </p>
-        </div>
+        <TagInput
+          name="feeds"
+          label="Blog or forum feeds"
+          defaultValue={defaults.feeds ?? []}
+          placeholder="https://example.com/blog/feed.xml"
+          urls
+          hint="Only read when RSS feeds is ticked above."
+        />
 
-        <div className="field">
-          <label htmlFor="subreddits">Subreddits</label>
-          <textarea
-            id="subreddits"
-            name="subreddits"
-            rows={3}
-            defaultValue={(defaults.subreddits ?? []).join("\n")}
-            placeholder={"SaaS\nfreelance"}
-          />
-          <p className="hint">
-            One per line, with or without the <code>r/</code>. Saved now so it
-            is ready the day Reddit polling is approved.
-          </p>
-        </div>
+        <TagInput
+          name="subreddits"
+          label="Subreddits to watch"
+          defaultValue={defaults.subreddits ?? []}
+          placeholder="SaaS"
+          subreddits
+          suggestions={["SaaS", "startups", "smallbusiness"]}
+          hint="Saved now, ready for the day Reddit approves us."
+        />
       </div>
     </div>
   );
 
   const terms = (
-    <div className="grid2">
-      <div className="field">
-        <label htmlFor="includeTerms">Include terms</label>
-        <textarea
-          id="includeTerms"
+    <>
+      <div className="grid2">
+        <TagInput
           name="includeTerms"
-          rows={9}
-          defaultValue={(defaults.includeTerms ?? []).join("\n")}
-          placeholder={'"product analytics"\nmixpanel\nchasing late payments'}
+          label="Words to look for"
+          defaultValue={defaults.includeTerms ?? []}
+          placeholder="chasing late payments"
+          phrases
+          softLimit={10}
+          hint="We only read a post if it contains one of these."
         />
-        <p className="hint">
-          One per line. A post must match at least one of these before the
-          classifier reads it, so these are a net rather than a judgement.
-          <br />
-          <br />
-          <b>Quote a phrase</b> — <code>&quot;feature usage&quot;</code> — to
-          require those words together. Unquoted, the words are matched
-          separately and anywhere, which catches far more and is usually what
-          you want for a brand name and rarely what you want for two common
-          words.
-        </p>
+
+        <TagInput
+          name="excludeTerms"
+          label="Words to skip"
+          defaultValue={defaults.excludeTerms ?? []}
+          placeholder="salary"
+          suggestions={['"who is hiring"', "upwork", "fiverr"]}
+          hint="A post with any of these never reaches you."
+        />
       </div>
 
-      <div className="field">
-        <label htmlFor="excludeTerms">Exclude terms</label>
-        <textarea
-          id="excludeTerms"
-          name="excludeTerms"
-          rows={9}
-          defaultValue={(defaults.excludeTerms ?? []).join("\n")}
-          placeholder={'"who is hiring"\nsalary\nupwork'}
-        />
-        <p className="hint">
-          One per line. Anything matching these is dropped before it costs
-          anything to classify, so this is the cheapest lever you have on the
-          bill.
-        </p>
-      </div>
-    </div>
+      {/* The answer to "will this find anything?", measured on posts we have
+          already read rather than guessed at. */}
+      <TermPreview />
+    </>
   );
 
   const running = (
@@ -193,8 +169,7 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
           required
         />
         <p className="hint">
-          Only you see this. It labels the leads this search finds, in the feed
-          and in the digest.
+          Only you see it. It labels these leads in your feed and digest.
         </p>
       </div>
 
@@ -206,10 +181,7 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
               <IconClock size={13} />
               Active
             </b>
-            <em>
-              Paused searches keep every lead they have already found, and stop
-              polling.
-            </em>
+            <em>Pause any time. You keep every lead already found.</em>
           </span>
         </label>
       </div>
@@ -223,9 +195,9 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
       )}
       <Tabs
         tabs={[
+          { id: "running", label: "Name", icon: <IconSearch />, content: running },
+          { id: "terms", label: "Words", icon: <IconTag />, content: terms },
           { id: "where", label: "Where to look", icon: <IconGlobe />, content: where },
-          { id: "terms", label: "Terms", icon: <IconTag />, content: terms },
-          { id: "running", label: "Name and status", icon: <IconSearch />, content: running },
         ]}
       />
     </>

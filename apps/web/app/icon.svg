@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 124" width="120" height="124">
+  <!-- Otto's mark, drawn for 16px: heavier strokes, no belly, wings or feet. -->
+  <rect width="120" height="124" rx="24" fill="#FBF6EC"/>
+  <path d="M22 16 L44 30 Q60 25 76 30 L98 16 L101 56 L101 86 Q101 112 60 112 Q19 112 19 86 L19 56 Z" fill="#F5B83D" stroke="#1C1A16" stroke-width="7" stroke-linejoin="round"/>
+  <circle cx="43" cy="56" r="16" fill="#FFFFFF" stroke="#1C1A16" stroke-width="7"/>
+  <circle cx="77" cy="56" r="16" fill="#FFFFFF" stroke="#1C1A16" stroke-width="7"/>
+  <circle cx="46" cy="58" r="8" fill="#1C1A16"/>
+  <circle cx="80" cy="58" r="8" fill="#1C1A16"/>
+  <path d="M54 74 L66 74 L60 84 Z" fill="#EB6B3A" stroke="#1C1A16" stroke-width="5" stroke-linejoin="round"/>
+</svg>

@@ -31,9 +31,9 @@ export default async function SearchesPage() {
         <div>
           <h1>Searches</h1>
           <p className="pane-sub">
-            Each search watches its own sources with its own terms. They all
-            share what you sell, so add one per place worth watching rather than
-            widening a single search until it catches everything.
+            Each search has its own words and its own places to read. They all
+            share what you sell. Add one per audience worth watching, rather
+            than widening one search until it catches everything.
           </p>
         </div>
         <a className="btn btn-primary" href="/dashboard/searches/new">
@@ -64,8 +64,8 @@ export default async function SearchesPage() {
           <Owl mood="sleepy" size={96} />
           <h3>No searches yet.</h3>
           <p>
-            A search is a set of terms plus the places to look. Nothing is polled
-            until at least one exists.
+            A search is a few words to look for, plus where to read. Nothing is
+            read until you have one.
           </p>
           <a className="btn btn-primary" href="/dashboard/searches/new">
             <IconPlus size={14} />

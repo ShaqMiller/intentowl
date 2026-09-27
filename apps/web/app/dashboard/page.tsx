@@ -78,7 +78,7 @@ export default async function LeadsPage({
         <div>
           <h1>Leads</h1>
           <p className="pane-sub">
-            Last seven days, highest scoring first. Your digest goes out at{" "}
+            The last seven days, best first. Your digest goes out at{" "}
             {String(customer.digestHour).padStart(2, "0")}:00 {customer.tz}.
           </p>
         </div>

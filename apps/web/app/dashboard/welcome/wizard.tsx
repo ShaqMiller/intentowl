@@ -15,6 +15,7 @@ import { completeSetup, draftSetup, type DraftState } from "../../../src/onboard
 import { Owl } from "../../owl.tsx";
 import { IconAlert, IconPulse, IconTag, IconTarget } from "../icons.tsx";
 import { LIVE_SOURCES } from "../searches/watch-fields.tsx";
+import { TagInput } from "../tag-input.tsx";
 
 /** Where a new search looks by default: the busiest sources with real asks. */
 const DEFAULT_SOURCES = new Set(["hn", "bluesky", "lobsters"]);
@@ -103,7 +104,7 @@ export function SetupWizard({
               <h2>What do you sell?</h2>
             </div>
             <div className="field">
-              <label htmlFor="description">Your product</label>
+              <label htmlFor="description">What does your product do?</label>
               <textarea
                 id="description"
                 name="description"
@@ -114,11 +115,11 @@ export function SetupWizard({
             </div>
             <div className="grid2">
               <div className="field">
-                <label htmlFor="audience">Who buys it (optional)</label>
+                <label htmlFor="audience">Who buys it? (optional)</label>
                 <textarea id="audience" name="audience" rows={3} placeholder="Solo freelancers and small agencies" />
               </div>
               <div className="field">
-                <label htmlFor="competitors">Competitors (optional)</label>
+                <label htmlFor="competitors">Who do you compete with? (optional)</label>
                 <textarea id="competitors" name="competitors" rows={3} placeholder="FreshBooks, Wave" />
               </div>
             </div>
@@ -152,25 +153,29 @@ export function SetupWizard({
                 <h2>Your profile</h2>
               </div>
               <div className="field">
-                <label htmlFor="productDesc">What the product does</label>
+                <label htmlFor="productDesc">What does your product do?</label>
                 <textarea id="productDesc" name="productDesc" rows={4} required defaultValue={draftState.draft.productDesc} />
-                <p className="hint">Include what people do instead of using you — that is the situation a lead describes.</p>
+                <p className="hint">Include what people do instead of using you — that is the moment a lead describes.</p>
               </div>
               <div className="field">
-                <label htmlFor="icpDesc">Who it is for</label>
+                <label htmlFor="icpDesc">Who buys it?</label>
                 <textarea id="icpDesc" name="icpDesc" rows={3} required defaultValue={draftState.draft.icpDesc} />
               </div>
               <div className="grid2">
-                <div className="field">
-                  <label htmlFor="competitors-review">Competitors</label>
-                  <textarea id="competitors-review" name="competitors" rows={5} defaultValue={draftState.draft.competitors.join("\n")} />
-                  <p className="hint">One per line. A complaint about one of these is the strongest signal there is.</p>
-                </div>
-                <div className="field">
-                  <label htmlFor="disqualifiers">Definitely not a customer</label>
-                  <textarea id="disqualifiers" name="disqualifiers" rows={5} defaultValue={draftState.draft.disqualifiers.join("\n")} />
-                  <p className="hint">One per line. Keeps plausible-but-useless posts out of your inbox.</p>
-                </div>
+                <TagInput
+                  name="competitors"
+                  label="Who do you compete with?"
+                  defaultValue={draftState.draft.competitors}
+                  placeholder="FreshBooks"
+                  hint="A complaint about one of these is the strongest signal there is."
+                />
+                <TagInput
+                  name="disqualifiers"
+                  label="Who isn&apos;t a fit?"
+                  defaultValue={draftState.draft.disqualifiers}
+                  placeholder="students looking for free tools"
+                  hint="Keeps the near-misses out of your inbox."
+                />
               </div>
             </section>
 
@@ -180,25 +185,30 @@ export function SetupWizard({
                 <h2>Your first search</h2>
               </div>
               <div className="field">
-                <label htmlFor="name">Search name</label>
+                <label htmlFor="name">Name this search</label>
                 <input id="name" name="name" type="text" required maxLength={80} defaultValue={draftState.draft.searchName} />
               </div>
               <div className="grid2">
-                <div className="field">
-                  <label htmlFor="includeTerms">Include terms</label>
-                  <textarea id="includeTerms" name="includeTerms" rows={10} required defaultValue={draftState.draft.includeTerms.join("\n")} />
-                  <p className="hint">
-                    One per line, as someone with the problem would write it. Quote a phrase to match it exactly.
-                  </p>
-                </div>
-                <div className="field">
-                  <label htmlFor="excludeTerms">Exclude terms</label>
-                  <textarea id="excludeTerms" name="excludeTerms" rows={10} defaultValue={draftState.draft.excludeTerms.join("\n")} />
-                  <p className="hint">One per line. Posts matching these are dropped before they cost anything.</p>
-                </div>
+                <TagInput
+                  name="includeTerms"
+                  label="Words to look for"
+                  defaultValue={draftState.draft.includeTerms}
+                  placeholder="chasing late payments"
+                  phrases
+                  softLimit={10}
+                  hint="Write them the way someone with the problem would."
+                />
+                <TagInput
+                  name="excludeTerms"
+                  label="Words to skip"
+                  defaultValue={draftState.draft.excludeTerms}
+                  placeholder="salary"
+                  suggestions={['"who is hiring"', "upwork", "fiverr"]}
+                  hint="A post with any of these never reaches you."
+                />
               </div>
               <fieldset className="field">
-                <legend>Where to look</legend>
+                <legend>Where should we read?</legend>
                 <div className="checks">
                   {SETUP_SOURCES.map((s) => (
                     <label className="check" key={s.key}>
@@ -226,8 +236,8 @@ export function SetupWizard({
               ) : (
                 <span>
                   {preview
-                    ? "Preview only — saving is disabled because this account is already set up."
-                    : "Polling starts within minutes and looks back a week."}
+                    ? "Preview only — saving is off because this account is already set up."
+                    : "We start reading within minutes, and look back a week."}
                 </span>
               )}
               <button className="btn btn-primary" type="submit" disabled={saving || preview}>

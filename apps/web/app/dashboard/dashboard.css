@@ -1245,6 +1245,211 @@ fieldset.field legend {
   margin-bottom: 24px;
 }
 
+/* --- tag input ---------------------------------------------------------------- */
+
+/*
+ * One control for every list in the dashboard. The chips are the point: what
+ * is saved is countable at a glance, and removing the sixth is one click
+ * rather than an editing job in a block of text.
+ */
+.tag-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.tag-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 9px 12px;
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  cursor: text;
+  transition: box-shadow 80ms ease;
+}
+
+.tag-box:focus-within {
+  box-shadow: 0 0 0 4px var(--honey-wash);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 10px;
+  background: var(--honey-wash);
+  border: 1px solid var(--soft-line);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* A feed URL that will not fetch, said at the moment it is added. */
+.tag-bad {
+  background: var(--berry-wash);
+  color: var(--berry);
+}
+
+.tag-text {
+  white-space: nowrap;
+}
+
+.tag-x,
+.tag-phrase {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  cursor: pointer;
+}
+
+.tag-x:hover {
+  background: rgba(28, 26, 22, 0.12);
+}
+
+/* Exact-phrase toggle: off is an empty ring, on is a filled tick. Replaces
+   teaching people to type quotation marks. */
+.tag-phrase {
+  border: 1.5px solid var(--soft-line);
+  color: transparent;
+}
+
+.tag-phrase.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.tag-draft {
+  flex: 1;
+  min-width: 140px;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tag-draft:focus {
+  outline: none;
+}
+
+.tag-draft::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* The site-wide text-input rule would otherwise box the draft field inside
+   the box it already lives in. */
+.field .tag-box input[type="text"],
+.field .tag-box input[type="text"]:focus {
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 4px 2px;
+}
+
+.tag-suggests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tag-suggest {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--card);
+  border: 1px dashed var(--muted);
+  border-radius: 999px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tag-suggest:hover {
+  border-style: solid;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* --- term preview -------------------------------------------------------------- */
+
+.term-preview {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1.5px solid var(--hairline);
+}
+
+.term-preview-out {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--sunken);
+  border-radius: 14px;
+}
+
+.term-preview-count {
+  font-size: 15px;
+}
+
+.term-preview-count b {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.term-preview-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.term-preview-list li {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.term-preview-source {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 2px;
+}
+
 /* --- setup wizard ------------------------------------------------------------ */
 
 .wizard-page {

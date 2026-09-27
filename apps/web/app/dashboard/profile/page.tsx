@@ -18,6 +18,7 @@ import { updateProfile } from "../../../src/actions.ts";
 import { getProfile } from "../../../src/queries.ts";
 import { requireCustomer } from "../../../src/session.ts";
 import { ActionForm } from "../form.tsx";
+import { TagInput } from "../tag-input.tsx";
 import { IconAlert, IconTag, IconTarget } from "../icons.tsx";
 import { Tabs } from "../tabs.tsx";
 
@@ -28,13 +29,22 @@ export default async function ProfilePage() {
   const customer = await requireCustomer();
   const profile = await getProfile(customer.id);
 
+  // Four separate judgements, four saves — so say how far through they are,
+  // which one button at the bottom of a single form would have shown for free.
+  const filled = [
+    (profile?.productDesc ?? "") !== "",
+    (profile?.icpDesc ?? "") !== "",
+    (profile?.competitors.length ?? 0) > 0,
+    (profile?.disqualifiers.length ?? 0) > 0,
+  ].filter(Boolean).length;
+
   const product = (
     <>
       <SettingCard
         icon={<IconTarget />}
-        title="What the product does"
-        hint="Write it the way you would explain it to a peer, not the way you would put it on a pricing page. The most useful sentence is usually the one describing what people do instead of using you — that is the situation the classifier looks for in a thread."
-        footer="Applies from the next classification run."
+        title="What does your product do?"
+        hint="Plain words, the way you would explain it to another founder. The most useful sentence is usually what people do instead of using you — that is the moment we look for in a thread."
+        footer="Takes effect within the hour."
         action={updateProfile}
       >
         <textarea
@@ -48,9 +58,9 @@ export default async function ProfilePage() {
 
       <SettingCard
         icon={<IconTarget />}
-        title="Who it is for"
-        hint="Stage, company shape, and how technical they are. This is what separates a founder who would buy from one who is merely interested."
-        footer="Applies from the next classification run."
+        title="Who buys it?"
+        hint="Stage, company shape, how technical. This is what separates someone who would buy from someone who is merely interested."
+        footer="Takes effect within the hour."
         action={updateProfile}
       >
         <textarea
@@ -68,33 +78,31 @@ export default async function ProfilePage() {
     <>
       <SettingCard
         icon={<IconTag />}
-        title="Competitors"
-        hint="One per line. Someone complaining about one of these by name is the strongest buying signal there is — and these names work as search terms on their own."
+        title="Who do you compete with?"
+        hint="Someone complaining about one of these by name is the strongest buying signal there is."
         footer={`${profile?.competitors.length ?? 0} listed.`}
         action={updateProfile}
       >
-        <textarea
-          id="competitors"
+        <TagInput
           name="competitors"
-          rows={5}
-          defaultValue={(profile?.competitors ?? []).join("\n")}
-          placeholder={"Mixpanel\nAmplitude\nPostHog"}
+          label="Competitors"
+          defaultValue={profile?.competitors ?? []}
+          placeholder="Mixpanel"
         />
       </SettingCard>
 
       <SettingCard
         icon={<IconAlert />}
-        title="Definitely not a customer"
-        hint="One per line. This does more for precision than anything else on the page — it is what stops plausible-but-useless leads reaching your inbox."
+        title="Who isn&apos;t a fit?"
+        hint="This does more for precision than anything else here: it keeps the near-misses out of your inbox."
         footer={`${profile?.disqualifiers.length ?? 0} listed.`}
         action={updateProfile}
       >
-        <textarea
-          id="disqualifiers"
+        <TagInput
           name="disqualifiers"
-          rows={5}
-          defaultValue={(profile?.disqualifiers ?? []).join("\n")}
-          placeholder={"students looking for free tools\nenterprises needing SOC 2"}
+          label="Not a customer"
+          defaultValue={profile?.disqualifiers ?? []}
+          placeholder="students looking for free tools"
         />
       </SettingCard>
     </>
@@ -106,12 +114,21 @@ export default async function ProfilePage() {
         <div>
           <h1>What you sell</h1>
           <p className="pane-sub">
-            Every post that survives your search terms is judged against this.
-            It is the difference between leads that are yours and leads that are
-            merely about your category.
+            Every post that gets past your search words is judged against this.
+            It decides whether a lead is yours or just about your category.
           </p>
         </div>
       </header>
+
+      <p className="plan-usage">
+        <span>
+          <b>
+            {filled} of 4
+          </b>{" "}
+          filled in
+        </span>
+        {filled < 4 && <span>— the emptier this is, the more near-misses you get</span>}
+      </p>
 
       <Tabs
         tabs={[
