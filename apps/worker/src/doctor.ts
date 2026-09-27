@@ -420,15 +420,21 @@ async function checkStripe(appUrl: string): Promise<void> {
   }
 
   const auth = { authorization: `Bearer ${key}` };
+  // Restricted keys start rk_, standard ones sk_; both carry the mode.
+  const live = /_live_/.test(key);
+  const mode = live ? "live" : "test";
   const account = await request("https://api.stripe.com/v1/account", { headers: auth });
 
   await check("key accepted", async () => {
     if (account.status !== 200) return ["fail", `${account.status} ${account.body.slice(0, 160)}`];
     const data = asJson(account.body);
-    const live = key.startsWith("sk_live_");
-    const charges = data["charges_enabled"] === true;
-    if (live && !charges) return ["fail", "live key, but the account cannot take charges yet"];
-    return [live ? "ok" : "warn", live ? "live mode, charges enabled" : "TEST mode key"];
+    const restricted = key.startsWith("rk_");
+    const charges = data["charges_enabled"];
+    // A restricted key without account read cannot see charges_enabled; absent
+    // is not the same as false.
+    if (live && charges === false) return ["fail", "live key, but the account cannot take charges yet"];
+    const kind = `${mode} mode${restricted ? ", restricted key" : ""}`;
+    return [live ? "ok" : "warn", live ? `${kind}${charges === true ? ", charges enabled" : ""}` : kind];
   });
 
   if (account.status !== 200) return;
@@ -449,7 +455,12 @@ async function checkStripe(appUrl: string): Promise<void> {
       if (url === undefined) return ["warn", "not set here — confirm it is set in Vercel"];
       const match = known.find((entry) => entry.url === url.replace(/\?.*$/, ""));
       if (match === undefined) {
-        return ["fail", "not a Payment Link on this account — wrong mode, or it was deleted"];
+        // What the site serves is checked separately and is what customers
+        // hit; this variable is whatever this machine happens to hold.
+        return [
+          "warn",
+          `not on this ${mode}-mode account — expected if this machine holds the other mode's link`,
+        ];
       }
       if (match.active !== true) return ["fail", "the Payment Link is deactivated"];
       const { status } = await request(url);
@@ -506,7 +517,6 @@ async function checkStripe(appUrl: string): Promise<void> {
 
     const ours = found.filter((entry) => entry.url.includes("/api/stripe/webhook"));
     if (ours.length === 0) {
-      const mode = key.startsWith("sk_live_") ? "live" : "test";
       return [
         "fail",
         `no endpoint or event destination points at /api/stripe/webhook in ${mode} mode` +
@@ -533,7 +543,6 @@ async function checkStripe(appUrl: string): Promise<void> {
     const unknown = served.filter(
       (url) => !known.some((entry) => (entry.url ?? "").startsWith(url)),
     );
-    const mode = key.startsWith("sk_live_") ? "live" : "test";
     if (unknown.length === served.length) {
       return ["fail", `the site serves ${served.length} link(s) this ${mode}-mode account does not have`];
     }
