@@ -9,7 +9,7 @@
  * because "you already have a search with that name" is information, not a
  * crash.
  */
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useEffect, useState, type ReactNode } from "react";
 
 import { IconCheck } from "./icons.tsx";
 
@@ -43,6 +43,14 @@ export function ActionForm({
     FormData
   >(async (_previous, form) => action(form), null);
 
+  // A result describes the form as it was when it was sent. Once the customer
+  // edits anything it is history, and leaving it on screen reads as a live
+  // complaint about what they are looking at now — someone unticked RSS feeds
+  // and the "needs a feed URL" error stayed put, which is a bug report we
+  // earned.
+  const [edited, setEdited] = useState(false);
+  useEffect(() => setEdited(false), [state]);
+
   const button = (
     <button className="btn btn-primary btn-sm" type="submit" disabled={pending}>
       {pending ? "Saving…" : submitLabel}
@@ -50,7 +58,7 @@ export function ActionForm({
   );
 
   const result =
-    state === null ? null : (
+    state === null || edited ? null : (
       <p
         className={state.ok ? "flash ok" : "flash bad"}
         role="status"
@@ -62,7 +70,7 @@ export function ActionForm({
 
   if (variant === "card") {
     return (
-      <form action={formAction} className={className}>
+      <form action={formAction} className={className} onInput={() => setEdited(true)} onChange={() => setEdited(true)}>
         {children}
         <div className="setcard-foot">
           {/* The consequence of saving, until there is a result to show
@@ -75,7 +83,7 @@ export function ActionForm({
   }
 
   return (
-    <form action={formAction} className={className}>
+    <form action={formAction} className={className} onInput={() => setEdited(true)} onChange={() => setEdited(true)}>
       {children}
       <div className="form-foot">
         <button className="btn btn-primary" type="submit" disabled={pending}>
