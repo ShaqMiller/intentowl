@@ -212,9 +212,17 @@ describe("fetchNew", () => {
     expect(result.warnings?.[0]).toContain("HTTP 500");
   });
 
-  it("throws when the watch has no feeds at all", async () => {
+  it("warns rather than failing when the watch has no feeds at all", async () => {
     const adapter = createRssAdapter({ fetchImpl: stubFetch(RSS_2) });
-    await expect(adapter.fetchNew(watch(), null)).rejects.toThrow(/no feed URLs/);
+
+    const result = await adapter.fetchNew(watch(), null);
+
+    // Throwing failed the job every half hour forever and buried real
+    // failures in the alerts; the editor refuses to save this now.
+    expect(result.items).toEqual([]);
+    expect(result.cost.calls).toBe(0);
+    expect(result.nextCursor).toBeNull();
+    expect(result.warnings?.[0]).toContain("no feed URLs");
   });
 
   it("counts one call per feed", async () => {

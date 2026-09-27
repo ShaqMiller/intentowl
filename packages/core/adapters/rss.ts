@@ -77,11 +77,20 @@ export function createRssAdapter(options: RssAdapterOptions = {}): SourceAdapter
       previous: Cursor | null,
     ): Promise<FetchResult> {
       const feeds = resolveFeeds(watch);
+      // A watch saved with RSS ticked and no feeds used to throw, which failed
+      // the job every half hour forever and buried real failures in the
+      // alerts. The editor now refuses to save that combination; an older row
+      // reports itself once per poll and leaves the queue clean.
       if (feeds.length === 0) {
-        throw new AdapterError(
-          SOURCE,
-          `watch ${watch.id} has no feed URLs; set sourceConfig.rss.feeds`,
-        );
+        return {
+          items: [],
+          nextCursor: null,
+          cost: { calls: 0 },
+          warnings: [
+            `Watch "${watch.name}" has RSS switched on with no feed URLs, so it reads nothing. ` +
+              "Add a feed under the search's Where to look, or untick RSS feeds.",
+          ],
+        };
       }
 
       const previousCursor = cursorFor("rss", previous);

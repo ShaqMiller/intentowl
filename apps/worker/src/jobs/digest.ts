@@ -204,11 +204,21 @@ export async function registerDigest(boss: PgBoss, db: Db): Promise<void> {
 
   await boss.work<DigestJobData>(DIGEST_QUEUE, { batchSize: 1 }, async (jobs) => {
     for (const job of jobs) {
-      await runDigest({
+      const outcome = await runDigest({
         db,
         customerId: job.data.customerId,
         ...(job.data.force === true ? { force: true } : {}),
       });
+
+      // A send that Resend refused used to leave a "sent" row and a completed
+      // job, so a fortnight of rejected digests looked healthy. Fail the job
+      // instead: the watchdog reports job_failed, and a retry is harmless
+      // because the already-sent-today guard turns it into a skip.
+      if (!outcome.skipped && !outcome.sent) {
+        throw new Error(
+          `digest for ${outcome.customerId} was not sent: ${outcome.error ?? "unknown send failure"}`,
+        );
+      }
     }
   });
 
