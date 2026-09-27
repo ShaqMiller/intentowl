@@ -454,16 +454,38 @@ p {
  * the width of the longest word so the headline never reflows mid-decode; the
  * live word is laid over it with the same padding.
  */
+/*
+ * The rotating source name, washed rather than boxed.
+ *
+ * The one place the system's "no gradients" rule bends, deliberately: a badge
+ * with an outline and a ledge read as an object wedged into the sentence, and
+ * the eye went to its border instead of the word that changes. So the mark is
+ * painted behind the text as two offset pools of honey — denser low and left,
+ * thinner top right, the way ink sits unevenly — and its ends are masked away
+ * so the left and right edges dissolve into the paper with no visible edge to
+ * catch on. No radius, because there is no shape to round.
+ */
 .scramble {
   position: relative;
   display: inline-block;
-  padding: 0 14px 4px;
+  padding: 0 12px 2px;
   margin: 0 2px;
-  background: var(--honey);
-  border: 1.5px solid var(--ink);
-  border-radius: 16px;
-  box-shadow: 3px 3px 0 var(--ink);
   white-space: nowrap;
+}
+
+.scramble::before {
+  content: "";
+  position: absolute;
+  /* Wider than the word and a little short of its cap height, so the wash
+     looks laid down by hand rather than fitted to a bounding box. */
+  inset: 0.1em -0.3em 0.04em;
+  z-index: -1;
+  background:
+    radial-gradient(58% 120% at 30% 62%, rgba(245, 184, 61, 0.62), rgba(245, 184, 61, 0.3) 58%, rgba(245, 184, 61, 0) 100%),
+    radial-gradient(44% 96% at 74% 40%, rgba(245, 184, 61, 0.5), rgba(245, 184, 61, 0) 74%),
+    linear-gradient(180deg, rgba(245, 184, 61, 0.1), rgba(245, 184, 61, 0.36));
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
 }
 
 .scramble-ghost {
