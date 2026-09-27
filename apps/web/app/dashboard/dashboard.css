@@ -1398,6 +1398,43 @@ fieldset.field legend {
   color: var(--ink);
 }
 
+/* --- overlap notices ----------------------------------------------------------- */
+
+/*
+ * What the customer's other searches already cover. Two searches on one source
+ * is normal and costs nothing; two searches sharing a word pay twice for every
+ * post it catches, so that one is the warning.
+ */
+.overlap {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--sunken);
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.overlap svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.overlap b {
+  color: var(--ink);
+}
+
+.overlap-warn {
+  background: var(--honey-wash);
+}
+
+.overlap-warn svg {
+  color: var(--honey-deep);
+}
+
 /* --- term preview -------------------------------------------------------------- */
 
 .term-preview {

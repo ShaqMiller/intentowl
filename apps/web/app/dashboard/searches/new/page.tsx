@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { createWatch } from "../../../../src/actions.ts";
+import { listWatches } from "../../../../src/queries.ts";
 import { requireCustomer } from "../../../../src/session.ts";
 import { ActionForm } from "../../form.tsx";
 import { WatchFields } from "../watch-fields.tsx";
@@ -8,9 +9,10 @@ import { WatchFields } from "../watch-fields.tsx";
 export const metadata: Metadata = { title: "New search" };
 
 export default async function NewSearchPage() {
-  // Not used on the page, but it enforces the session before rendering a form
-  // that writes to the database.
-  await requireCustomer();
+  const customer = await requireCustomer();
+  // What the customer already covers, so this search can say where it overlaps
+  // rather than letting them find out on the bill.
+  const others = (await listWatches(customer.id)).filter((w) => w.active);
 
   return (
     <main className="pane narrow-pane">
@@ -28,7 +30,14 @@ export default async function NewSearchPage() {
       </header>
 
       <ActionForm action={createWatch} submitLabel="Create search" className="card-form">
-        <WatchFields defaults={{ sources: ["hn", "lobsters"] }} />
+        <WatchFields
+          defaults={{ sources: ["hn", "lobsters"] }}
+          others={others.map((w) => ({
+            name: w.name,
+            sources: w.sources,
+            includeTerms: w.includeTerms,
+          }))}
+        />
       </ActionForm>
     </main>
   );

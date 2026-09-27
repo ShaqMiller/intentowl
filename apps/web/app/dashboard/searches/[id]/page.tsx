@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { updateWatch } from "../../../../src/actions.ts";
-import { getWatch } from "../../../../src/queries.ts";
+import { getWatch, listWatches } from "../../../../src/queries.ts";
 import { requireCustomer } from "../../../../src/session.ts";
 import { ActionForm } from "../../form.tsx";
 import { WatchFields } from "../watch-fields.tsx";
@@ -22,6 +22,11 @@ export default async function EditSearchPage({
   // one that does not exist — which is the correct thing to tell them.
   const watch = await getWatch(customer.id, id);
   if (watch === null) notFound();
+
+  // Every other search of theirs; this one cannot overlap with itself.
+  const others = (await listWatches(customer.id)).filter(
+    (w) => w.id !== watch.id && w.active,
+  );
 
   return (
     <main className="pane narrow-pane">
@@ -43,6 +48,11 @@ export default async function EditSearchPage({
 
       <ActionForm action={updateWatch} submitLabel="Save changes" className="card-form">
         <WatchFields
+          others={others.map((w) => ({
+            name: w.name,
+            sources: w.sources,
+            includeTerms: w.includeTerms,
+          }))}
           defaults={{
             id: watch.id,
             name: watch.name,

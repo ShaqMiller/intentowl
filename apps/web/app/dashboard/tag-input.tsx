@@ -56,11 +56,19 @@ export function TagInput({
   const [ready, setReady] = useState(false);
   const inputId = useId();
   const box = useRef<HTMLDivElement>(null);
+  const hidden = useRef<HTMLInputElement>(null);
 
   // Swap to chips only once mounted: the server-rendered textarea carries the
   // real field name, so the form is submittable before hydration and with no
   // JavaScript at all.
   useEffect(() => setReady(true), []);
+
+  // Adding a chip changes React state, which no DOM event announces. Anything
+  // watching the form — the overlap warning, say — would keep reading the
+  // value from before the change, so fire the event a typed field would.
+  useEffect(() => {
+    hidden.current?.dispatchEvent(new Event("input", { bubbles: true }));
+  }, [tags]);
 
   if (!ready) {
     return (
@@ -208,7 +216,7 @@ export function TagInput({
         />
       </div>
 
-      <input type="hidden" name={name} value={tags.join("\n")} />
+      <input ref={hidden} type="hidden" name={name} value={tags.join("\n")} />
 
       {unused.length > 0 && (
         <p className="tag-suggests">

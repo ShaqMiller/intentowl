@@ -24,6 +24,7 @@ import {
   IconTag,
 } from "../icons.tsx";
 import { Tabs } from "../tabs.tsx";
+import { SourceOverlap, TermOverlap, type OtherSearch } from "./overlap.tsx";
 import { TagInput } from "../tag-input.tsx";
 import { TermPreview } from "./term-preview.tsx";
 
@@ -55,12 +56,32 @@ export const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> =
   },
 ];
 
+/** Every source key we might have to name, including ones not yet polling. */
+export const SOURCE_LABELS: Record<string, string> = {
+  hn: "Hacker News",
+  lobsters: "Lobsters",
+  stackexchange: "Stack Exchange",
+  rss: "RSS feeds",
+  bluesky: "Bluesky",
+  github: "GitHub issues",
+  reddit: "Reddit",
+  threads: "Threads",
+  x: "X",
+};
+
 const PENDING_SOURCES: Array<{ key: string; label: string; note: string }> = [
   { key: "reddit", label: "Reddit", note: "coming soon — we will switch it on for you" },
   { key: "threads", label: "Threads", note: "coming soon — we will switch it on for you" },
 ];
 
-export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
+export function WatchFields({
+  defaults = {},
+  others = [],
+}: {
+  defaults?: WatchDefaults;
+  /** The customer's other searches, so this one can say what they cover. */
+  others?: OtherSearch[];
+}) {
   const selected = new Set(defaults.sources ?? []);
   const active = defaults.active ?? true;
 
@@ -101,6 +122,8 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
             ))}
           </div>
         </fieldset>
+
+        <SourceOverlap others={others} labels={SOURCE_LABELS} />
       </div>
 
       <div>
@@ -148,6 +171,8 @@ export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
           hint="A post with any of these never reaches you."
         />
       </div>
+
+      <TermOverlap others={others} />
 
       {/* The answer to "will this find anything?", measured on posts we have
           already read rather than guessed at. */}
