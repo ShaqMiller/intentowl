@@ -411,7 +411,7 @@ async function checkResend(): Promise<void> {
   });
 }
 
-async function checkStripe(): Promise<void> {
+async function checkStripe(appUrl: string): Promise<void> {
   section("Stripe");
   const key = webVar("STRIPE_SECRET_KEY");
   if (key === undefined) {
@@ -458,30 +458,87 @@ async function checkStripe(): Promise<void> {
   }
 
   await check("webhook endpoint", async () => {
-    const { status, body } = await request("https://api.stripe.com/v1/webhook_endpoints?limit=100", {
-      headers: auth,
-    });
-    if (status !== 200) return ["fail", `${status} ${body.slice(0, 120)}`];
-    const endpoints = (asJson(body)["data"] ?? []) as Array<{
-      url?: string;
-      status?: string;
-      enabled_events?: string[];
-    }>;
-    const ours = endpoints.filter((entry) => (entry.url ?? "").includes("/api/stripe/webhook"));
-    if (ours.length === 0) {
-      return ["fail", "none points at /api/stripe/webhook — checkout will create no account"];
-    }
-    const enabled = ours.find((entry) => entry.status === "enabled");
-    if (enabled === undefined) return ["fail", "an endpoint exists but is disabled"];
-    const events = enabled.enabled_events ?? [];
     const needed = [
       "checkout.session.completed",
       "customer.subscription.updated",
       "customer.subscription.deleted",
     ];
-    const missing = needed.filter((event) => !events.includes(event) && !events.includes("*"));
-    if (missing.length > 0) return ["fail", `missing events: ${missing.join(", ")}`];
-    return ["ok", `${enabled.url ?? ""} with all three events`];
+
+    // Two shapes exist: the classic webhook endpoint, and the newer event
+    // destination the Workbench creates. Either is fine, so look for both
+    // before calling it missing — and note which mode the key is in, because
+    // a live endpoint is invisible to a test key.
+    const classic = await request("https://api.stripe.com/v1/webhook_endpoints?limit=100", {
+      headers: auth,
+    });
+    if (classic.status !== 200) return ["fail", `${classic.status} ${classic.body.slice(0, 120)}`];
+
+    const found: Array<{ url: string; enabled: boolean; events: string[]; kind: string }> = (
+      (asJson(classic.body)["data"] ?? []) as Array<{
+        url?: string;
+        status?: string;
+        enabled_events?: string[];
+      }>
+    ).map((entry) => ({
+      url: entry.url ?? "",
+      enabled: entry.status === "enabled",
+      events: entry.enabled_events ?? [],
+      kind: "webhook endpoint",
+    }));
+
+    const modern = await request("https://api.stripe.com/v2/core/event_destinations?limit=100", {
+      headers: auth,
+    });
+    if (modern.status === 200) {
+      for (const entry of (asJson(modern.body)["data"] ?? []) as Array<{
+        status?: string;
+        enabled_events?: string[];
+        webhook_endpoint?: { url?: string };
+      }>) {
+        found.push({
+          url: entry.webhook_endpoint?.url ?? "",
+          enabled: entry.status === "enabled",
+          events: entry.enabled_events ?? [],
+          kind: "event destination",
+        });
+      }
+    }
+
+    const ours = found.filter((entry) => entry.url.includes("/api/stripe/webhook"));
+    if (ours.length === 0) {
+      const mode = key.startsWith("sk_live_") ? "live" : "test";
+      return [
+        "fail",
+        `no endpoint or event destination points at /api/stripe/webhook in ${mode} mode` +
+          (mode === "test" ? " — re-run with the live key if yours is live-only" : ""),
+      ];
+    }
+    const enabled = ours.find((entry) => entry.enabled);
+    if (enabled === undefined) return ["fail", "one exists but is disabled"];
+    const missing = needed.filter(
+      (event) => !enabled.events.includes(event) && !enabled.events.includes("*"),
+    );
+    if (missing.length > 0) return ["fail", `${enabled.kind} is missing events: ${missing.join(", ")}`];
+    return ["ok", `${enabled.kind} ${enabled.url} with all three events`];
+  });
+
+  // The strongest check of the lot: whatever the site is actually serving must
+  // belong to this account and this mode. A site on test links with a live
+  // webhook takes no money and creates no accounts, and both halves look fine
+  // on their own.
+  await check("links served by the site", async () => {
+    const { body } = await request(`${appUrl}/`);
+    const served = [...new Set(body.match(/https:\/\/buy\.stripe\.com\/[A-Za-z0-9]+/g) ?? [])];
+    if (served.length === 0) return ["warn", "no checkout link found on the landing page"];
+    const unknown = served.filter(
+      (url) => !known.some((entry) => (entry.url ?? "").startsWith(url)),
+    );
+    const mode = key.startsWith("sk_live_") ? "live" : "test";
+    if (unknown.length === served.length) {
+      return ["fail", `the site serves ${served.length} link(s) this ${mode}-mode account does not have`];
+    }
+    if (unknown.length > 0) return ["fail", `${unknown.length} of ${served.length} are not ${mode}-mode links`];
+    return ["ok", `${served.length} link(s), all ${mode} mode on this account`];
   });
 
   await check("billing portal", async () => {
@@ -640,7 +697,7 @@ export async function runDoctor(options: { spend?: boolean; appUrl?: string } = 
     await checkPipeline(db);
     await checkAnthropic(options.spend ?? false);
     await checkResend();
-    await checkStripe();
+    await checkStripe(appUrl);
     await checkSupabase();
     await checkWeb(appUrl);
     await checkSources();
