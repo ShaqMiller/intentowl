@@ -17,6 +17,17 @@ export const metadata: Metadata = {
   title: "Sign up",
 };
 
+/**
+ * Rendered per request, never prerendered.
+ *
+ * The checkout links come from env, and a hosting platform can keep sensitive
+ * variables out of the build while supplying them at runtime — which is
+ * exactly what happened: this page was built with no links and shipped
+ * "Opening shortly" to every visitor while the landing page, which renders per
+ * request, showed the buttons correctly.
+ */
+export const dynamic = "force-dynamic";
+
 export default function SignupPage() {
   const ready = Object.values(checkout).some((links) => links.monthly !== undefined);
 

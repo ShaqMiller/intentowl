@@ -20,6 +20,7 @@ import { eq, sql } from "drizzle-orm";
 import { createAdapters } from "./adapters.ts";
 import { createBoss } from "./boss.ts";
 import { createAccount, type CreateAccountInput } from "./create-account.ts";
+import { runDoctor } from "./doctor.ts";
 import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
 import { runDigest } from "./jobs/digest.ts";
@@ -35,6 +36,14 @@ const USAGE = `intentowl cli
 
   ping
       Check the database connection.
+
+  doctor [--spend] [--url=<site>]
+      Check everything production depends on and print one line per test in
+      green, yellow or red: environment, database, queue health, Anthropic,
+      Resend, Stripe, Supabase, every public page, and each source. Read-only.
+      --spend adds a real one-token Anthropic call (about $0.00002), the only
+      way to tell a working key from an account out of credit. --url checks a
+      different site than APP_URL. Exits 1 if anything is red.
 
   run-poll --watch=<id> [--source=<name>] [--dry-run]
       Fetch new items for one watch. Omit --source to poll every source
@@ -84,6 +93,14 @@ async function main(): Promise<number> {
   switch (command) {
     case "ping":
       return await ping();
+
+    case "doctor": {
+      const url = flags.string("url");
+      return await runDoctor({
+        spend: flags.boolean("spend"),
+        ...(url === undefined ? {} : { appUrl: url }),
+      });
+    }
 
     case "run-poll":
       return await runPollCommand(flags);
