@@ -30,19 +30,22 @@ export const metadata: Metadata = {
  * Sources that genuinely poll in production today.
  *
  * Reddit and Threads are deliberately absent from `live`: both adapters are
- * built but wait on platform approval. They move up on the day they poll.
+ * built and waiting on the platforms, which is our problem rather than the
+ * reader's, so the page says "coming soon" and nothing about approvals. They
+ * move up on the day they poll.
  */
 const LIVE_SOURCES = [
   "Hacker News",
   "Lobsters",
   "Stack Exchange",
   "Bluesky",
+  "GitHub issues",
   "RSS feeds",
 ];
 const NEXT_SOURCES = ["Reddit", "Threads"];
 
 /** The rotating word in the headline — live sources only, same promise. */
-const SCRAMBLE_SOURCES = ["Hacker News", "Lobsters", "Stack Exchange"];
+const SCRAMBLE_SOURCES = ["Hacker News", "Lobsters", "Stack Exchange", "GitHub"];
 
 const STEPS = [
   {
@@ -96,7 +99,7 @@ const FAQ = [
   },
   {
     q: "Which communities does it read?",
-    a: "Hacker News, Lobsters, Stack Exchange, Bluesky, and any site with an RSS feed. Reddit is pending API approval. If there is a forum your customers live in that has a feed, it works today — and if it does not, adding it is usually a same-week job.",
+    a: "Hacker News, Lobsters, Stack Exchange, Bluesky, GitHub issues, and any site with an RSS feed. Reddit and Threads are built and coming soon. If there is a forum your customers live in that has a feed, it works today — and if it does not, adding it is usually a same-week job.",
   },
   {
     q: "What is the difference between Starter and Pro?",
@@ -153,7 +156,7 @@ export default async function LandingPage() {
           <div className="hero-copy">
             <a className="badge" href="#sources">
               <span className="badge-dot" />
-              Five sources live · Reddit next
+              Six sources live · Reddit next
             </a>
 
             <h1>
@@ -365,6 +368,7 @@ const SOURCE_LABELS: Record<string, string> = {
   stackexchange: "Stack Exchange",
   bluesky: "Bluesky",
   threads: "Threads",
+  github: "GitHub issues",
   rss: "RSS feeds",
 };
 
@@ -433,8 +437,8 @@ function ActivityStrip({ activity }: { activity: PublicActivity | null }) {
         ))}
         {NEXT_SOURCES.filter((name) => !polled.has(name.toLowerCase())).map((name) => (
           <li className="soon" key={name}>
-            {name} · soon
-            <span className="source-when">awaiting approval</span>
+            {name}
+            <span className="source-when">coming soon</span>
           </li>
         ))}
       </ul>

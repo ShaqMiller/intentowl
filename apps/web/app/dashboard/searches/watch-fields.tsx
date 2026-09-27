@@ -56,8 +56,8 @@ export const LIVE_SOURCES: Array<{ key: string; label: string; note: string }> =
 ];
 
 const PENDING_SOURCES: Array<{ key: string; label: string; note: string }> = [
-  { key: "reddit", label: "Reddit", note: "awaiting API approval" },
-  { key: "threads", label: "Threads", note: "awaiting Meta approval" },
+  { key: "reddit", label: "Reddit", note: "coming soon — we will switch it on for you" },
+  { key: "threads", label: "Threads", note: "coming soon — we will switch it on for you" },
 ];
 
 export function WatchFields({ defaults = {} }: { defaults?: WatchDefaults }) {
