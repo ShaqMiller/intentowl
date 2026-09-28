@@ -20,6 +20,7 @@ import { eq, sql } from "drizzle-orm";
 import { createAdapters } from "./adapters.ts";
 import { createBoss } from "./boss.ts";
 import { createAccount, type CreateAccountInput } from "./create-account.ts";
+import { draftReplies, resolveCustomer } from "./draft-replies.ts";
 import { runDoctor } from "./doctor.ts";
 import { startBatchRun } from "./jobs/classify-batch.ts";
 import { env } from "./env.ts";
@@ -65,6 +66,12 @@ const USAGE = `intentowl cli
       omit it for an unbilled account with Pro limits. The person then sets
       a password at /login/claim with the same email and lands in the setup
       wizard. Idempotent by email; --update changes an existing account.
+
+  draft-replies --customer=<email|id> [--limit=5] [--min-score=70]
+                [--days=14] [--out=<file.md>]
+      Write a reply to each recent lead into a markdown file, with the post
+      next to it. Costs about a tenth of a cent per lead. Nothing is posted
+      and nothing is emailed: the drafts are for you to edit and send.
 
   seed --file=<customer.json>
       Onboard or update a customer from a JSON file. Idempotent by email.
@@ -113,6 +120,9 @@ async function main(): Promise<number> {
 
     case "create-account":
       return await createAccountCommand(flags);
+
+    case "draft-replies":
+      return await draftRepliesCommand(flags);
 
     case "seed":
       return await seedCommand(flags);
@@ -237,6 +247,37 @@ async function createAccountCommand(flags: Flags): Promise<number> {
           "confirmation link sent to that inbox. First sign-in opens the setup wizard.\n",
       );
     }
+    return 0;
+  } finally {
+    await pool.end();
+  }
+}
+
+async function draftRepliesCommand(flags: Flags): Promise<number> {
+  const who = flags.string("customer");
+  if (who === undefined) {
+    process.stderr.write("draft-replies requires --customer=<email|id>\n");
+    return 1;
+  }
+
+  const { pool, db } = createDb(env.DATABASE_URL);
+  try {
+    const customerId = await resolveCustomer(db, who);
+    const outcome = await draftReplies({
+      db,
+      customerId,
+      limit: Number(flags.string("limit") ?? 5),
+      minScore: Number(flags.string("min-score") ?? 70),
+      days: Number(flags.string("days") ?? 14),
+      out: flags.string("out") ?? "docs/replies.md",
+      trialLine:
+        "7 days free, then $15 a month, and you can cancel before day 7 without paying anything",
+      appUrl: env.APP_URL,
+    });
+    process.stdout.write(
+      `${String(outcome.drafted)} draft(s) for ${String(outcome.leads)} lead(s) -> ${outcome.path}\n` +
+        `cost $${outcome.costUsd.toFixed(4)}\n`,
+    );
     return 0;
   } finally {
     await pool.end();

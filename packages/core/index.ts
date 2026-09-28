@@ -5,6 +5,7 @@
 // classification layers stay unit-testable.
 export { loadRootEnv, parseEnv } from "./env.ts";
 export * from "./adapters/index.ts";
+export * from "./outreach/reply.ts";
 export * from "./filter/rules.ts";
 export * from "./classify/index.ts";
 export * from "./scoring.ts";
